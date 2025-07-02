@@ -1,0 +1,178 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    ADMIN
+    GROSSISTE
+    POINT_DE_VENTE
+    GRANDE_SURFACE
+}
+
+model User {
+    id        String   @id @default(cuid())
+    name     String
+    email     String   @unique
+    password  String
+    role      Role
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    CompanyDataId String       @unique
+    CompanyData   CompanyData? @relation(fields: [CompanyDataId], references: [id], onDelete: Cascade)
+
+    Stock Stock[]
+    Order Order[]
+
+    // Sale Sale[]
+    Cart Cart?
+}
+
+model CompanyData {
+    id           String   @id @default(cuid())
+    raisonSocial String
+    nif          BigInt
+    nis          BigInt
+    phone        Int
+    address      Address?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String @unique
+    User   User?
+}
+
+model Address {
+    id        String   @id @default(cuid())
+    wilaya    String
+    commune   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    companyDataId String       @unique
+    companyData   CompanyData? @relation(fields: [companyDataId], references: [id], onDelete: Cascade)
+}
+
+model Stock {
+    id               String   @id @default(cuid())
+    productId        String
+    quantity         Int
+    price            Float @default(0)
+    expirationDate   DateTime
+    minQuantity      Int      @default(1)
+    reductionPercent Float    @default(0)
+    visible          Boolean  @default(false)
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
+
+    product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    ownerId String
+    owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+    // Pour l'instant un utilisateur peut avoir plusieurs stocks pour un même produit, on verra plus tard
+    // si on veut restreindre cela 
+    // Contrainte d'unicité : un utilisateur ne peut avoir qu'un seul stock par produit
+    // @@unique([ownerId, productId], name: "unique_user_product_stock")
+
+    // Sale Sale[]
+
+    OrderItem OrderItem[]
+}
+
+model Product {
+    id          String   @id @default(cuid())
+    name        String
+    description String?
+    image       String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    stock Stock[]
+
+    subCategoryId String
+    SubCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+    id          String  @id @default(cuid())
+    name        String
+    image       String?
+    description String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    SubCategories SubCategory[]
+}
+
+model SubCategory {
+    id          String    @id @default(cuid())
+    name        String
+    image       String?
+    description String?
+    products    Product[]
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    categoryId String
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+    SHIPPING
+    COMPLETED
+    CANCELED
+}
+
+model Order {
+    id        String      @id
+    userId    String
+    total     Float
+    status    OrderStatus @default(PENDING)
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    OrderItems OrderItem[]
+}
+
+model OrderItem {
+    id       String  @id @default(cuid())
+    orderId  String?
+    cartId   String?
+    stockId  String
+    quantity Int
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    order Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    stock Stock  @relation(fields: [stockId], references: [id], onDelete: Cascade)
+    Cart  Cart?  @relation(fields: [cartId], references: [id])
+}
+
+model Cart {
+    id String @id @default(cuid())
+
+    userId    String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    CartItems OrderItem[]
+}
