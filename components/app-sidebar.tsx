@@ -33,8 +33,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { logoutAction } from "@/lib/actions/auth";
+// import { logoutAction } from "@/lib/actions/auth";
 import { useRouter } from "next/navigation";
+import { logoutAction } from "@/lib/actions/logout";
+import { useSession } from "next-auth/react";
 
 // Menu items.
 const items = [
@@ -92,7 +94,8 @@ const items = [
 
 export function AppSidebar() {
   const router = useRouter();
-
+  const { data: session } = useSession();
+  const { user } = session!;
   const handleLogout = async () => {
     try {
       await logoutAction();
@@ -142,7 +145,7 @@ export function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton>
-                  <User2 /> Admin User
+                  <User2 /> {user.name}
                   <ChevronUp className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

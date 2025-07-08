@@ -45,6 +45,7 @@ import {
   Filter,
   Printer,
   ArrowRight,
+  ChevronDown,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -52,39 +53,55 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { createOrderAction, updateOrderAction, deleteOrderAction } from "@/lib/actions/orders";
+import {
+  createOrderAction,
+  updateOrderAction,
+  deleteOrderAction,
+} from "@/lib/actions/orders";
+import { clientAxios } from "@/lib/axios-interceptor";
 
 interface Order {
   id: string;
   userId: string;
   total: number;
   status: string;
-  shippingAddress?: string;
   createdAt: Date | string;
+  updatedAt: Date | string;
   user?: {
     id: string;
     email: string;
     name?: string;
-    company?: {
+    CompanyData?: {
       raisonSocial: string;
     };
   };
-  receiver?: {
-    id: string;
-    email: string;
-    name?: string;
-    company?: {
-      raisonSocial: string;
-    };
-  };
-  orderItems?: Array<{
+  OrderItems?: Array<{
     id: string;
     quantity: number;
-    price: number;
-    product?: {
-      id: string;
-      name: string;
+    stock: {
+      price: number;
+      expirationDate: string;
+      reductionPercent: number;
+      owner: {
+        id: string;
+        email: string;
+        name?: string;
+        CompanyData?: {
+          raisonSocial: string;
+        };
+      };
+      product: {
+        name: string;
+        description: string;
+        image: string;
+      };
     };
   }>;
 }
@@ -124,10 +141,11 @@ export default function OrdersTable({
   const filteredOrders = orders.filter((order) => {
     const userEmail = order.user?.email || "";
     const userName = order.user?.name || "";
-    const senderCompany = order.user?.company?.raisonSocial || "";
-    const receiverEmail = order.receiver?.email || "";
-    const receiverName = order.receiver?.name || "";
-    const receiverCompany = order.receiver?.company?.raisonSocial || "";
+    const senderCompany = order.user?.CompanyData?.raisonSocial || "";
+    const receiverEmail = order.OrderItems?.[0]?.stock.owner.email || "";
+    const receiverName = order.OrderItems?.[0]?.stock.owner.name || "";
+    const receiverCompany =
+      order.OrderItems?.[0]?.stock.owner.CompanyData?.raisonSocial || "";
 
     const matchesSearch =
       userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -140,9 +158,10 @@ export default function OrdersTable({
 
     const matchesStatus = !statusFilter || order.status === statusFilter;
 
-    const dateString = order.createdAt instanceof Date
-      ? order.createdAt.toISOString().split("T")[0]
-      : order.createdAt;
+    const dateString =
+      order.createdAt instanceof Date
+        ? order.createdAt.toISOString().split("T")[0]
+        : order.createdAt;
     const matchesDate = !dateFilter || dateString.includes(dateFilter);
 
     return matchesSearch && matchesStatus && matchesDate;
@@ -172,109 +191,44 @@ export default function OrdersTable({
     setIsCreateOpen(false);
   };
 
-  const handleUpdateOrder = async (formData: FormData) => {
-    await updateOrderAction(formData);
-    setEditingOrder(null);
-  };
-
   const handleDeleteOrder = async (orderId: string) => {
     await deleteOrderAction(orderId);
   };
 
+  const handlePrintDocument = async (orderId: string, documentType: string) => {
+    try {
+      // Replace with your actual endpoint
+      const response = await fetch(
+        `/api/orders/${orderId}/print/${documentType}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (
+        response.ok &&
+        response.headers.get("content-type")?.includes("application/pdf")
+      ) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, "_blank");
+        // Clean up the URL object after opening
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
+      } else {
+        console.error("Failed to fetch PDF document");
+        // You might want to show a toast notification here
+      }
+    } catch (error) {
+      console.error("Error printing document:", error);
+      // You might want to show a toast notification here
+    }
+  };
+
   const handlePrint = () => {
     if (!viewingOrder) return;
-    
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Order #${viewingOrder.id}</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-              .order-info { margin-bottom: 20px; }
-              table { width: 100%; border-collapse: collapse; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #f2f2f2; }
-              .total { text-align: right; margin-top: 20px; font-weight: bold; }
-              .footer { margin-top: 50px; text-align: center; font-size: 12px; }
-              @media print {
-                button { display: none; }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>Order Invoice</h1>
-              <div>
-                <p><strong>Order #:</strong> ${viewingOrder.id}</p>
-                <p><strong>Date:</strong> ${viewingOrder.createdAt instanceof Date 
-                  ? viewingOrder.createdAt.toISOString().split("T")[0] 
-                  : viewingOrder.createdAt}</p>
-                <p><strong>Status:</strong> ${viewingOrder.status}</p>
-              </div>
-            </div>
-            
-            <div class="order-info">
-              <div style="display: flex; justify-content: space-between;">
-                <div>
-                  <h3>From:</h3>
-                  <p>${viewingOrder.user?.name || "Unknown"}</p>
-                  <p>${viewingOrder.user?.company?.raisonSocial || "Unknown Company"}</p>
-                  <p>${viewingOrder.user?.email || ""}</p>
-                </div>
-                <div>
-                  <h3>To:</h3>
-                  <p>${viewingOrder.receiver?.name || "Unknown"}</p>
-                  <p>${viewingOrder.receiver?.company?.raisonSocial || "Unknown Company"}</p>
-                  <p>${viewingOrder.receiver?.email || ""}</p>
-                  <p>${viewingOrder.shippingAddress || ""}</p>
-                </div>
-              </div>
-            </div>
-            
-            <h3>Order Items</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(viewingOrder.orderItems || [])
-                  .map(
-                    (item) => `
-                  <tr>
-                    <td>${item.product?.name || "Unknown Product"}</td>
-                    <td>${item.quantity}</td>
-                    <td>$${item.price.toFixed(2)}</td>
-                    <td>$${(item.quantity * item.price).toFixed(2)}</td>
-                  </tr>
-                `,
-                  )
-                  .join("")}
-              </tbody>
-            </table>
-            
-            <div class="total">
-              <p>Total: $${viewingOrder.total.toFixed(2)}</p>
-            </div>
-            
-            <div class="footer">
-              <p>Thank you for your business!</p>
-            </div>
-            
-            <button onclick="window.print();" style="margin-top: 20px; padding: 10px 20px;">Print Invoice</button>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-    }
   };
 
   return (
@@ -282,7 +236,9 @@ export default function OrdersTable({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
-          <p className="text-muted-foreground">Manage customer orders and their status</p>
+          <p className="text-muted-foreground">
+            Manage customer orders and their status
+          </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -294,7 +250,9 @@ export default function OrdersTable({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create New Order</DialogTitle>
-              <DialogDescription>Create a new order for a customer</DialogDescription>
+              <DialogDescription>
+                Create a new order for a customer
+              </DialogDescription>
             </DialogHeader>
             <form action={handleCreateOrder}>
               <div className="grid gap-4 py-4">
@@ -336,7 +294,13 @@ export default function OrdersTable({
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="total">Total Amount</Label>
-                  <Input id="total" name="total" type="number" step="0.01" required />
+                  <Input
+                    id="total"
+                    name="total"
+                    type="number"
+                    step="0.01"
+                    required
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="status">Status</Label>
@@ -380,7 +344,11 @@ export default function OrdersTable({
             <div className="flex items-center gap-2">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
                     <Filter className="h-4 w-4" />
                     <span>Filter</span>
                     {(statusFilter || dateFilter) && (
@@ -392,12 +360,14 @@ export default function OrdersTable({
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <h4 className="font-medium">Status</h4>
-                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <Select
+                        value={statusFilter || undefined}
+                        onValueChange={(value) => setStatusFilter(value || "")}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Any status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any status</SelectItem>
                           <SelectItem value="PENDING">Pending</SelectItem>
                           <SelectItem value="ACCEPTED">Accepted</SelectItem>
                           <SelectItem value="REJECTED">Rejected</SelectItem>
@@ -455,29 +425,38 @@ export default function OrdersTable({
                     <TableCell className="font-medium">#{order.id}</TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{order.user?.name || "Unknown"}</span>
+                        <span className="font-medium">
+                          {order.user?.name || "Unknown"}
+                        </span>
                         <span className="text-xs text-muted-foreground">
-                          {order.user?.company?.raisonSocial || "Unknown Company"}
+                          {order.user?.CompanyData?.raisonSocial ||
+                            "Unknown Company"}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{order.receiver?.name || "Unknown"}</span>
+                        <span className="font-medium">
+                          {order.OrderItems?.at(0)?.stock.owner.name ||
+                            "Unknown"}
+                        </span>
                         <span className="text-xs text-muted-foreground">
-                          {order.receiver?.company?.raisonSocial || "Unknown Company"}
+                          {order.OrderItems?.at(0)?.stock.owner.CompanyData
+                            ?.raisonSocial || "Unknown Company"}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>${order.total.toFixed(2)}</TableCell>
+                    <TableCell>{order.total.toFixed(2)} DA</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusColor(order.status)}>{order.status}</Badge>
+                      <Badge variant={getStatusColor(order.status)}>
+                        {order.status}
+                      </Badge>
                     </TableCell>
-                    <TableCell>{order.orderItems?.length || 0} items</TableCell>
+                    <TableCell>{order.OrderItems?.length || 0} items</TableCell>
                     <TableCell>
                       {order.createdAt instanceof Date
                         ? order.createdAt.toISOString().split("T")[0]
-                        : order.createdAt}
+                        : order.createdAt.split("T")[0]}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -488,13 +467,58 @@ export default function OrdersTable({
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Printer className="h-4 w-4 mr-1" />
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handlePrintDocument(order.id, "bon-livraison")
+                              }
+                            >
+                              Bon de Livraison
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handlePrintDocument(order.id, "bon-commande")
+                              }
+                            >
+                              Bon de Commande
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handlePrintDocument(order.id, "bon-retour")
+                              }
+                            >
+                              Bon de Retour
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handlePrintDocument(order.id, "facture")
+                              }
+                            >
+                              Facture
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handlePrintDocument(order.id, "proforma")
+                              }
+                            >
+                              Facture Proforma
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {/* <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setEditingOrder(order)}
                         >
                           <Edit className="h-4 w-4" />
-                        </Button>
+                        </Button> */}
                         <Button
                           variant="outline"
                           size="sm"
@@ -512,7 +536,7 @@ export default function OrdersTable({
         </CardContent>
       </Card>
 
-      {/* Edit Order Dialog */}
+      {/* Edit Order Dialog
       <Dialog open={!!editingOrder} onOpenChange={() => setEditingOrder(null)}>
         <DialogContent>
           <DialogHeader>
@@ -566,11 +590,11 @@ export default function OrdersTable({
             </form>
           )}
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
 
       {/* View Order Dialog */}
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[60vw]">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               <span>Order #{viewingOrder?.id}</span>
@@ -605,28 +629,38 @@ export default function OrdersTable({
                             : viewingOrder.createdAt}
                         </span>
                         <span className="text-muted-foreground">Total:</span>
-                        <span>${viewingOrder.total.toFixed(2)}</span>
+                        <span>{viewingOrder.total.toFixed(2)} DA</span>
                         <span className="text-muted-foreground">Items:</span>
-                        <span>{viewingOrder.orderItems?.length || 0}</span>
+                        <span>{viewingOrder.OrderItems?.length || 0}</span>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <h3 className="font-medium">Parties</h3>
                       <div className="flex items-center gap-2 text-sm">
                         <div className="flex-1">
-                          <p className="font-medium">{viewingOrder.user?.name || "Unknown"}</p>
-                          <p className="text-muted-foreground">
-                            {viewingOrder.user?.company?.raisonSocial || "Unknown Company"}
+                          <p className="font-medium">
+                            {viewingOrder.user?.name || "Unknown"}
                           </p>
-                          <p className="text-muted-foreground">{viewingOrder.user?.email}</p>
+                          <p className="text-muted-foreground">
+                            {viewingOrder.user?.CompanyData?.raisonSocial ||
+                              "Unknown Company"}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {viewingOrder.user?.email}
+                          </p>
                         </div>
                         <ArrowRight className="h-4 w-4" />
                         <div className="flex-1">
-                          <p className="font-medium">{viewingOrder.receiver?.name || "Unknown"}</p>
-                          <p className="text-muted-foreground">
-                            {viewingOrder.receiver?.company?.raisonSocial || "Unknown Company"}
+                          <p className="font-medium">
+                            {viewingOrder.user?.name || "Unknown"}
                           </p>
-                          <p className="text-muted-foreground">{viewingOrder.receiver?.email}</p>
+                          <p className="text-muted-foreground">
+                            {viewingOrder.user?.CompanyData?.raisonSocial ||
+                              "Unknown Company"}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {viewingOrder.user?.email}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -643,12 +677,18 @@ export default function OrdersTable({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {(viewingOrder.orderItems || []).map((item) => (
+                      {(viewingOrder.OrderItems || []).map((item) => (
                         <TableRow key={item.id}>
-                          <TableCell>{item.product?.name || "Unknown Product"}</TableCell>
+                          <TableCell>
+                            {item.stock.product?.name || "Unknown Product"}
+                          </TableCell>
                           <TableCell>{item.quantity}</TableCell>
-                          <TableCell>${item.price.toFixed(2)}</TableCell>
-                          <TableCell>${(item.quantity * item.price).toFixed(2)}</TableCell>
+                          <TableCell>
+                            {item.stock.price.toFixed(2)} DA
+                          </TableCell>
+                          <TableCell>
+                            {(item.quantity * item.stock.price).toFixed(2)} DA
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -656,22 +696,8 @@ export default function OrdersTable({
                   <div className="flex justify-end mt-4">
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">Total</div>
-                      <div className="text-xl font-bold">${viewingOrder.total.toFixed(2)}</div>
-                    </div>
-                  </div>
-                </TabsContent>
-                <TabsContent value="shipping" className="mt-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-medium">Shipping Address</h3>
-                      <p className="mt-1">{viewingOrder.shippingAddress || "No address provided"}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Shipping Status</h3>
-                      <div className="mt-2">
-                        <Badge variant={getStatusColor(viewingOrder.status)}>
-                          {viewingOrder.status}
-                        </Badge>
+                      <div className="text-xl font-bold">
+                        {viewingOrder.total.toFixed(2)} DA
                       </div>
                     </div>
                   </div>

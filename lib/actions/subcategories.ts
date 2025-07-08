@@ -11,19 +11,19 @@ export const createSubCategoryAction = async (formData: FormData) => {
 
     // Create a new FormData object to send to the API
     const apiFormData = new FormData();
-    
+
     if (name && name.trim()) {
       apiFormData.append("name", name.trim());
     }
-    
+
     if (description && description.trim()) {
       apiFormData.append("description", description.trim());
     }
-    
+
     if (categoryId) {
       apiFormData.append("categoryId", categoryId);
     }
-    
+
     // Only append image if it's a valid file (not empty)
     if (image && image.size > 0) {
       apiFormData.append("image", image);
@@ -57,19 +57,19 @@ export const updateSubCategoryAction = async (formData: FormData) => {
 
     // Create a new FormData object to send to the API
     const apiFormData = new FormData();
-    
+
     if (name && name.trim()) {
       apiFormData.append("name", name.trim());
     }
-    
+
     if (description && description.trim()) {
       apiFormData.append("description", description.trim());
     }
-    
+
     if (categoryId) {
       apiFormData.append("categoryId", categoryId);
     }
-    
+
     // Only append image if it's a valid file (not empty)
     if (image && image.size > 0) {
       apiFormData.append("image", image);
@@ -124,13 +124,16 @@ export const getSubCategoriesAction = async () => {
 
 export const getCategoriesAction = async () => {
   try {
-    const response = await serverApi.get("/category");
+    const response = await serverApi.get("/category?page=1&limit=100");
     if (response.status !== 200) {
       throw new Error(`Failed to fetch categories: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching categories:", error);
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+     throw new Error("UNAUTHORIZED");
+    }
     return [];
   }
 };

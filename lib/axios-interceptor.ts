@@ -6,6 +6,7 @@ import axios, {
 import { getSession, signOut } from "next-auth/react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 // Shared auth headers function
 const getAuthHeaders = (session: any) => {
@@ -56,28 +57,42 @@ if (typeof window !== "undefined") {
   );
 }
 
-// Simplified server API helper - no interceptors needed
+// Server-side axios instance with response interceptor
+const serverAxios = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+});
+
+// Setup server-side response interceptor
+serverAxios.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      throw new Error("UNAUTHORIZED");
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Server API helper with interceptor support
 const serverApi = {
   async patch(url: string, data?: any) {
     const session = await getServerSession(authOptions);
     const headers = getAuthHeaders(session);
     // If data is FormData, don't set Content-Type header (let browser set it with boundary)
     if (data instanceof FormData) {
-      return axios.patch(url, data, {
-        baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+      return serverAxios.patch(url, data, {
         headers,
       });
     }
-    return axios.patch(url, data, {
-      baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+    return serverAxios.patch(url, data, {
       headers,
     });
   },
-  async get(url: string) {
+  async get(url: string, config?: any) {
     const session = await getServerSession(authOptions);
-    return axios.get(url, {
-      baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+    return serverAxios.get(url, {
       headers: getAuthHeaders(session),
+      ...config,
     });
   },
 
@@ -87,14 +102,12 @@ const serverApi = {
 
     // If data is FormData, don't set Content-Type header (let browser set it with boundary)
     if (data instanceof FormData) {
-      return axios.post(url, data, {
-        baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+      return serverAxios.post(url, data, {
         headers,
       });
     }
 
-    return axios.post(url, data, {
-      baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+    return serverAxios.post(url, data, {
       headers,
     });
   },
@@ -105,22 +118,19 @@ const serverApi = {
 
     // If data is FormData, don't set Content-Type header (let browser set it with boundary)
     if (data instanceof FormData) {
-      return axios.put(url, data, {
-        baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+      return serverAxios.put(url, data, {
         headers,
       });
     }
 
-    return axios.put(url, data, {
-      baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+    return serverAxios.put(url, data, {
       headers,
     });
   },
 
   async delete(url: string) {
     const session = await getServerSession(authOptions);
-    return axios.delete(url, {
-      baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+    return serverAxios.delete(url, {
       headers: getAuthHeaders(session),
     });
   },
