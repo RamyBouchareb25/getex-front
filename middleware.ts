@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 export default withAuth(
   function middleware(req) {
     const { pathname, searchParams } = req.nextUrl;
-    console.log("Middleware triggered for:", req.nextauth);
     const token = req.nextauth.token;
 
     // Auth routes (login, register, etc.)

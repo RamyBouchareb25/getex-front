@@ -32,6 +32,46 @@ export const createOrderAction = async (formData: FormData) => {
   }
 };
 
+export const acceptOrderAction = async (orderId: string) => {
+  try {
+    if (!orderId) {
+      throw new Error("Order ID is required for acceptance");
+    }
+    const response = await serverApi.patch(`/order/${orderId}/status`, {
+      status: "ACCEPTED",
+    });
+    if (response.status !== 200) {
+      throw new Error(`Failed to accept order: ${response.statusText}`);
+    }
+    console.log("Order accepted successfully:", response.data);
+    revalidatePath("/dashboard/orders");
+    return { success: true, message: "Order accepted successfully" };
+  } catch (error) {
+    console.error("Error accepting order:", error);
+    return { success: false, message: "Failed to accept order" };
+  }
+};
+
+export const rejectOrderAction = async (orderId: string) => {
+  try {
+    if (!orderId) {
+      throw new Error("Order ID is required for rejection");
+    }
+    const response = await serverApi.patch(`/order/${orderId}/status`, {
+      status: "REJECTED",
+    });
+    if (response.status !== 200 && response.status !== 204) {
+      throw new Error(`Failed to reject order: ${response.statusText}`);
+    }
+    console.log("Order rejected successfully:", response.data);
+    revalidatePath("/dashboard/orders");
+    return { success: true, message: "Order rejected successfully" };
+  } catch (error) {
+    console.error("Error rejecting order:", error);
+    return { success: false, message: "Failed to reject order" };
+  }
+};
+
 export const updateOrderAction = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;

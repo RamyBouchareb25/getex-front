@@ -45,6 +45,7 @@ import {
   deleteSubCategoryAction,
 } from "@/lib/actions/subcategories";
 import { imageUrl } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SubCategory {
   id: string;
@@ -79,6 +80,15 @@ export default function SubCategoriesTable({
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<string>("");
   const [productCountFilter, setProductCountFilter] = useState<string>("");
+
+  // Loading states
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  // Error states
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("categoryId");
@@ -133,21 +143,81 @@ export default function SubCategoriesTable({
   };
 
   const handleCreateSubCategory = async (formData: FormData) => {
-    await createSubCategoryAction(formData);
-    setIsCreateOpen(false);
+    setIsCreating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await createSubCategoryAction(formData);
+      if (result.success) {
+        setSuccess("Subcategory created successfully!");
+        setIsCreateOpen(false);
+      } else {
+        setError(result.message || "Failed to create subcategory");
+      }
+    } catch (error) {
+      console.error("Error creating subcategory:", error);
+      setError("An unexpected error occurred while creating the subcategory");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleUpdateSubCategory = async (formData: FormData) => {
-    await updateSubCategoryAction(formData);
-    setEditingSubCategory(null);
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await updateSubCategoryAction(formData);
+      if (result.success) {
+        setSuccess("Subcategory updated successfully!");
+        setEditingSubCategory(null);
+      } else {
+        setError(result.message || "Failed to update subcategory");
+      }
+    } catch (error) {
+      console.error("Error updating subcategory:", error);
+      setError("An unexpected error occurred while updating the subcategory");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleDeleteSubCategory = async (subCategoryId: string) => {
-    await deleteSubCategoryAction(subCategoryId);
+    setIsDeleting(subCategoryId);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await deleteSubCategoryAction(subCategoryId);
+      if (result.success) {
+        setSuccess("Subcategory deleted successfully!");
+      } else {
+        setError(result.message || "Failed to delete subcategory");
+      }
+    } catch (error) {
+      console.error("Error deleting subcategory:", error);
+      setError("An unexpected error occurred while deleting the subcategory");
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Sub Categories</h1>

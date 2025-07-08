@@ -97,6 +97,12 @@ export default function UsersTable({ users }: { users: User[] }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Loading states
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+
   const searchParams = useSearchParams();
   const companyId = searchParams.get("companyId");
 
@@ -130,22 +136,69 @@ export default function UsersTable({ users }: { users: User[] }) {
   });
 
   const handleCreateUser = async (formData: FormData) => {
-    await createUserAction(formData);
-    setIsCreateOpen(false);
+    setIsCreating(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+    
+    try {
+      const result = await createUserAction(formData);
+      if (result.success) {
+        setSuccessMessage("User created successfully!");
+        setIsCreateOpen(false);
+      } else {
+        setErrorMessage(result.message || "Failed to create user");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      setErrorMessage("An unexpected error occurred while creating the user");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleUpdateUser = async (formData: FormData) => {
-    const result = await updateUserAction(formData);
-    if (result.success) {
-      setEditingUser(null);
+    setIsUpdating(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+    
+    try {
+      const result = await updateUserAction(formData);
+      if (result.success) {
+        setSuccessMessage("User updated successfully!");
+        setEditingUser(null);
+      } else {
+        setErrorMessage(result.message || "Failed to update user");
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      setErrorMessage("An unexpected error occurred while updating the user");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    await deleteUserAction(userId);
+    setIsDeleting(userId);
+    setErrorMessage("");
+    setSuccessMessage("");
+    
+    try {
+      const result = await deleteUserAction(userId);
+      if (result.success) {
+        setSuccessMessage("User deleted successfully!");
+      } else {
+        setErrorMessage(result.message || "Failed to delete user");
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setErrorMessage("An unexpected error occurred while deleting the user");
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   const handleResetPassword = async (formData: FormData) => {
+    setIsResettingPassword(true);
     setSuccessMessage("");
     setErrorMessage("");
 
@@ -159,6 +212,8 @@ export default function UsersTable({ users }: { users: User[] }) {
       }
     } catch (error) {
       setErrorMessage("Failed to reset password");
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -270,7 +325,9 @@ export default function UsersTable({ users }: { users: User[] }) {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Create User</Button>
+                <Button type="submit" disabled={isCreating}>
+                  {isCreating ? "Creating..." : "Create User"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -412,6 +469,7 @@ export default function UsersTable({ users }: { users: User[] }) {
                           variant="outline"
                           size="sm"
                           onClick={() => setEditingUser(user)}
+                          disabled={isUpdating}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -419,6 +477,7 @@ export default function UsersTable({ users }: { users: User[] }) {
                           variant="outline"
                           size="sm"
                           onClick={() => setChangingPasswordFor(user)}
+                          disabled={isResettingPassword}
                         >
                           <Key className="h-4 w-4" />
                         </Button>
@@ -426,8 +485,9 @@ export default function UsersTable({ users }: { users: User[] }) {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDeleteUser(user.id)}
+                          disabled={isDeleting === user.id}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {isDeleting === user.id ? "Deleting..." : <Trash2 className="h-4 w-4" />}
                         </Button>
                       </div>
                     </TableCell>
@@ -489,7 +549,9 @@ export default function UsersTable({ users }: { users: User[] }) {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Update User</Button>
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? "Updating..." : "Update User"}
+                </Button>
               </DialogFooter>
             </form>
           )}
@@ -549,7 +611,9 @@ export default function UsersTable({ users }: { users: User[] }) {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit">Reset Password</Button>
+                  <Button type="submit" disabled={isResettingPassword}>
+                    {isResettingPassword ? "Resetting..." : "Reset Password"}
+                  </Button>
                 </DialogFooter>
               </form>
             </div>

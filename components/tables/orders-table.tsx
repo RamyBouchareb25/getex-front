@@ -64,8 +64,12 @@ import {
   createOrderAction,
   updateOrderAction,
   deleteOrderAction,
+  acceptOrderAction,
+  rejectOrderAction,
 } from "@/lib/actions/orders";
 import { clientAxios } from "@/lib/axios-interceptor";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Order {
   id: string;
@@ -129,6 +133,16 @@ export default function OrdersTable({
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<string>("");
 
+  // Loading states
+  const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isPrinting, setIsPrinting] = useState<string | null>(null);
+
+  // Error states
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
@@ -187,17 +201,51 @@ export default function OrdersTable({
   };
 
   const handleCreateOrder = async (formData: FormData) => {
-    await createOrderAction(formData);
-    setIsCreateOpen(false);
+    setIsCreating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await createOrderAction(formData);
+      if (result.success) {
+        setSuccess("Order created successfully!");
+        setIsCreateOpen(false);
+      } else {
+        setError(result.message || "Failed to create order");
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      setError("An unexpected error occurred while creating the order");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleDeleteOrder = async (orderId: string) => {
-    await deleteOrderAction(orderId);
+    setIsDeleting(orderId);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await deleteOrderAction(orderId);
+      if (result.success) {
+        setSuccess("Order deleted successfully!");
+      } else {
+        setError(result.message || "Failed to delete order");
+      }
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      setError("An unexpected error occurred while deleting the order");
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   const handlePrintDocument = async (orderId: string, documentType: string) => {
+    setIsPrinting(`${orderId}-${documentType}`);
+    setError(null);
+    
     try {
-      // Replace with your actual endpoint
       const response = await fetch(
         `/api/orders/${orderId}/print/${documentType}`,
         {
@@ -215,24 +263,78 @@ export default function OrdersTable({
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         window.open(url, "_blank");
-        // Clean up the URL object after opening
         setTimeout(() => window.URL.revokeObjectURL(url), 100);
+        setSuccess("Document printed successfully!");
       } else {
-        console.error("Failed to fetch PDF document");
-        // You might want to show a toast notification here
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.message || "Failed to fetch PDF document");
       }
     } catch (error) {
       console.error("Error printing document:", error);
-      // You might want to show a toast notification here
+      setError("An unexpected error occurred while printing the document");
+    } finally {
+      setIsPrinting(null);
     }
   };
 
   const handlePrint = () => {
     if (!viewingOrder) return;
   };
+  const handleAcceptOrder = async (editingOrderId: string) => {
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await acceptOrderAction(editingOrderId);
+      if (result.success) {
+        setSuccess("Order accepted successfully!");
+        setEditingOrder(null);
+      } else {
+        setError(result.message || "Failed to accept order");
+      }
+    } catch (error) {
+      console.error("Error accepting order:", error);
+      setError("An unexpected error occurred while accepting the order");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
+  const handleRejectOrder = async (editingOrderId: string) => {
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await rejectOrderAction(editingOrderId);
+      if (result.success) {
+        setSuccess("Order rejected successfully!");
+        setEditingOrder(null);
+      } else {
+        setError(result.message || "Failed to reject order");
+      }
+    } catch (error) {
+      console.error("Error rejecting order:", error);
+      setError("An unexpected error occurred while rejecting the order");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
   return (
     <div className="space-y-6">
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
@@ -320,7 +422,9 @@ export default function OrdersTable({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Create Order</Button>
+                <Button type="submit" disabled={isCreating}>
+                  {isCreating ? "Creating..." : "Create Order"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -463,13 +567,24 @@ export default function OrdersTable({
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => setEditingOrder(order)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setViewingOrder(order)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              disabled={isPrinting?.startsWith(order.id)}
+                            >
                               <Printer className="h-4 w-4 mr-1" />
                               <ChevronDown className="h-3 w-3" />
                             </Button>
@@ -479,36 +594,41 @@ export default function OrdersTable({
                               onClick={() =>
                                 handlePrintDocument(order.id, "bon-livraison")
                               }
+                              disabled={isPrinting === `${order.id}-bon-livraison`}
                             >
-                              Bon de Livraison
+                              {isPrinting === `${order.id}-bon-livraison` ? "Printing..." : "Bon de Livraison"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
                                 handlePrintDocument(order.id, "bon-commande")
                               }
+                              disabled={isPrinting === `${order.id}-bon-commande`}
                             >
-                              Bon de Commande
+                              {isPrinting === `${order.id}-bon-commande` ? "Printing..." : "Bon de Commande"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
                                 handlePrintDocument(order.id, "bon-retour")
                               }
+                              disabled={isPrinting === `${order.id}-bon-retour`}
                             >
-                              Bon de Retour
+                              {isPrinting === `${order.id}-bon-retour` ? "Printing..." : "Bon de Retour"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
                                 handlePrintDocument(order.id, "facture")
                               }
+                              disabled={isPrinting === `${order.id}-facture`}
                             >
-                              Facture
+                              {isPrinting === `${order.id}-facture` ? "Printing..." : "Facture"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
                                 handlePrintDocument(order.id, "proforma")
                               }
+                              disabled={isPrinting === `${order.id}-proforma`}
                             >
-                              Facture Proforma
+                              {isPrinting === `${order.id}-proforma` ? "Printing..." : "Facture Proforma"}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -523,8 +643,13 @@ export default function OrdersTable({
                           variant="outline"
                           size="sm"
                           onClick={() => handleDeleteOrder(order.id)}
+                          disabled={isDeleting === order.id}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {isDeleting === order.id ? (
+                            "Deleting..."
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     </TableCell>
@@ -591,7 +716,50 @@ export default function OrdersTable({
           )}
         </DialogContent>
       </Dialog> */}
+      {/* Edit Order Dialog */}
+      <Dialog open={!!editingOrder} onOpenChange={() => setEditingOrder(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Order Status</DialogTitle>
+            <DialogDescription>
+              Accept or deny this order with a message
+            </DialogDescription>
+          </DialogHeader>
+          {editingOrder && (
+            <div className="space-y-4 py-4">
+              <div className="grid gap-2">
+                <Label>Current Status</Label>
+                <Badge variant={getStatusColor(editingOrder.status)}>
+                  {editingOrder.status}
+                </Badge>
+              </div>
 
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="default"
+                  className="flex-1"
+                  onClick={() => {
+                    handleAcceptOrder(editingOrder.id);
+                  }}
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? "Processing..." : "Accept Order"}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={() => {
+                    handleRejectOrder(editingOrder.id);
+                  }}
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? "Processing..." : "Deny Order"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
       {/* View Order Dialog */}
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
         <DialogContent className="sm:max-w-[60vw]">

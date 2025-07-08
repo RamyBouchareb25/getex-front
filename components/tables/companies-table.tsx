@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/popover";
 import Link from "next/link";
 import { updateCompanyAction } from "@/lib/actions/companies";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Company {
   id: string;
@@ -74,6 +75,13 @@ export default function CompaniesTable({
   const [wilayaFilter, setWilayaFilter] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<string>("");
 
+  // Loading states
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Error states
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
   const searchParams = useSearchParams();
   const companyId = searchParams.get("id");
 
@@ -110,12 +118,40 @@ export default function CompaniesTable({
   );
 
   const handleUpdateCompany = async (formData: FormData) => {
-    await updateCompanyAction(formData);
-    setEditingCompany(null);
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await updateCompanyAction(formData);
+      if (result.success) {
+        setSuccess("Company updated successfully!");
+        setEditingCompany(null);
+      } else {
+        setError(result.message || "Failed to update company");
+      }
+    } catch (error) {
+      console.error("Error updating company:", error);
+      setError("An unexpected error occurred while updating the company");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Companies</h1>

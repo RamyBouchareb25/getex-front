@@ -48,6 +48,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { createProductAction, updateProductAction, deleteProductAction } from "@/lib/actions/products";
 import { imageUrl } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Product {
   id: string;
@@ -79,6 +80,15 @@ export default function ProductsTable({
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<string>("");
+
+  // Loading states
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  // Error states
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const subCategoryId = searchParams.get("subCategoryId");
@@ -120,21 +130,81 @@ export default function ProductsTable({
   };
 
   const handleCreateProduct = async (formData: FormData) => {
-    await createProductAction(formData);
-    setIsCreateOpen(false);
+    setIsCreating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await createProductAction(formData);
+      if (result.success) {
+        setSuccess("Product created successfully!");
+        setIsCreateOpen(false);
+      } else {
+        setError(result.message || "Failed to create product");
+      }
+    } catch (error) {
+      console.error("Error creating product:", error);
+      setError("An unexpected error occurred while creating the product");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleUpdateProduct = async (formData: FormData) => {
-    await updateProductAction(formData);
-    setEditingProduct(null);
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await updateProductAction(formData);
+      if (result.success) {
+        setSuccess("Product updated successfully!");
+        setEditingProduct(null);
+      } else {
+        setError(result.message || "Failed to update product");
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      setError("An unexpected error occurred while updating the product");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    await deleteProductAction(productId);
+    setIsDeleting(productId);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await deleteProductAction(productId);
+      if (result.success) {
+        setSuccess("Product deleted successfully!");
+      } else {
+        setError(result.message || "Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      setError("An unexpected error occurred while deleting the product");
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Products</h1>

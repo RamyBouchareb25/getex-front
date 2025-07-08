@@ -45,6 +45,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { createStockAction, updateStockAction, deleteStockAction } from "@/lib/actions/stock";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Stock {
   id: string;
@@ -93,6 +94,15 @@ export default function StockTable({
   const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
   const [stockStatusFilter, setStockStatusFilter] = useState<string>("");
   const [visibilityFilter, setVisibilityFilter] = useState<string>("");
+
+  // Loading states
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  // Error states
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const productId = searchParams.get("productId");
@@ -145,21 +155,81 @@ export default function StockTable({
   };
 
   const handleCreateStock = async (formData: FormData) => {
-    await createStockAction(formData);
-    setIsCreateOpen(false);
+    setIsCreating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await createStockAction(formData);
+      if (result.success) {
+        setSuccess("Stock created successfully!");
+        setIsCreateOpen(false);
+      } else {
+        setError(result.message || "Failed to create stock");
+      }
+    } catch (error) {
+      console.error("Error creating stock:", error);
+      setError("An unexpected error occurred while creating the stock");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleUpdateStock = async (formData: FormData) => {
-    await updateStockAction(formData);
-    setEditingStock(null);
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await updateStockAction(formData);
+      if (result.success) {
+        setSuccess("Stock updated successfully!");
+        setEditingStock(null);
+      } else {
+        setError(result.message || "Failed to update stock");
+      }
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      setError("An unexpected error occurred while updating the stock");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleDeleteStock = async (stockId: string) => {
-    await deleteStockAction(stockId);
+    setIsDeleting(stockId);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await deleteStockAction(stockId);
+      if (result.success) {
+        setSuccess("Stock deleted successfully!");
+      } else {
+        setError(result.message || "Failed to delete stock");
+      }
+    } catch (error) {
+      console.error("Error deleting stock:", error);
+      setError("An unexpected error occurred while deleting the stock");
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Stock Management</h1>

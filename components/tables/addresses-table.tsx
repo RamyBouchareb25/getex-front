@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/popover";
 import Link from "next/link";
 import { updateAddressAction } from "@/lib/actions/addresses";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Address {
   id: string;
@@ -64,6 +65,13 @@ export default function AddressesTable({
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [wilayaFilter, setWilayaFilter] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<string>("");
+
+  // Loading states
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Error states
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const addressId = searchParams.get("id");
@@ -100,12 +108,40 @@ export default function AddressesTable({
   );
 
   const handleUpdateAddress = async (formData: FormData) => {
-    await updateAddressAction(formData);
-    setEditingAddress(null);
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const result = await updateAddressAction(formData);
+      if (result.success) {
+        setSuccess("Address updated successfully!");
+        setEditingAddress(null);
+      } else {
+        setError(result.message || "Failed to update address");
+      }
+    } catch (error) {
+      console.error("Error updating address:", error);
+      setError("An unexpected error occurred while updating the address");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Addresses</h1>
