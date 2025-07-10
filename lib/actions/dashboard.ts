@@ -5,7 +5,9 @@ export const getDashboardStatsAction = async () => {
   try {
     const response = await serverApi.get("/dashboard/stats");
     if (response.status !== 200) {
-      throw new Error(`Failed to fetch dashboard stats: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch dashboard stats: ${response.statusText}`
+      );
     }
     return response.data;
   } catch (error) {
@@ -55,9 +57,32 @@ export const getOrderStatusDataAction = async () => {
   try {
     const response = await serverApi.get("/dashboard/order-status");
     if (response.status !== 200) {
-      throw new Error(`Failed to fetch order status data: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch order status data: ${response.statusText}`
+      );
     }
-    return response.data;
+    // Transform the response data to match the expected format
+    const transformedData = Object.entries(response.data).map(
+      ([status, value]) => {
+        const statusMap = {
+          COMPLETED: { name: "Completed", color: "#22c55e" },
+          PENDING: { name: "Pending", color: "#f59e0b" },
+          SHIPPING: { name: "Shipping", color: "#3b82f6" },
+          CANCELED: { name: "Cancelled", color: "#ef4444" },
+          CANCELLED: { name: "Cancelled", color: "#ef4444" },
+          REJECTED: { name: "Rejected", color: "#ef4444" },
+        };
+
+        return {
+          name: statusMap[status as keyof typeof statusMap]?.name || status,
+          value: value as number,
+          color:
+            statusMap[status as keyof typeof statusMap]?.color || "#6b7280",
+        };
+      }
+    );
+
+    return transformedData;
   } catch (error) {
     console.error("Error fetching order status data:", error);
     // Return fallback data
@@ -74,7 +99,9 @@ export const getTopProductsDataAction = async () => {
   try {
     const response = await serverApi.get("/dashboard/top-products");
     if (response.status !== 200) {
-      throw new Error(`Failed to fetch top products data: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch top products data: ${response.statusText}`
+      );
     }
     return response.data;
   } catch (error) {
@@ -95,7 +122,9 @@ export const getStockLevelsDataAction = async () => {
   try {
     const response = await serverApi.get("/dashboard/stock-levels");
     if (response.status !== 200) {
-      throw new Error(`Failed to fetch stock levels data: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch stock levels data: ${response.statusText}`
+      );
     }
     return response.data;
   } catch (error) {
@@ -116,7 +145,9 @@ export const getRegionalSalesDataAction = async () => {
   try {
     const response = await serverApi.get("/dashboard/regional-sales");
     if (response.status !== 200) {
-      throw new Error(`Failed to fetch regional sales data: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch regional sales data: ${response.statusText}`
+      );
     }
     return response.data;
   } catch (error) {
@@ -137,7 +168,9 @@ export const getCategoryPerformanceDataAction = async () => {
   try {
     const response = await serverApi.get("/dashboard/category-performance");
     if (response.status !== 200) {
-      throw new Error(`Failed to fetch category performance data: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch category performance data: ${response.statusText}`
+      );
     }
     return response.data;
   } catch (error) {
@@ -155,7 +188,7 @@ export const getCategoryPerformanceDataAction = async () => {
 
 export const getRecentOrdersAction = async () => {
   try {
-    const response = await serverApi.get("/dashboard/recent-orders");
+    const response = await serverApi.get("/dashboard/recent-orders-admin");
     if (response.status !== 200) {
       throw new Error(`Failed to fetch recent orders: ${response.statusText}`);
     }
@@ -164,10 +197,30 @@ export const getRecentOrdersAction = async () => {
     console.error("Error fetching recent orders:", error);
     // Return fallback data
     return [
-      { id: "ORD-001", customer: "John Doe", status: "COMPLETED", amount: "$234.50" },
-      { id: "ORD-002", customer: "Jane Smith", status: "PENDING", amount: "$156.75" },
-      { id: "ORD-003", customer: "Bob Johnson", status: "SHIPPING", amount: "$89.99" },
-      { id: "ORD-004", customer: "Alice Brown", status: "ACCEPTED", amount: "$345.20" },
+      {
+        id: "ORD-001",
+        customer: "John Doe",
+        status: "COMPLETED",
+        amount: "$234.50",
+      },
+      {
+        id: "ORD-002",
+        customer: "Jane Smith",
+        status: "PENDING",
+        amount: "$156.75",
+      },
+      {
+        id: "ORD-003",
+        customer: "Bob Johnson",
+        status: "SHIPPING",
+        amount: "$89.99",
+      },
+      {
+        id: "ORD-004",
+        customer: "Alice Brown",
+        status: "ACCEPTED",
+        amount: "$345.20",
+      },
     ];
   }
 };

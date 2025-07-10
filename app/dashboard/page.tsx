@@ -32,7 +32,7 @@ export default async function DashboardPage() {
     getCategoryPerformanceDataAction(),
     getRecentOrdersAction(),
     getQuickStatsAction(),
-  ]);
+  ]);  
   return (
     <DashboardCharts
       dashboardStats={dashboardStats}

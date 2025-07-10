@@ -459,7 +459,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-purple-600" />
-              <span className="text-sm">Average order value: $187</span>
+              <span className="text-sm">Average order value: 187 DA</span>
             </div>
             <div className="flex items-center gap-2">
               <Warehouse className="h-4 w-4 text-orange-600" />
