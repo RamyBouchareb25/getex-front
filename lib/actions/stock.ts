@@ -61,7 +61,7 @@ export const updateStockAction = async (formData: FormData) => {
       visible: visible === "true",
     };
 
-    const response = await serverApi.put(`/stock/${id}`, payload);
+    const response = await serverApi.patch(`/stock/${id}`, payload);
     if (response.status !== 200) {
       throw new Error(`Failed to update stock: ${response.statusText}`);
     }

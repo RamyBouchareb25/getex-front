@@ -9,3 +9,11 @@ export function cn(...inputs: ClassValue[]) {
 export function imageUrl(image:string): string {
   return backendUrl + image;
 }
+
+export function formatPhoneNumber(phone: string): string {
+  if (!phone) return "";
+  // Remove any non-digit characters
+  const cleaned = phone.replace(/\D/g, "");
+  // Format as +213XXXXXXXXX
+  return `+213${cleaned}`;
+}

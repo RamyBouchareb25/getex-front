@@ -67,7 +67,7 @@ export const updateUserAction = async (formData: FormData) => {
       role,
     };
 
-    const response = await serverApi.put(`/user/${id}`, payload);
+    const response = await serverApi.patch(`/user/${id}`, payload);
     if (response.status !== 200) {
       throw new Error(`Failed to update user: ${response.statusText}`);
     }
@@ -123,7 +123,7 @@ export const resetUserPasswordAction = async (formData: FormData) => {
       password: newPassword,
     };
 
-    const response = await serverApi.put(`/user/${userId}/password`, payload);
+    const response = await serverApi.patch(`/user/${userId}/password`, payload);
     if (response.status !== 200) {
       throw new Error(`Failed to reset password: ${response.statusText}`);
     }

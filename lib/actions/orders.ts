@@ -89,7 +89,7 @@ export const updateOrderAction = async (formData: FormData) => {
       shippingAddress,
     };
 
-    const response = await serverApi.put(`/order/${id}`, payload);
+    const response = await serverApi.patch(`/order/${id}`, payload);
     if (response.status !== 200) {
       throw new Error(`Failed to update order: ${response.statusText}`);
     }

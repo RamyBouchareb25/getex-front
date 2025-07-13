@@ -17,7 +17,7 @@ export const updateAddressAction = async (formData: FormData) => {
       commune,
     };
 
-    const response = await serverApi.put(`/address/${id}`, payload);
+    const response = await serverApi.patch(`/address/${id}`, payload);
     if (response.status !== 200) {
       throw new Error(`Failed to update address: ${response.statusText}`);
     }

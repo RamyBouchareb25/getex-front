@@ -29,9 +29,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Edit, Trash2, Filter, Upload, Tag } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Filter, Upload, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Popover,
   PopoverContent,
@@ -66,75 +66,115 @@ interface Category {
   name: string;
 }
 
-export default function SubCategoriesTable({
-  subCategories,
-  categories,
-}: {
+interface PaginationData {
   subCategories: SubCategory[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export default function SubCategoriesTable({
+  subCategoriesData,
+  categories,
+  currentPage,
+  limit,
+}: {
+  subCategoriesData: PaginationData | SubCategory[];
   categories: Category[];
+  currentPage: number;
+  limit: number;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Handle both paginated and non-paginated data
+  const subCategories = Array.isArray(subCategoriesData) ? subCategoriesData : subCategoriesData.subCategories;
+  const totalPages = Array.isArray(subCategoriesData) ? Math.ceil(subCategories.length / limit) : subCategoriesData.totalPages;
+  const total = Array.isArray(subCategoriesData) ? subCategories.length : subCategoriesData.total;
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingSubCategory, setEditingSubCategory] =
-    useState<SubCategory | null>(null);
+  const [editingSubCategory, setEditingSubCategory] = useState<SubCategory | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [dateFilter, setDateFilter] = useState<string>("");
+  const [dateFromFilter, setDateFromFilter] = useState<string>("");
+  const [dateToFilter, setDateToFilter] = useState<string>("");
   const [productCountFilter, setProductCountFilter] = useState<string>("");
 
   // Loading states
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Error states
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
-  const categoryId = searchParams.get("categoryId");
+  const categoryIdParam = searchParams.get("categoryId");
   const subCategoryId = searchParams.get("id");
 
+  // Initialize filters from URL params
   useEffect(() => {
-    if (categoryId) {
-      setSelectedCategories([categoryId]);
+    setSearchTerm(searchParams.get("search") || "");
+    setDateFromFilter(searchParams.get("dateFrom") || "");
+    setDateToFilter(searchParams.get("dateTo") || "");
+    if (categoryIdParam) {
+      setSelectedCategories([categoryIdParam]);
     }
+  }, [searchParams, categoryIdParam]);
+
+  // Handle loading state when URL changes
+  useEffect(() => {
+    setIsSearching(false);
+  }, [subCategories]);
+
+  useEffect(() => {
     if (subCategoryId) {
       const subCategory = subCategories.find((sc) => sc.id === subCategoryId);
       if (subCategory) {
         setSearchTerm(subCategory.name);
       }
     }
-  }, [categoryId, subCategoryId, subCategories]);
+  }, [subCategoryId, subCategories]);
 
-  const filteredSubCategories = subCategories.filter((subCategory) => {
-    const matchesSearch =
-      subCategory.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subCategory.description?.toLowerCase().includes(searchTerm.toLowerCase());
+  // Since we're using server-side pagination, we don't filter on client
+  const filteredSubCategories = subCategories;
 
-    const matchesCategory =
-      selectedCategories.length === 0 ||
-      selectedCategories.includes(subCategory.categoryId);
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams();
+    params.set('page', newPage.toString());
+    params.set('limit', limit.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
-    const dateString =
-      subCategory.createdAt instanceof Date
-        ? subCategory.createdAt.toISOString().split("T")[0]
-        : subCategory.createdAt;
-    const matchesDate = !dateFilter || dateString.includes(dateFilter);
+  const handleSearch = () => {
+    setIsSearching(true);
+    const params = new URLSearchParams();
+    params.set('page', '1');
+    params.set('limit', limit.toString());
+    
+    if (searchTerm) params.set('search', searchTerm);
+    if (selectedCategories.length > 0) params.set('categoryId', selectedCategories[0]);
+    if (dateFromFilter) params.set('dateFrom', dateFromFilter);
+    if (dateToFilter) params.set('dateTo', dateToFilter);
+    
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
-    const matchesProductCount =
-      !productCountFilter ||
-      (productCountFilter === "less10" &&
-        (subCategory.productsCount || 0) < 10) ||
-      (productCountFilter === "10to25" &&
-        (subCategory.productsCount || 0) >= 10 &&
-        (subCategory.productsCount || 0) <= 25) ||
-      (productCountFilter === "more25" &&
-        (subCategory.productsCount || 0) > 25);
-
-    return (
-      matchesSearch && matchesCategory && matchesDate && matchesProductCount
-    );
-  });
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSelectedCategories([]);
+    setDateFromFilter("");
+    setDateToFilter("");
+    setProductCountFilter("");
+    
+    const params = new URLSearchParams();
+    params.set('page', '1');
+    params.set('limit', limit.toString());
+    
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const toggleCategoryFilter = (id: string) => {
     setSelectedCategories((prev) =>
@@ -296,11 +336,25 @@ export default function SubCategoriesTable({
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
+                disabled={isUpdating || isSearching}
                 placeholder="Search sub categories..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
                 className="max-w-sm"
               />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSearch}
+                disabled={isSearching}
+              >
+                {isSearching ? "Searching..." : "Search"}
+              </Button>
             </div>
             <div className="flex items-center gap-2">
               <Popover>
@@ -313,7 +367,8 @@ export default function SubCategoriesTable({
                     <Filter className="h-4 w-4" />
                     <span>Filter</span>
                     {(selectedCategories.length > 0 ||
-                      dateFilter ||
+                      dateFromFilter ||
+                      dateToFilter ||
                       productCountFilter) && (
                       <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                     )}
@@ -357,30 +412,65 @@ export default function SubCategoriesTable({
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Created</h4>
-                      <Input
-                        type="date"
-                        value={dateFilter}
-                        onChange={(e) => setDateFilter(e.target.value)}
-                      />
+                      <h4 className="font-medium">Date Range</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-muted-foreground">From</label>
+                          <Input
+                            disabled={isUpdating || isSearching}
+                            type="date"
+                            value={dateFromFilter}
+                            onChange={(e) => setDateFromFilter(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">To</label>
+                          <Input
+                            disabled={isUpdating || isSearching}
+                            type="date"
+                            value={dateToFilter}
+                            onChange={(e) => setDateToFilter(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          setSelectedCategories([]);
-                          setDateFilter("");
-                          setProductCountFilter("");
-                        }}
+                        onClick={handleResetFilters}
+                        disabled={isSearching}
                       >
                         Reset Filters
                       </Button>
-                      <Button size="sm">Apply Filters</Button>
+                      <Button 
+                        size="sm"
+                        onClick={handleSearch}
+                        disabled={isSearching}
+                      >
+                        {isSearching ? "Applying..." : "Apply Filters"}
+                      </Button>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
+              
+              <select
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                value={limit}
+                onChange={(e) => {
+                  const newLimit = parseInt(e.target.value);
+                  const searchParams = new URLSearchParams();
+                  searchParams.set('page', '1');
+                  searchParams.set('limit', newLimit.toString());
+                  router.push(`${pathname}?${searchParams.toString()}`);
+                }}
+              >
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </select>
             </div>
           </div>
         </CardHeader>
@@ -445,6 +535,7 @@ export default function SubCategoriesTable({
                         variant="outline"
                         size="sm"
                         onClick={() => setEditingSubCategory(subCategory)}
+                        disabled={isUpdating || isDeleting === subCategory.id}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -452,8 +543,13 @@ export default function SubCategoriesTable({
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteSubCategory(subCategory.id)}
+                        disabled={isDeleting === subCategory.id || isUpdating}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {isDeleting === subCategory.id ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </TableCell>
@@ -463,6 +559,61 @@ export default function SubCategoriesTable({
           </Table>
         </CardContent>
       </Card>
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, total)} of {total} subcategories
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNumber;
+              if (totalPages <= 5) {
+                pageNumber = i + 1;
+              } else if (currentPage <= 3) {
+                pageNumber = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + i;
+              } else {
+                pageNumber = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNumber)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* Edit Sub Category Dialog */}
       <Dialog

@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { serverApi } from "../axios-interceptor";
+import { Pagination } from "@/types";
 
 export const createSubCategoryAction = async (formData: FormData) => {
   try {
@@ -75,7 +76,7 @@ export const updateSubCategoryAction = async (formData: FormData) => {
       apiFormData.append("image", image);
     }
 
-    const response = await serverApi.put(`/sub-category/${id}`, apiFormData);
+    const response = await serverApi.patch(`/sub-category/${id}`, apiFormData);
     if (response.status !== 200) {
       throw new Error(`Failed to update sub category: ${response.statusText}`);
     }
@@ -109,16 +110,38 @@ export const deleteSubCategoryAction = async (subCategoryId: string) => {
   }
 };
 
-export const getSubCategoriesAction = async () => {
+export const getSubCategoriesAction = async ({ 
+  page, 
+  limit, 
+  search, 
+  categoryId,
+  dateFrom, 
+  dateTo 
+}: Pagination & { 
+  search?: string; 
+  categoryId?: string;
+  dateFrom?: string; 
+  dateTo?: string; 
+}) => {
   try {
-    const response = await serverApi.get("/sub-category?page=1&limit=100");
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search) params.append('search', search);
+    if (categoryId) params.append('categoryId', categoryId);
+    if (dateFrom) params.append('dateFrom', dateFrom);
+    if (dateTo) params.append('dateTo', dateTo);
+
+    const response = await serverApi.get(`/sub-category/admin?${params.toString()}`);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch sub categories: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching sub categories:", error);
-    return [];
+    return { subCategories: [], total: 0, page: 1, limit: 10, totalPages: 0 };
   }
 };
 

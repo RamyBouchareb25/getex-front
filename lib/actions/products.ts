@@ -75,7 +75,7 @@ export const updateProductAction = async (formData: FormData) => {
       apiFormData.append("image", image);
     }
 
-    const response = await serverApi.put(`/product/${id}`, apiFormData);
+    const response = await serverApi.patch(`/product/${id}`, apiFormData);
     if (response.status !== 200) {
       throw new Error(`Failed to update product: ${response.statusText}`);
     }

@@ -61,11 +61,6 @@ const items = [
     icon: Building2,
   },
   {
-    title: "Addresses",
-    url: "/dashboard/addresses",
-    icon: MapPin,
-  },
-  {
     title: "Categories",
     url: "/dashboard/categories",
     icon: Tag,

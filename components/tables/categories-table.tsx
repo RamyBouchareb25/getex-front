@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,7 +29,16 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Edit, Trash2, Filter, Upload } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Filter,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Image from "next/image";
 import {
   Popover,
@@ -45,16 +54,45 @@ import {
   deleteCategoryAction,
 } from "@/lib/actions/categories";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+
+interface PaginationData {
+  categories: (Category & { _count: { SubCategories: number } })[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
 export default function CategoriesTable({
-  categories,
+  categoriesData,
+  currentPage,
+  limit,
 }: {
-  categories: (Category & { _count: { SubCategories: number } })[];
+  categoriesData:
+    | PaginationData
+    | (Category & { _count: { SubCategories: number } })[];
+  currentPage: number;
+  limit: number;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Handle both paginated and non-paginated data
+  const categories = Array.isArray(categoriesData)
+    ? categoriesData
+    : categoriesData.categories;
+  const totalPages = Array.isArray(categoriesData)
+    ? Math.ceil(categories.length / limit)
+    : categoriesData.totalPages;
+  const total = Array.isArray(categoriesData)
+    ? categories.length
+    : categoriesData.total;
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
-  const [dateFilter, setDateFilter] = useState<string>("");
+  const [dateFromFilter, setDateFromFilter] = useState<string>("");
+  const [dateToFilter, setDateToFilter] = useState<string>("");
   const [subCategoryCountFilter, setSubCategoryCountFilter] =
     useState<string>("");
 
@@ -62,38 +100,72 @@ export default function CategoriesTable({
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Error states
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const filteredCategories = categories.filter((category) => {
-    const matchesSearch =
-      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.description?.toLowerCase().includes(searchTerm.toLowerCase());
+  const searchParams = useSearchParams();
 
-    const matchesDate =
-      !dateFilter || category.createdAt.toString().includes(dateFilter);
+  // Initialize filters from URL params
+  useEffect(() => {
+    setSearchTerm(searchParams.get("search") || "");
+    setDateFromFilter(searchParams.get("dateFrom") || "");
+    setDateToFilter(searchParams.get("dateTo") || "");
+  }, [searchParams]);
 
-    const matchesSubCount =
-      !subCategoryCountFilter ||
-      (subCategoryCountFilter === "less5" &&
-        category._count.SubCategories < 5) ||
-      (subCategoryCountFilter === "5to10" &&
-        category._count.SubCategories >= 5 &&
-        category._count.SubCategories <= 10) ||
-      (subCategoryCountFilter === "more10" &&
-        category._count.SubCategories > 10);
+  // Handle loading state when URL changes
+  useEffect(() => {
+    setIsSearching(false);
+  }, [categories]);
 
-    return matchesSearch && matchesDate && matchesSubCount;
-  });
+  // Since we're using server-side pagination, we don't filter on client
+  const filteredCategories = categories;
 
-  const handleCreateCategory = async (formData: FormData) => {
+  const handlePageChange = (newPage: number) => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", newPage.toString());
+    searchParams.set("limit", limit.toString());
+    router.push(`${pathname}?${searchParams.toString()}`);
+  };
+
+  const handleSearch = () => {
+    setIsSearching(true);
+    const params = new URLSearchParams();
+    params.set("page", "1");
+    params.set("limit", limit.toString());
+
+    if (searchTerm) params.set("search", searchTerm);
+    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
+    if (dateToFilter) params.set("dateTo", dateToFilter);
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setDateFromFilter("");
+    setDateToFilter("");
+    setSubCategoryCountFilter("");
+
+    const params = new URLSearchParams();
+    params.set("page", "1");
+    params.set("limit", limit.toString());
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleCreateCategory = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
     setIsCreating(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await createCategoryAction(formData);
       if (result.success) {
         setSuccess("Category created successfully!");
@@ -109,12 +181,16 @@ export default function CategoriesTable({
     }
   };
 
-  const handleUpdateCategory = async (formData: FormData) => {
+  const handleUpdateCategory = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
     setIsUpdating(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await updateCategoryAction(formData);
       if (result.success) {
         setSuccess("Category updated successfully!");
@@ -134,7 +210,7 @@ export default function CategoriesTable({
     setIsDeleting(categoryId);
     setError(null);
     setSuccess(null);
-    
+
     try {
       const result = await deleteCategoryAction(categoryId);
       if (result.success) {
@@ -181,15 +257,19 @@ export default function CategoriesTable({
               <DialogTitle>Create New Category</DialogTitle>
               <DialogDescription>Add a new product category</DialogDescription>
             </DialogHeader>
-            <form action={handleCreateCategory}>
+            <form onSubmit={handleCreateCategory}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Category Name</Label>
-                  <Input id="name" name="name" required />
+                  <Input disabled={isCreating} id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" name="description" />
+                  <Textarea
+                    disabled={isCreating}
+                    id="description"
+                    name="description"
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="image">Category Image</Label>
@@ -199,6 +279,7 @@ export default function CategoriesTable({
                       name="image"
                       type="file"
                       accept="image/*"
+                      disabled={isCreating}
                     />
                     <Button type="button" variant="outline" size="icon">
                       <Upload className="h-4 w-4" />
@@ -207,7 +288,16 @@ export default function CategoriesTable({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Create Category</Button>
+                <Button type="submit" disabled={isCreating}>
+                  {isUpdating ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Category"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -222,11 +312,25 @@ export default function CategoriesTable({
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
+                disabled={isUpdating || isSearching}
                 placeholder="Search categories..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
                 className="max-w-sm"
               />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSearch}
+                disabled={isSearching}
+              >
+                {isSearching ? "Searching..." : "Search"}
+              </Button>
             </div>
             <div className="flex items-center gap-2">
               <Popover>
@@ -238,7 +342,9 @@ export default function CategoriesTable({
                   >
                     <Filter className="h-4 w-4" />
                     <span>Filter</span>
-                    {(dateFilter || subCategoryCountFilter) && (
+                    {(dateFromFilter ||
+                      dateToFilter ||
+                      subCategoryCountFilter) && (
                       <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                     )}
                   </Button>
@@ -246,12 +352,31 @@ export default function CategoriesTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Created</h4>
-                      <Input
-                        type="date"
-                        value={dateFilter}
-                        onChange={(e) => setDateFilter(e.target.value)}
-                      />
+                      <h4 className="font-medium">Date Range</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-muted-foreground">
+                            From
+                          </label>
+                          <Input
+                            disabled={isUpdating || isSearching}
+                            type="date"
+                            value={dateFromFilter}
+                            onChange={(e) => setDateFromFilter(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">
+                            To
+                          </label>
+                          <Input
+                            disabled={isUpdating || isSearching}
+                            type="date"
+                            value={dateToFilter}
+                            onChange={(e) => setDateToFilter(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <h4 className="font-medium">Sub Categories Count</h4>
@@ -272,18 +397,39 @@ export default function CategoriesTable({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          setDateFilter("");
-                          setSubCategoryCountFilter("");
-                        }}
+                        onClick={handleResetFilters}
+                        disabled={isSearching}
                       >
                         Reset Filters
                       </Button>
-                      <Button size="sm">Apply Filters</Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSearch}
+                        disabled={isSearching}
+                      >
+                        {isSearching ? "Applying..." : "Apply Filters"}
+                      </Button>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
+
+              <select
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                value={limit}
+                onChange={(e) => {
+                  const newLimit = parseInt(e.target.value);
+                  const searchParams = new URLSearchParams();
+                  searchParams.set("page", "1");
+                  searchParams.set("limit", newLimit.toString());
+                  router.push(`${pathname}?${searchParams.toString()}`);
+                }}
+              >
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </select>
             </div>
           </div>
         </CardHeader>
@@ -324,7 +470,9 @@ export default function CategoriesTable({
                     </Link>
                   </TableCell>
                   <TableCell>
-                    {category.createdAt ? category.createdAt.toString().split("T")[0] : "N/A"}
+                    {category.createdAt
+                      ? category.createdAt.toString().split("T")[0]
+                      : "N/A"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -332,6 +480,7 @@ export default function CategoriesTable({
                         variant="outline"
                         size="sm"
                         onClick={() => setEditingCategory(category)}
+                        disabled={isUpdating || isDeleting === category.id}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -339,8 +488,13 @@ export default function CategoriesTable({
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteCategory(category.id)}
+                        disabled={isDeleting === category.id || isUpdating}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {isDeleting === category.id ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </TableCell>
@@ -350,6 +504,62 @@ export default function CategoriesTable({
           </Table>
         </CardContent>
       </Card>
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * limit + 1} to{" "}
+          {Math.min(currentPage * limit, total)} of {total} categories
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNumber;
+              if (totalPages <= 5) {
+                pageNumber = i + 1;
+              } else if (currentPage <= 3) {
+                pageNumber = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + i;
+              } else {
+                pageNumber = currentPage - 2 + i;
+              }
+
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNumber)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* Edit Category Dialog */}
       <Dialog
@@ -362,12 +572,13 @@ export default function CategoriesTable({
             <DialogDescription>Update category information</DialogDescription>
           </DialogHeader>
           {editingCategory && (
-            <form action={handleUpdateCategory}>
+            <form onSubmit={handleUpdateCategory}>
               <input type="hidden" name="id" value={editingCategory.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="edit-name">Category Name</Label>
                   <Input
+                    disabled={isUpdating}
                     id="edit-name"
                     name="name"
                     defaultValue={editingCategory.name}
@@ -377,6 +588,7 @@ export default function CategoriesTable({
                 <div className="grid gap-2">
                   <Label htmlFor="edit-description">Description</Label>
                   <Textarea
+                    disabled={isUpdating}
                     id="edit-description"
                     name="description"
                     defaultValue={editingCategory.description}
@@ -397,6 +609,7 @@ export default function CategoriesTable({
                       />
                     </div>
                     <Input
+                      disabled={isUpdating}
                       id="edit-image"
                       name="image"
                       type="file"
@@ -406,7 +619,16 @@ export default function CategoriesTable({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Update Category</Button>
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Category"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           )}

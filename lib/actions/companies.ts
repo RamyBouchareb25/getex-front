@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { serverApi } from "../axios-interceptor";
+import { Pagination } from "@/types";
 
 export const updateCompanyAction = async (formData: FormData) => {
   try {
@@ -20,14 +21,17 @@ export const updateCompanyAction = async (formData: FormData) => {
       raisonSocial,
       nif,
       nis,
-      phone,
-      address: wilaya && commune ? {
-        wilaya,
-        commune,
-      } : undefined,
+      phone: +phone,
+      address:
+        wilaya && commune
+          ? {
+              wilaya,
+              commune,
+            }
+          : undefined,
     };
 
-    const response = await serverApi.put(`/company/${id}`, payload);
+    const response = await serverApi.patch(`/company/${id}`, payload);
     if (response.status !== 200) {
       throw new Error(`Failed to update company: ${response.statusText}`);
     }
@@ -41,16 +45,38 @@ export const updateCompanyAction = async (formData: FormData) => {
   }
 };
 
-export const getCompaniesAction = async () => {
+export const getCompaniesAction = async ({ 
+  page, 
+  limit, 
+  search, 
+  wilaya, 
+  dateFrom, 
+  dateTo 
+}: Pagination & { 
+  search?: string; 
+  wilaya?: string; 
+  dateFrom?: string; 
+  dateTo?: string; 
+}) => {
   try {
-    const response = await serverApi.get("/company");
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search) params.append('search', search);
+    if (wilaya) params.append('wilaya', wilaya);
+    if (dateFrom) params.append('dateFrom', dateFrom);
+    if (dateTo) params.append('dateTo', dateTo);
+
+    const response = await serverApi.get(`/company?${params.toString()}`);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch companies: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching companies:", error);
-    return [];
+    return { companies: [], total: 0, page: 1, limit: 10, totalPages: 0 };
   }
 };
 

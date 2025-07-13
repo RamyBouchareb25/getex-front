@@ -117,7 +117,7 @@ export default function DashboardCharts({
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString('en-US')}</div>
             <p className="text-xs text-muted-foreground">+{dashboardStats.revenueGrowth}% from last month</p>
           </CardContent>
         </Card>
@@ -127,7 +127,7 @@ export default function DashboardCharts({
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.totalOrders.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{dashboardStats.totalOrders.toLocaleString('en-US')}</div>
             <p className="text-xs text-muted-foreground">+{dashboardStats.ordersGrowth}% from last month</p>
           </CardContent>
         </Card>
@@ -137,7 +137,7 @@ export default function DashboardCharts({
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.activeUsers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{dashboardStats.activeUsers.toLocaleString('en-US')}</div>
             <p className="text-xs text-muted-foreground">+{dashboardStats.usersGrowth}% from last month</p>
           </CardContent>
         </Card>
@@ -147,7 +147,7 @@ export default function DashboardCharts({
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.productsInStock.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{dashboardStats.productsInStock.toLocaleString('en-US')}</div>
             <p className="text-xs text-muted-foreground">+{dashboardStats.stockGrowth}% from last month</p>
           </CardContent>
         </Card>
@@ -189,7 +189,7 @@ export default function DashboardCharts({
                     dataKey="revenue"
                     stroke="var(--color-revenue)"
                     strokeWidth={2}
-                    name="Revenue ($)"
+                    name="Revenue (DA)"
                   />
                   <Line
                     yAxisId="right"
@@ -434,7 +434,7 @@ export default function DashboardCharts({
                     >
                       {order.status}
                     </Badge>
-                    <span className="font-medium">{order.amount}</span>
+                    <span className="font-medium">{order.amount} DA</span>
                   </div>
                 </div>
               ))}
@@ -487,7 +487,9 @@ export default function DashboardCharts({
               <div key={category.category} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="space-y-1">
                   <p className="text-sm font-medium">{category.category}</p>
-                  <p className="text-sm text-muted-foreground">${category.sales.toLocaleString()} in sales</p>
+                  <p className="text-sm text-muted-foreground">
+                    {category.sales.toLocaleString('en-US')} DA in sales
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={category.growth > 0 ? "default" : "destructive"}>

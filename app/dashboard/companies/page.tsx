@@ -1,11 +1,34 @@
 import { getCompaniesAction } from "@/lib/actions/companies";
 import CompaniesTable from "@/components/tables/companies-table";
 
-export default async function CompaniesPage() {
-  const [companies] = await Promise.all([
-    getCompaniesAction(),
-  ]);
+interface CompaniesPageProps {
+  searchParams: {
+    page?: string;
+    limit?: string;
+    search?: string;
+    wilaya?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  };
+}
 
-  return <CompaniesTable companies={companies}  />;
+export default async function CompaniesPage({ searchParams }: CompaniesPageProps) {
+  const page = parseInt(searchParams.page || "1");
+  const limit = parseInt(searchParams.limit || "10");
+  const search = searchParams.search;
+  const wilaya = searchParams.wilaya;
+  const dateFrom = searchParams.dateFrom;
+  const dateTo = searchParams.dateTo;
+
+  const companiesData = await getCompaniesAction({ 
+    page, 
+    limit, 
+    search, 
+    wilaya, 
+    dateFrom, 
+    dateTo 
+  });
+
+  return <CompaniesTable companiesData={companiesData} currentPage={page} limit={limit} />;
 }
  

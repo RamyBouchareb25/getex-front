@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { serverApi } from "../axios-interceptor";
+import { Pagination } from "@/types";
 
 export const createCategoryAction = async (formData: FormData) => {
   try {
@@ -96,5 +97,37 @@ export const deleteCategoryAction = async (categoryId: string) => {
   } catch (error) {
     console.error("Error deleting category:", error);
     return { success: false, message: "Failed to delete category" };
+  }
+};
+
+export const getCategoriesAction = async ({ 
+  page, 
+  limit, 
+  search, 
+  dateFrom, 
+  dateTo 
+}: Pagination & { 
+  search?: string; 
+  dateFrom?: string; 
+  dateTo?: string; 
+}) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search) params.append('search', search);
+    if (dateFrom) params.append('dateFrom', dateFrom);
+    if (dateTo) params.append('dateTo', dateTo);
+
+    const response = await serverApi.get(`/category/admin?${params.toString()}`);
+    if (response.status !== 200) {
+      throw new Error(`Failed to fetch categories: ${response.statusText}`);
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return { categories: [], total: 0, page: 1, limit: 10, totalPages: 0 };
   }
 };

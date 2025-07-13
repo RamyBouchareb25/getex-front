@@ -27,8 +27,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Search, Edit, Filter, MapPin } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { Search, Edit, Filter, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Popover,
   PopoverContent,
@@ -43,11 +43,12 @@ interface Company {
   raisonSocial: string;
   nif: string;
   nis: string;
+  rc: string;
   phone: string;
   userId?: string;
   addressId?: string;
   createdAt: Date | string;
-  user?: {
+  User?: {
     id: string;
     email: string;
     name?: string;
@@ -59,24 +60,40 @@ interface Company {
   };
 }
 
-interface User {
-  id: string;
-  email: string;
-  name?: string;
+interface PaginationData {
+  companies: Company[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export default function CompaniesTable({
-  companies,
+  companiesData,
+  currentPage,
+  limit,
 }: {
-  companies: Company[];
+  companiesData: PaginationData | Company[];
+  currentPage: number;
+  limit: number;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Handle both paginated and non-paginated data
+  const companies = Array.isArray(companiesData) ? companiesData : companiesData.companies;
+  const totalPages = Array.isArray(companiesData) ? Math.ceil(companies.length / limit) : companiesData.totalPages;
+  const total = Array.isArray(companiesData) ? companies.length : companiesData.total;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [wilayaFilter, setWilayaFilter] = useState<string>("");
-  const [dateFilter, setDateFilter] = useState<string>("");
+  const [dateFromFilter, setDateFromFilter] = useState<string>("");
+  const [dateToFilter, setDateToFilter] = useState<string>("");
 
   // Loading states
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Error states
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +101,19 @@ export default function CompaniesTable({
 
   const searchParams = useSearchParams();
   const companyId = searchParams.get("id");
+
+  // Initialize filters from URL params
+  useEffect(() => {
+    setSearchTerm(searchParams.get("search") || "");
+    setWilayaFilter(searchParams.get("wilaya") || "");
+    setDateFromFilter(searchParams.get("dateFrom") || "");
+    setDateToFilter(searchParams.get("dateTo") || "");
+  }, [searchParams]);
+
+  // Handle loading state when URL changes
+  useEffect(() => {
+    setIsSearching(false);
+  }, [companies]);
 
   useEffect(() => {
     if (companyId) {
@@ -94,35 +124,49 @@ export default function CompaniesTable({
     }
   }, [companyId, companies]);
 
-  const filteredCompanies = companies.filter((company) => {
-    const userEmail = company.user?.email || "";
-    const matchesSearch =
-      company.raisonSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.nif.includes(searchTerm) ||
-      company.nis.includes(searchTerm) ||
-      userEmail.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesWilaya = !wilayaFilter || 
-      company.address?.wilaya.toLowerCase() === wilayaFilter.toLowerCase();
-
-    const dateString = company.createdAt instanceof Date
-      ? company.createdAt.toISOString().split("T")[0]
-      : company.createdAt;
-    const matchesDate = !dateFilter || dateString.includes(dateFilter);
-
-    return matchesSearch && matchesWilaya && matchesDate;
-  });
+  // Since we're using server-side pagination, we don't filter on client
+  const filteredCompanies = companies;
 
   const uniqueWilayas = Array.from(
     new Set(companies.map((company) => company.address?.wilaya).filter(Boolean))
   );
 
-  const handleUpdateCompany = async (formData: FormData) => {
+  const handleSearch = () => {
+    setIsSearching(true);
+    const params = new URLSearchParams();
+    params.set('page', '1');
+    params.set('limit', limit.toString());
+    
+    if (searchTerm) params.set('search', searchTerm);
+    if (wilayaFilter) params.set('wilaya', wilayaFilter);
+    if (dateFromFilter) params.set('dateFrom', dateFromFilter);
+    if (dateToFilter) params.set('dateTo', dateToFilter);
+    
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setWilayaFilter("");
+    setDateFromFilter("");
+    setDateToFilter("");
+    
+    const params = new URLSearchParams();
+    params.set('page', '1');
+    params.set('limit', limit.toString());
+    
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleUpdateCompany = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     setIsUpdating(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await updateCompanyAction(formData);
       if (result.success) {
         setSuccess("Company updated successfully!");
@@ -136,6 +180,13 @@ export default function CompaniesTable({
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('page', newPage.toString());
+    searchParams.set('limit', limit.toString());
+    router.push(`${pathname}?${searchParams.toString()}`);
   };
 
   return (
@@ -162,24 +213,39 @@ export default function CompaniesTable({
       <Card>
         <CardHeader>
           <CardTitle>All Companies</CardTitle>
-          <CardDescription>A list of all companies in the system</CardDescription>
+          <CardDescription>
+            A list of all companies in the system
+          </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
+                disabled={isUpdating || isSearching}
                 placeholder="Search companies..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="max-w-sm"
               />
+              <Button 
+                onClick={handleSearch} 
+                size="sm"
+                disabled={isSearching}
+              >
+                {isSearching ? "Searching..." : "Search"}
+              </Button>
             </div>
             <div className="flex items-center gap-2">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
                     <Filter className="h-4 w-4" />
                     <span>Filter</span>
-                    {(wilayaFilter || dateFilter) && (
+                    {(wilayaFilter || dateFromFilter || dateToFilter) && (
                       <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                     )}
                   </Button>
@@ -202,29 +268,66 @@ export default function CompaniesTable({
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Created</h4>
-                      <Input
-                        type="date"
-                        value={dateFilter}
-                        onChange={(e) => setDateFilter(e.target.value)}
-                      />
+                      <h4 className="font-medium">Date Range</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-muted-foreground">From</label>
+                          <Input
+                            disabled={isUpdating || isSearching}
+                            type="date"
+                            value={dateFromFilter}
+                            onChange={(e) => setDateFromFilter(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">To</label>
+                          <Input
+                            disabled={isUpdating || isSearching}
+                            type="date"
+                            value={dateToFilter}
+                            onChange={(e) => setDateToFilter(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          setWilayaFilter("");
-                          setDateFilter("");
-                        }}
+                        onClick={handleResetFilters}
+                        disabled={isSearching}
                       >
                         Reset Filters
                       </Button>
-                      <Button size="sm">Apply Filters</Button>
+                      <Button 
+                        size="sm"
+                        onClick={handleSearch}
+                        disabled={isSearching}
+                      >
+                        {isSearching ? "Applying..." : "Apply Filters"}
+                      </Button>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
+              
+              <select
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                value={limit}
+                onChange={(e) => {
+                  const newLimit = parseInt(e.target.value);
+                  const searchParams = new URLSearchParams();
+                  searchParams.set('page', '1');
+                  searchParams.set('limit', newLimit.toString());
+                  router.push(`${pathname}?${searchParams.toString()}`);
+                }}
+              >
+                <option value={2}>2 per page</option>
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </select>
             </div>
           </div>
         </CardHeader>
@@ -234,7 +337,11 @@ export default function CompaniesTable({
               <TableHeader>
                 <TableRow>
                   <TableHead>Raison Social</TableHead>
-                  <TableHead>NIF/NIS</TableHead>
+                  <TableHead>Numero d&apos;identification fiscal</TableHead>
+                  <TableHead>
+                    Numero d&apos;identification statistique
+                  </TableHead>
+                  <TableHead>Registre de commerce</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>User</TableHead>
                   <TableHead>Address</TableHead>
@@ -245,21 +352,21 @@ export default function CompaniesTable({
               <TableBody>
                 {filteredCompanies.map((company) => (
                   <TableRow key={company.id}>
-                    <TableCell className="font-medium">{company.raisonSocial}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div>NIF: {company.nif}</div>
-                        <div>NIS: {company.nis}</div>
-                      </div>
+                    <TableCell className="font-medium">
+                      {company.raisonSocial}
                     </TableCell>
+                    <TableCell className="text-center">{company.nif}</TableCell>{" "}
+                    <TableCell className="text-center">{company.nis}</TableCell>{" "}
+                    <TableCell className="text-center">{company.rc}</TableCell>
                     <TableCell>{company.phone}</TableCell>
                     <TableCell>
-                      {company.user ? (
+                      {company.User ? (
                         <Link
                           href={`/dashboard/users?id=${company.userId}`}
-                          className="text-blue-600 hover:underline"
+                          className="text-blue-600 hover:underline flex flex-col gap-2"
                         >
-                          {company.user.email}
+                          <div>{company.User.email}</div>
+                          <div>{company.User.name}</div>
                         </Link>
                       ) : (
                         <span className="text-muted-foreground">No user</span>
@@ -267,21 +374,22 @@ export default function CompaniesTable({
                     </TableCell>
                     <TableCell>
                       {company.address ? (
-                        <Link
-                          href={`/dashboard/addresses?id=${company.addressId}`}
-                          className="text-blue-600 hover:underline flex items-center gap-1"
-                        >
+                        <div className="text-blue-600 flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
                           {company.address.wilaya}, {company.address.commune}
-                        </Link>
+                        </div>
                       ) : (
-                        <span className="text-muted-foreground">No address</span>
+                        <span className="text-muted-foreground">
+                          No address
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>
                       {company.createdAt instanceof Date
                         ? company.createdAt.toISOString().split("T")[0]
-                        : company.createdAt}
+                        : new Date(company.createdAt).toLocaleDateString(
+                            "fr-FR"
+                          )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -302,20 +410,84 @@ export default function CompaniesTable({
         </CardContent>
       </Card>
 
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, total)} of {total} companies
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNumber;
+              if (totalPages <= 5) {
+                pageNumber = i + 1;
+              } else if (currentPage <= 3) {
+                pageNumber = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + i;
+              } else {
+                pageNumber = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNumber}
+                  variant={currentPage === pageNumber ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNumber)}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNumber}
+                </Button>
+              );
+            })}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
       {/* Edit Company Dialog */}
-      <Dialog open={!!editingCompany} onOpenChange={() => setEditingCompany(null)}>
+      <Dialog
+        open={!!editingCompany}
+        onOpenChange={() => setEditingCompany(null)}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Company</DialogTitle>
             <DialogDescription>Update company information</DialogDescription>
           </DialogHeader>
           {editingCompany && (
-            <form action={handleUpdateCompany}>
-              <input type="hidden" name="id" value={editingCompany.id} />
+            <form onSubmit={handleUpdateCompany}>
+              <input
+                disabled={isUpdating}
+                type="hidden"
+                name="id"
+                value={editingCompany.id}
+              />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="edit-raisonSocial">Raison Social</Label>
                   <Input
+                    disabled={isUpdating}
                     id="edit-raisonSocial"
                     name="raisonSocial"
                     defaultValue={editingCompany.raisonSocial}
@@ -326,6 +498,7 @@ export default function CompaniesTable({
                   <div className="grid gap-2">
                     <Label htmlFor="edit-nif">NIF</Label>
                     <Input
+                      disabled={isUpdating}
                       id="edit-nif"
                       name="nif"
                       defaultValue={editingCompany.nif}
@@ -335,6 +508,7 @@ export default function CompaniesTable({
                   <div className="grid gap-2">
                     <Label htmlFor="edit-nis">NIS</Label>
                     <Input
+                      disabled={isUpdating}
                       id="edit-nis"
                       name="nis"
                       defaultValue={editingCompany.nis}
@@ -345,6 +519,7 @@ export default function CompaniesTable({
                 <div className="grid gap-2">
                   <Label htmlFor="edit-phone">Phone</Label>
                   <Input
+                    disabled={isUpdating}
                     id="edit-phone"
                     name="phone"
                     type="tel"
@@ -356,6 +531,7 @@ export default function CompaniesTable({
                   <div className="grid gap-2">
                     <Label htmlFor="edit-wilaya">Wilaya</Label>
                     <Input
+                      disabled={isUpdating}
                       id="edit-wilaya"
                       name="wilaya"
                       defaultValue={editingCompany.address?.wilaya || ""}
@@ -365,6 +541,7 @@ export default function CompaniesTable({
                   <div className="grid gap-2">
                     <Label htmlFor="edit-commune">Commune</Label>
                     <Input
+                      disabled={isUpdating}
                       id="edit-commune"
                       name="commune"
                       defaultValue={editingCompany.address?.commune || ""}
@@ -374,7 +551,16 @@ export default function CompaniesTable({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Update Company</Button>
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Company"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           )}
