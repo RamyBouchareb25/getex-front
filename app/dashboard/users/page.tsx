@@ -1,9 +1,42 @@
 import UsersTable from "@/components/tables/users-table";
-import { getUsersAction } from "@/lib/actions/companies";
+import { getUsersAction } from "@/lib/actions/users";
 
-const UsersPage = async () => {
-  const [users] = await Promise.all([getUsersAction()]);
-  return <UsersTable users={users} />;
+interface UsersPageProps {
+  searchParams: {
+    page?: string;
+    search?: string;
+    roles?: string | string[];
+    dateFilter?: string;
+  };
+}
+
+const UsersPage = async ({ searchParams }: UsersPageProps) => {
+  const page = parseInt(searchParams.page || "1");
+  const search = searchParams.search || "";
+  const roles = Array.isArray(searchParams.roles) 
+    ? searchParams.roles 
+    : searchParams.roles 
+    ? [searchParams.roles] 
+    : [];
+  const dateFilter = searchParams.dateFilter || "";
+
+  const usersData = await getUsersAction({
+    page,
+    limit: 10,
+    search,
+    roles,
+    dateFilter
+  });
+
+  return (
+    <UsersTable 
+      initialData={usersData}
+      initialPage={page}
+      initialSearch={search}
+      initialRoles={roles}
+      initialDateFilter={dateFilter}
+    />
+  );
 };
 
 export default UsersPage;

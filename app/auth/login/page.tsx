@@ -27,9 +27,8 @@ export default function LoginPage() {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
-    console.log("Form submitted with loading:", isLoading);
     setErrorMessage("");
-
+    
     try {
       const formData = new FormData(event.currentTarget);
       const email = formData.get("email") as string;

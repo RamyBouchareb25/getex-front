@@ -18,24 +18,22 @@ export const createUserAction = async (formData: FormData) => {
     // Address fields
     const wilaya = formData.get("wilaya") as string;
     const commune = formData.get("commune") as string;
-
+    const rc = formData.get("rc") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
     const payload = {
       email,
       name,
       password,
       role,
-      company: raisonSocial && nif && nis && phone ? {
-        raisonSocial,
-        nif,
-        nis,
-        phone,
-        address: wilaya && commune ? {
-          wilaya,
-          commune,
-        } : undefined,
-      } : undefined,
+      raisonSocial,
+      nif,
+      nis,
+      rc,
+      phone,
+      wilaya,
+      commune,
+      confirmPassword
     };
-
     const response = await serverApi.post("/user", payload);
     if (response.status !== 201) {
       throw new Error(`Failed to create user: ${response.statusText}`);
@@ -116,7 +114,10 @@ export const resetUserPasswordAction = async (formData: FormData) => {
     }
 
     if (newPassword.length < 6) {
-      return { success: false, message: "Password must be at least 6 characters long" };
+      return {
+        success: false,
+        message: "Password must be at least 6 characters long",
+      };
     }
 
     const payload = {
@@ -137,16 +138,34 @@ export const resetUserPasswordAction = async (formData: FormData) => {
   }
 };
 
-export const getUsersAction = async () => {
+export const getUsersAction = async (params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  roles?: string[];
+  dateFilter?: string;
+}) => {
   try {
-    const response = await serverApi.get("/user");
+    const searchParams = new URLSearchParams();
+    
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.search) searchParams.append('search', params.search);
+    if (params?.roles && params.roles.length > 0) {
+      params.roles.forEach(role => searchParams.append('roles', role));
+    }
+    if (params?.dateFilter) searchParams.append('dateFilter', params.dateFilter);
+
+    const url = `/user${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const response = await serverApi.get(url);
+    
     if (response.status !== 200) {
       throw new Error(`Failed to fetch users: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching users:", error);
-    return [];
+    return { users: [], total: 0, page: 1, totalPages: 0 };
   }
 };
 

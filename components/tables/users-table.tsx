@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,14 +37,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Edit, Trash2, Filter, Key } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Filter, Key, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import {
   updateUserAction,
   deleteUserAction,
   resetUserPasswordAction,
   createUserAction,
 } from "@/lib/actions/users";
-import { useSearchParams } from "next/navigation";
 import {
   Popover,
   PopoverContent,
@@ -58,42 +58,55 @@ interface User {
   email: string;
   name?: string;
   role: string;
-  companyId?: string;
+  CompanyDataId?: string;
   createdAt: Date | string;
-  company?: {
+  CompanyData?: {
     id: string;
     raisonSocial: string;
   };
 }
 
-interface Company {
-  id: string;
-  raisonSocial: string;
-  nif: string;
-  nis: string;
-  phone: string;
-  address?: {
-    id: string;
-    wilaya: string;
-    commune: string;
-  };
+interface UsersData {
+  users: User[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
-interface Address {
-  id: string;
-  wilaya: string;
-  commune: string;
+interface UsersTableProps {
+  initialData: UsersData;
+  initialPage: number;
+  initialSearch: string;
+  initialRoles: string[];
+  initialDateFilter: string;
 }
 
-export default function UsersTable({ users }: { users: User[] }) {
-  const [searchTerm, setSearchTerm] = useState("");
+export default function UsersTable({ 
+  initialData, 
+  initialPage, 
+  initialSearch, 
+  initialRoles, 
+  initialDateFilter 
+}: UsersTableProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  
+  // Data state
+  const [usersData, setUsersData] = useState<UsersData>(initialData);
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(initialRoles);
+  const [dateFilter, setDateFilter] = useState<string>(initialDateFilter);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  
+  // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [changingPasswordFor, setChangingPasswordFor] = useState<User | null>(
-    null
-  );
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [dateFilter, setDateFilter] = useState<string>("");
+  const [changingPasswordFor, setChangingPasswordFor] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  
+  // Message states
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -103,48 +116,105 @@ export default function UsersTable({ users }: { users: User[] }) {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
 
-  const searchParams = useSearchParams();
-  const companyId = searchParams.get("companyId");
-
-  useEffect(() => {
-    if (companyId) {
-      setSearchTerm(companyId);
+  // Update URL with new filters
+  const updateURL = (params: {
+    page?: number;
+    search?: string;
+    roles?: string[];
+    dateFilter?: string;
+  }) => {
+    const newSearchParams = new URLSearchParams();
+    
+    if (params.page && params.page > 1) newSearchParams.set('page', params.page.toString());
+    if (params.search) newSearchParams.set('search', params.search);
+    if (params.roles && params.roles.length > 0) {
+      params.roles.forEach(role => newSearchParams.append('roles', role));
     }
-  }, [companyId]);
+    if (params.dateFilter) newSearchParams.set('dateFilter', params.dateFilter);
 
-  const filteredUsers = users.filter((user) => {
-    const userEmail = user.email || "";
-    const userName = user.name || "";
-    const companyName = user.company?.raisonSocial || "";
+    const newUrl = `/dashboard/users${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`;
+    
+    startTransition(() => {
+      router.push(newUrl);
+    });
+  };
 
-    const matchesSearch =
-      userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.id.toLowerCase().includes(searchTerm.toLowerCase());
+  // Handle search input change with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== initialSearch) {
+        updateURL({
+          page: 1,
+          search: searchTerm,
+          roles: selectedRoles,
+          dateFilter
+        });
+      }
+    }, 500);
 
-    const matchesRole =
-      selectedRoles.length === 0 || selectedRoles.includes(user.role);
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
-    const dateString =
-      user.createdAt instanceof Date
-        ? user.createdAt.toISOString().split("T")[0]
-        : user.createdAt;
-    const matchesDate = !dateFilter || dateString.includes(dateFilter);
+  // Handle filter changes
+  const handleFilterChange = () => {
+    updateURL({
+      page: 1,
+      search: searchTerm,
+      roles: selectedRoles,
+      dateFilter
+    });
+  };
 
-    return matchesSearch && matchesRole && matchesDate;
-  });
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    updateURL({
+      page,
+      search: searchTerm,
+      roles: selectedRoles,
+      dateFilter
+    });
+  };
 
-  const handleCreateUser = async (formData: FormData) => {
+  // Toggle role filter
+  const toggleRoleFilter = (role: string) => {
+    const newRoles = selectedRoles.includes(role)
+      ? selectedRoles.filter((item) => item !== role)
+      : [...selectedRoles, role];
+    setSelectedRoles(newRoles);
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    handleFilterChange();
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setSelectedRoles([]);
+    setDateFilter("");
+    setSearchTerm("");
+    updateURL({
+      page: 1,
+      search: "",
+      roles: [],
+      dateFilter: ""
+    });
+  };
+
+  const handleCreateUser = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsCreating(true);
     setErrorMessage("");
     setSuccessMessage("");
-    
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await createUserAction(formData);
       if (result.success) {
         setSuccessMessage("User created successfully!");
         setIsCreateOpen(false);
+        // Refresh the current page to show the new user
+        router.refresh();
       } else {
         setErrorMessage(result.message || "Failed to create user");
       }
@@ -160,12 +230,13 @@ export default function UsersTable({ users }: { users: User[] }) {
     setIsUpdating(true);
     setErrorMessage("");
     setSuccessMessage("");
-    
+
     try {
       const result = await updateUserAction(formData);
       if (result.success) {
         setSuccessMessage("User updated successfully!");
         setEditingUser(null);
+        router.refresh();
       } else {
         setErrorMessage(result.message || "Failed to update user");
       }
@@ -181,11 +252,13 @@ export default function UsersTable({ users }: { users: User[] }) {
     setIsDeleting(userId);
     setErrorMessage("");
     setSuccessMessage("");
-    
+
     try {
       const result = await deleteUserAction(userId);
       if (result.success) {
         setSuccessMessage("User deleted successfully!");
+        setDeletingUser(null);
+        router.refresh();
       } else {
         setErrorMessage(result.message || "Failed to delete user");
       }
@@ -217,16 +290,42 @@ export default function UsersTable({ users }: { users: User[] }) {
     }
   };
 
-  const toggleRoleFilter = (role: string) => {
-    setSelectedRoles((prev) =>
-      prev.includes(role)
-        ? prev.filter((item) => item !== role)
-        : [...prev, role]
-    );
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    const totalPages = usersData.totalPages;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
   };
 
   return (
     <div className="space-y-6">
+      {/* Success/Error Messages */}
+      {successMessage && (
+        <Alert className="bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100">
+          <AlertTitle>Success</AlertTitle>
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Users</h1>
@@ -248,7 +347,7 @@ export default function UsersTable({ users }: { users: User[] }) {
                 Add a new user to the system
               </DialogDescription>
             </DialogHeader>
-            <form action={handleCreateUser}>
+            <form onSubmit={handleCreateUser}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Full Name</Label>
@@ -263,6 +362,15 @@ export default function UsersTable({ users }: { users: User[] }) {
                   <Input
                     id="password"
                     name="password"
+                    type="password"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
                     type="password"
                     required
                   />
@@ -285,7 +393,6 @@ export default function UsersTable({ users }: { users: User[] }) {
                     </SelectContent>
                   </Select>
                 </div>
-
                 {/* Company Information */}
                 <div className="grid gap-2">
                   <Label>Company Information (Optional)</Label>
@@ -306,9 +413,12 @@ export default function UsersTable({ users }: { users: User[] }) {
                       <Label htmlFor="phone">Phone</Label>
                       <Input id="phone" name="phone" />
                     </div>
+                    <div>
+                      <Label htmlFor="rc">Registre de commerce</Label>
+                      <Input id="rc" name="rc" />
+                    </div>
                   </div>
                 </div>
-
                 {/* Address Information */}
                 <div className="grid gap-2">
                   <Label>Address Information (Optional)</Label>
@@ -337,7 +447,9 @@ export default function UsersTable({ users }: { users: User[] }) {
       <Card>
         <CardHeader>
           <CardTitle>All Users</CardTitle>
-          <CardDescription>A list of all users in the system</CardDescription>
+          <CardDescription>
+            A list of all users in the system (Page {usersData.page} of {usersData.totalPages}, {usersData.total} total users)
+          </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
@@ -346,6 +458,7 @@ export default function UsersTable({ users }: { users: User[] }) {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
+                disabled={isPending}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -355,6 +468,7 @@ export default function UsersTable({ users }: { users: User[] }) {
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1"
+                    disabled={isPending}
                   >
                     <Filter className="h-4 w-4" />
                     <span>Filter</span>
@@ -400,14 +514,14 @@ export default function UsersTable({ users }: { users: User[] }) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          setSelectedRoles([]);
-                          setDateFilter("");
-                        }}
+                        onClick={resetFilters}
+                        disabled={isPending}
                       >
                         Reset Filters
                       </Button>
-                      <Button size="sm">Apply Filters</Button>
+                      <Button size="sm" onClick={applyFilters} disabled={isPending}>
+                        Apply Filters
+                      </Button>
                     </div>
                   </div>
                 </PopoverContent>
@@ -429,7 +543,7 @@ export default function UsersTable({ users }: { users: User[] }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {usersData.users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
                       {user.name || "Unknown"}
@@ -445,12 +559,12 @@ export default function UsersTable({ users }: { users: User[] }) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {user.company ? (
+                      {user.CompanyData ? (
                         <Link
-                          href={`/dashboard/companies?id=${user.companyId}`}
+                          href={`/dashboard/companies?id=${user.CompanyDataId}`}
                           className="text-blue-600 hover:underline"
                         >
-                          {user.company.raisonSocial}
+                          {user.CompanyData.raisonSocial}
                         </Link>
                       ) : (
                         <span className="text-muted-foreground">
@@ -461,7 +575,7 @@ export default function UsersTable({ users }: { users: User[] }) {
                     <TableCell>
                       {user.createdAt instanceof Date
                         ? user.createdAt.toISOString().split("T")[0]
-                        : user.createdAt}
+                        : new Date(user.createdAt).toLocaleDateString("fr-FR")}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -469,7 +583,7 @@ export default function UsersTable({ users }: { users: User[] }) {
                           variant="outline"
                           size="sm"
                           onClick={() => setEditingUser(user)}
-                          disabled={isUpdating}
+                          disabled={isUpdating || isPending}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -477,17 +591,17 @@ export default function UsersTable({ users }: { users: User[] }) {
                           variant="outline"
                           size="sm"
                           onClick={() => setChangingPasswordFor(user)}
-                          disabled={isResettingPassword}
+                          disabled={isResettingPassword || isPending}
                         >
                           <Key className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          disabled={isDeleting === user.id}
+                          onClick={() => setDeletingUser(user)}
+                          disabled={isDeleting === user.id || isPending}
                         >
-                          {isDeleting === user.id ? "Deleting..." : <Trash2 className="h-4 w-4" />}
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -496,6 +610,51 @@ export default function UsersTable({ users }: { users: User[] }) {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination */}
+          {usersData.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, usersData.total)} of {usersData.total} users
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1 || isPending}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                
+                <div className="flex items-center space-x-1">
+                  {generatePaginationNumbers().map((page) => (
+                    <Button
+                      key={page}
+                      variant={page === currentPage ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageChange(page)}
+                      disabled={isPending}
+                      className="w-8 h-8 p-0"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= usersData.totalPages || isPending}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -558,6 +717,46 @@ export default function UsersTable({ users }: { users: User[] }) {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingUser} onOpenChange={() => setDeletingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Confirm Deletion
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this user? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {deletingUser && (
+            <div className="py-4">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <p className="font-medium">{deletingUser.name}</p>
+                <p className="text-sm text-muted-foreground">{deletingUser.email}</p>
+                <p className="text-sm text-muted-foreground">Role: {deletingUser.role}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeletingUser(null)}
+              disabled={isDeleting === deletingUser?.id}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deletingUser && handleDeleteUser(deletingUser.id)}
+              disabled={isDeleting === deletingUser?.id}
+            >
+              {isDeleting === deletingUser?.id ? "Deleting..." : "Delete User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Change Password Dialog */}
       <Dialog
         open={!!changingPasswordFor}
@@ -572,18 +771,6 @@ export default function UsersTable({ users }: { users: User[] }) {
           </DialogHeader>
           {changingPasswordFor && (
             <div>
-              {successMessage && (
-                <Alert className="mb-4 bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100">
-                  <AlertTitle>Success</AlertTitle>
-                  <AlertDescription>{successMessage}</AlertDescription>
-                </Alert>
-              )}
-              {errorMessage && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{errorMessage}</AlertDescription>
-                </Alert>
-              )}
               <form action={handleResetPassword}>
                 <input
                   type="hidden"
