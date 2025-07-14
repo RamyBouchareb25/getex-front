@@ -202,17 +202,6 @@ export default function AccountPage() {
                         required
                       />
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="avatar">Profile Picture</Label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="avatar"
-                          name="avatar"
-                          type="file"
-                          accept="image/*"
-                        />
-                      </div>
-                    </div>
                     <Button type="submit" disabled={isUpdating}>
                       {isUpdating ? "Updating..." : "Update Profile"}
                     </Button>
