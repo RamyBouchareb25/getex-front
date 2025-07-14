@@ -119,6 +119,7 @@ export default function SubCategoriesTable({
     setSearchTerm(searchParams.get("search") || "");
     setDateFromFilter(searchParams.get("dateFrom") || "");
     setDateToFilter(searchParams.get("dateTo") || "");
+    setProductCountFilter(searchParams.get("productCount") || "");
     if (categoryIdParam) {
       setSelectedCategories([categoryIdParam]);
     }
@@ -145,6 +146,14 @@ export default function SubCategoriesTable({
     const params = new URLSearchParams();
     params.set('page', newPage.toString());
     params.set('limit', limit.toString());
+    
+    // Preserve existing filters
+    if (searchTerm.trim()) params.set('search', searchTerm.trim());
+    if (selectedCategories.length > 0) params.set('categoryId', selectedCategories[0]);
+    if (dateFromFilter) params.set('dateFrom', dateFromFilter);
+    if (dateToFilter) params.set('dateTo', dateToFilter);
+    if (productCountFilter) params.set('productCount', productCountFilter);
+    
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -154,15 +163,17 @@ export default function SubCategoriesTable({
     params.set('page', '1');
     params.set('limit', limit.toString());
     
-    if (searchTerm) params.set('search', searchTerm);
+    if (searchTerm.trim()) params.set('search', searchTerm.trim());
     if (selectedCategories.length > 0) params.set('categoryId', selectedCategories[0]);
     if (dateFromFilter) params.set('dateFrom', dateFromFilter);
     if (dateToFilter) params.set('dateTo', dateToFilter);
+    if (productCountFilter) params.set('productCount', productCountFilter);
     
     router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleResetFilters = () => {
+    setIsSearching(true);
     setSearchTerm("");
     setSelectedCategories([]);
     setDateFromFilter("");
@@ -319,7 +330,9 @@ export default function SubCategoriesTable({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Create Sub Category</Button>
+                <Button type="submit" disabled={isCreating}>
+                  {isCreating ? "Creating..." : "Create Sub Category"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -460,10 +473,18 @@ export default function SubCategoriesTable({
                 value={limit}
                 onChange={(e) => {
                   const newLimit = parseInt(e.target.value);
-                  const searchParams = new URLSearchParams();
-                  searchParams.set('page', '1');
-                  searchParams.set('limit', newLimit.toString());
-                  router.push(`${pathname}?${searchParams.toString()}`);
+                  const params = new URLSearchParams();
+                  params.set('page', '1');
+                  params.set('limit', newLimit.toString());
+                  
+                  // Preserve existing filters
+                  if (searchTerm.trim()) params.set('search', searchTerm.trim());
+                  if (selectedCategories.length > 0) params.set('categoryId', selectedCategories[0]);
+                  if (dateFromFilter) params.set('dateFrom', dateFromFilter);
+                  if (dateToFilter) params.set('dateTo', dateToFilter);
+                  if (productCountFilter) params.set('productCount', productCountFilter);
+                  
+                  router.push(`${pathname}?${params.toString()}`);
                 }}
               >
                 <option value={5}>5 per page</option>
@@ -475,88 +496,103 @@ export default function SubCategoriesTable({
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Image</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Products</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSubCategories.map((subCategory) => (
-                <TableRow key={subCategory.id}>
-                  <TableCell>
-                    <Image
-                      src={
-                        imageUrl(subCategory.image ?? "") || "/placeholder.svg"
-                      }
-                      alt={subCategory.name}
-                      width={50}
-                      height={50}
-                      className="rounded-md object-cover"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {subCategory.name}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {subCategory.description}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/categories?id=${subCategory.categoryId}`}
-                      className="text-blue-600 hover:underline flex items-center gap-1"
-                    >
-                      <Tag className="h-3 w-3" />
-                      {subCategory.category?.name || "Unknown"}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/products?subCategoryId=${subCategory.id}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {subCategory.productsCount || 0} products
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {subCategory.createdAt instanceof Date
-                      ? subCategory.createdAt.toISOString().split("T")[0]
-                      : subCategory.createdAt}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingSubCategory(subCategory)}
-                        disabled={isUpdating || isDeleting === subCategory.id}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteSubCategory(subCategory.id)}
-                        disabled={isDeleting === subCategory.id || isUpdating}
-                      >
-                        {isDeleting === subCategory.id ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </TableCell>
+          {isSearching ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-b-transparent"></div>
+              <span className="ml-2">Loading subcategories...</span>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Image</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Products</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredSubCategories.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No subcategories found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSubCategories.map((subCategory) => (
+                    <TableRow key={subCategory.id}>
+                      <TableCell>
+                        <Image
+                          src={
+                            imageUrl(subCategory.image ?? "") || "/placeholder.svg"
+                          }
+                          alt={subCategory.name}
+                          width={50}
+                          height={50}
+                          className="rounded-md object-cover"
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {subCategory.name}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {subCategory.description}
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/dashboard/categories?id=${subCategory.categoryId}`}
+                          className="text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                          <Tag className="h-3 w-3" />
+                          {subCategory.category?.name || "Unknown"}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/dashboard/products?subCategoryId=${subCategory.id}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {subCategory.productsCount || 0} products
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        {subCategory.createdAt instanceof Date
+                          ? subCategory.createdAt.toISOString().split("T")[0]
+                          : subCategory.createdAt}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingSubCategory(subCategory)}
+                            disabled={isUpdating || isDeleting === subCategory.id}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteSubCategory(subCategory.id)}
+                            disabled={isDeleting === subCategory.id || isUpdating}
+                          >
+                            {isDeleting === subCategory.id ? (
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -689,7 +725,9 @@ export default function SubCategoriesTable({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Update Sub Category</Button>
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? "Updating..." : "Update Sub Category"}
+                </Button>
               </DialogFooter>
             </form>
           )}

@@ -123,16 +123,72 @@ export const deleteOrderAction = async (orderId: string) => {
   }
 };
 
-export const getOrdersAction = async () => {
+export const getOrdersAction = async (params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  userId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+} = {}) => {
   try {
-    const response = await serverApi.get("/order?all=true");
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+      userId,
+      dateFrom,
+      dateTo,
+    } = params;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("page", page.toString());
+    queryParams.append("limit", limit.toString());
+    queryParams.append("all", "true");
+
+    if (search) queryParams.append("search", search);
+    if (status) queryParams.append("status", status);
+    if (userId) queryParams.append("userId", userId);
+    if (dateFrom) queryParams.append("dateFrom", dateFrom);
+    if (dateTo) queryParams.append("dateTo", dateTo);
+
+    const response = await serverApi.get(`/order/admin?${queryParams.toString()}`);
+    
     if (response.status !== 200) {
       throw new Error(`Failed to fetch orders: ${response.statusText}`);
     }
-    return response.data;
+
+    // If API returns paginated data, use it; otherwise return as is
+    if (response.data.orders && response.data.total !== undefined) {
+      return {
+        orders: response.data.orders,
+        total: response.data.total,
+        page: response.data.page || page,
+        limit: response.data.limit || limit,
+        totalPages: response.data.totalPages || Math.ceil(response.data.total / limit),
+      };
+    } else {
+      // Fallback: treat response data as orders array
+      const orders = Array.isArray(response.data) ? response.data : [response.data];
+      return {
+        orders,
+        total: orders.length,
+        page,
+        limit,
+        totalPages: Math.ceil(orders.length / limit),
+      };
+    }
   } catch (error) {
     console.error("Error fetching orders:", error);
-    return [];
+    return {
+      orders: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+      totalPages: 0,
+    };
   }
 };
 

@@ -116,12 +116,14 @@ export const getSubCategoriesAction = async ({
   search, 
   categoryId,
   dateFrom, 
-  dateTo 
+  dateTo,
+  productCount 
 }: Pagination & { 
   search?: string; 
   categoryId?: string;
   dateFrom?: string; 
   dateTo?: string; 
+  productCount?: string;
 }) => {
   try {
     const params = new URLSearchParams({
@@ -133,6 +135,7 @@ export const getSubCategoriesAction = async ({
     if (categoryId) params.append('categoryId', categoryId);
     if (dateFrom) params.append('dateFrom', dateFrom);
     if (dateTo) params.append('dateTo', dateTo);
+    if (productCount) params.append('productCount', productCount);
 
     const response = await serverApi.get(`/sub-category/admin?${params.toString()}`);
     if (response.status !== 200) {

@@ -1,11 +1,46 @@
 import { getOrdersAction, getUsersAction } from "@/lib/actions/orders";
 import OrdersTable from "@/components/tables/orders-table";
 
-export default async function OrdersPage() {
-  const [orders, users] = await Promise.all([
-    getOrdersAction(),
+interface OrdersPageProps {
+  searchParams: {
+    page?: string;
+    limit?: string;
+    search?: string;
+    status?: string;
+    userId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  };
+}
+
+export default async function OrdersPage({ searchParams }: OrdersPageProps) {
+  const page = parseInt(searchParams.page || "1");
+  const limit = parseInt(searchParams.limit || "10");
+  const search = searchParams.search;
+  const status = searchParams.status;
+  const userId = searchParams.userId;
+  const dateFrom = searchParams.dateFrom;
+  const dateTo = searchParams.dateTo;
+
+  const [ordersData, { users }] = await Promise.all([
+    getOrdersAction({
+      page,
+      limit,
+      search,
+      status,
+      userId,
+      dateFrom,
+      dateTo,
+    }),
     getUsersAction(),
   ]);
 
-  return <OrdersTable orders={orders} users={users} />;
+  return (
+    <OrdersTable 
+      ordersData={ordersData} 
+      users={users} 
+      currentPage={page}
+      limit={limit}
+    />
+  );
 }

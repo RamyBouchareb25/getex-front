@@ -1,8 +1,25 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { jwtDecode } from "jwt-decode";
 
-export const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-
+export const backendUrl =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+  // Interface for JWT token payload
+  export interface JWTTokenPayload {
+    sub: string;
+    email: string;
+    role: string;
+    raisonSocial: string;
+    rc: string;
+    phone: number;
+    commune: string;
+    wilaya: string;
+    nif: string;
+    nis: string;
+    name: string;
+    iat: number;
+    exp: number;
+  }
 // Registration function
 export async function registerUser(userData: {
   email: string;
@@ -54,7 +71,6 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-
           const response = await fetch(`${backendUrl}/auth/login`, {
             method: "POST",
             headers: {
@@ -70,14 +86,22 @@ export const authOptions: NextAuthOptions = {
           }
 
           const data = await response.json();
-          
-          if (data.access_token) {
+          const { access_token: token } = data;
+          if (token) {
+            const decodedToken = jwtDecode(token) as JWTTokenPayload;
             return {
-              id: data.user?.id || data.id || "unknown",
-              email: data.user?.email || credentials.email,
-              name: data.user?.name || data.name || "User",
-              role: data.user?.role || data.role || "USER",
-              accessToken: data.access_token,
+              id: decodedToken.sub,
+              email: decodedToken.email,
+              role: decodedToken.role,
+              name: decodedToken.name,
+              accessToken: token,
+              raisonSocial: decodedToken.raisonSocial,
+              rc: decodedToken.rc,
+              phone: decodedToken.phone,
+              commune: decodedToken.commune,
+              wilaya: decodedToken.wilaya,
+              nif: decodedToken.nif,
+              nis: decodedToken.nis,
             };
           }
 

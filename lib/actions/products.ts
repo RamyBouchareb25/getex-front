@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { serverApi } from "../axios-interceptor";
+import { Pagination } from "@/types";
 
 export const createProductAction = async (formData: FormData) => {
   try {
@@ -109,28 +110,72 @@ export const deleteProductAction = async (productId: string) => {
   }
 };
 
-export const getProductsAction = async () => {
+export const getProductsAction = async ({ 
+  page, 
+  limit, 
+  search, 
+  subCategoryId,
+  categoryId,
+  dateFrom, 
+  dateTo 
+}: Pagination & { 
+  search?: string; 
+  subCategoryId?: string;
+  categoryId?: string;
+  dateFrom?: string; 
+  dateTo?: string; 
+}) => {
   try {
-    const response = await serverApi.get("/product");
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search) params.append('search', search);
+    if (subCategoryId) params.append('subCategoryId', subCategoryId);
+    if (categoryId) params.append('categoryId', categoryId);
+    if (dateFrom) params.append('dateFrom', dateFrom);
+    if (dateTo) params.append('dateTo', dateTo);
+
+    const response = await serverApi.get(`/product/admin?${params.toString()}`);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch products: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching products:", error);
-    return [];
+    return { products: [], total: 0, page: 1, limit: 10, totalPages: 0 };
   }
 };
 
 export const getSubCategoriesAction = async () => {
   try {
-    const response = await serverApi.get("/sub-category");
+    const response = await serverApi.get("/sub-category?page=1&limit=100");
     if (response.status !== 200) {
       throw new Error(`Failed to fetch sub categories: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching sub categories:", error);
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+     throw new Error("UNAUTHORIZED");
+    }
+    return [];
+  }
+};
+
+export const getCategoriesAction = async () => {
+  try {
+    const response = await serverApi.get("/category?page=1&limit=100");
+    if (response.status !== 200) {
+      throw new Error(`Failed to fetch categories: ${response.statusText}`);
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+     throw new Error("UNAUTHORIZED");
+    }
     return [];
   }
 };

@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { serverApi } from "../axios-interceptor";
+import { Pagination } from "@/types";
 
 export const createStockAction = async (formData: FormData) => {
   try {
@@ -95,41 +96,78 @@ export const deleteStockAction = async (stockId: string) => {
   }
 };
 
-export const getStockAction = async () => {
+export const getStockAction = async ({ 
+  page, 
+  limit, 
+  search, 
+  productId,
+  ownerId,
+  stockStatus,
+  visibility,
+  dateFrom, 
+  dateTo 
+}: Pagination & { 
+  search?: string; 
+  productId?: string;
+  ownerId?: string;
+  stockStatus?: string;
+  visibility?: string;
+  dateFrom?: string; 
+  dateTo?: string; 
+}) => {
   try {
-    const response = await serverApi.get("/stock?all=true");
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (search) params.append('search', search);
+    if (productId) params.append('productId', productId);
+    if (ownerId) params.append('ownerId', ownerId);
+    if (stockStatus) params.append('stockStatus', stockStatus);
+    if (visibility) params.append('visibility', visibility);
+    if (dateFrom) params.append('dateFrom', dateFrom);
+    if (dateTo) params.append('dateTo', dateTo);
+
+    const response = await serverApi.get(`/stock/admin?${params.toString()}`);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch stock: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching stock:", error);
-    return [];
+    return { stock: [], total: 0, page: 1, limit: 10, totalPages: 0 };
   }
 };
 
 export const getProductsAction = async () => {
   try {
-    const response = await serverApi.get("/product");
+    const response = await serverApi.get("/product?page=1&limit=100");
     if (response.status !== 200) {
       throw new Error(`Failed to fetch products: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching products:", error);
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+     throw new Error("UNAUTHORIZED");
+    }
     return [];
   }
 };
 
 export const getUsersAction = async () => {
   try {
-    const response = await serverApi.get("/user");
+    const response = await serverApi.get("/user?page=1&limit=100");
     if (response.status !== 200) {
       throw new Error(`Failed to fetch users: ${response.statusText}`);
     }
     return response.data;
   } catch (error) {
     console.error("Error fetching users:", error);
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+     throw new Error("UNAUTHORIZED");
+    }
     return [];
   }
 };

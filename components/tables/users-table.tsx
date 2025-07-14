@@ -37,7 +37,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Edit, Trash2, Filter, Key, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Filter,
+  Key,
+  ChevronLeft,
+  ChevronRight,
+  AlertTriangle,
+} from "lucide-react";
 import {
   updateUserAction,
   deleteUserAction,
@@ -81,31 +91,33 @@ interface UsersTableProps {
   initialDateFilter: string;
 }
 
-export default function UsersTable({ 
-  initialData, 
-  initialPage, 
-  initialSearch, 
-  initialRoles, 
-  initialDateFilter 
+export default function UsersTable({
+  initialData,
+  initialPage,
+  initialSearch,
+  initialRoles,
+  initialDateFilter,
 }: UsersTableProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  
+
   // Data state
   const [usersData, setUsersData] = useState<UsersData>(initialData);
-  
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(initialRoles);
   const [dateFilter, setDateFilter] = useState<string>(initialDateFilter);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  
+
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [changingPasswordFor, setChangingPasswordFor] = useState<User | null>(null);
+  const [changingPasswordFor, setChangingPasswordFor] = useState<User | null>(
+    null
+  );
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
-  
+
   // Message states
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -124,16 +136,19 @@ export default function UsersTable({
     dateFilter?: string;
   }) => {
     const newSearchParams = new URLSearchParams();
-    
-    if (params.page && params.page > 1) newSearchParams.set('page', params.page.toString());
-    if (params.search) newSearchParams.set('search', params.search);
-    if (params.roles && params.roles.length > 0) {
-      params.roles.forEach(role => newSearchParams.append('roles', role));
-    }
-    if (params.dateFilter) newSearchParams.set('dateFilter', params.dateFilter);
 
-    const newUrl = `/dashboard/users${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`;
-    
+    if (params.page && params.page > 1)
+      newSearchParams.set("page", params.page.toString());
+    if (params.search) newSearchParams.set("search", params.search);
+    if (params.roles && params.roles.length > 0) {
+      params.roles.forEach((role) => newSearchParams.append("roles", role));
+    }
+    if (params.dateFilter) newSearchParams.set("dateFilter", params.dateFilter);
+
+    const newUrl = `/dashboard/users${
+      newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""
+    }`;
+
     startTransition(() => {
       router.push(newUrl);
     });
@@ -147,7 +162,7 @@ export default function UsersTable({
           page: 1,
           search: searchTerm,
           roles: selectedRoles,
-          dateFilter
+          dateFilter,
         });
       }
     }, 500);
@@ -161,7 +176,7 @@ export default function UsersTable({
       page: 1,
       search: searchTerm,
       roles: selectedRoles,
-      dateFilter
+      dateFilter,
     });
   };
 
@@ -172,7 +187,7 @@ export default function UsersTable({
       page,
       search: searchTerm,
       roles: selectedRoles,
-      dateFilter
+      dateFilter,
     });
   };
 
@@ -198,7 +213,7 @@ export default function UsersTable({
       page: 1,
       search: "",
       roles: [],
-      dateFilter: ""
+      dateFilter: "",
     });
   };
 
@@ -295,18 +310,18 @@ export default function UsersTable({
     const pages = [];
     const maxVisiblePages = 5;
     const totalPages = usersData.totalPages;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   };
 
@@ -448,7 +463,8 @@ export default function UsersTable({
         <CardHeader>
           <CardTitle>All Users</CardTitle>
           <CardDescription>
-            A list of all users in the system (Page {usersData.page} of {usersData.totalPages}, {usersData.total} total users)
+            A list of all users in the system (Page {usersData.page} of{" "}
+            {usersData.totalPages}, {usersData.total} total users)
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
@@ -519,7 +535,11 @@ export default function UsersTable({
                       >
                         Reset Filters
                       </Button>
-                      <Button size="sm" onClick={applyFilters} disabled={isPending}>
+                      <Button
+                        size="sm"
+                        onClick={applyFilters}
+                        disabled={isPending}
+                      >
                         Apply Filters
                       </Button>
                     </div>
@@ -610,53 +630,53 @@ export default function UsersTable({
               </TableBody>
             </Table>
           </div>
-
-          {/* Pagination */}
-          {usersData.totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-muted-foreground">
-                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, usersData.total)} of {usersData.total} users
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage <= 1 || isPending}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-                
-                <div className="flex items-center space-x-1">
-                  {generatePaginationNumbers().map((page) => (
-                    <Button
-                      key={page}
-                      variant={page === currentPage ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePageChange(page)}
-                      disabled={isPending}
-                      className="w-8 h-8 p-0"
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage >= usersData.totalPages || isPending}
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
+      {/* Pagination */}
+
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * 10 + 1} to{" "}
+          {Math.min(currentPage * 10, usersData.total)} of {usersData.total}{" "}
+          users
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || isPending}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+
+          <div className="flex items-center space-x-1">
+            {generatePaginationNumbers().map((page) => (
+              <Button
+                key={page}
+                variant={page === currentPage ? "default" : "outline"}
+                size="sm"
+                onClick={() => handlePageChange(page)}
+                disabled={isPending}
+                className="w-8 h-8 p-0"
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= usersData.totalPages || isPending}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* Edit User Dialog */}
       <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
@@ -726,15 +746,20 @@ export default function UsersTable({
               Confirm Deletion
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this user? This action cannot be undone.
+              Are you sure you want to delete this user? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           {deletingUser && (
             <div className="py-4">
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                 <p className="font-medium">{deletingUser.name}</p>
-                <p className="text-sm text-muted-foreground">{deletingUser.email}</p>
-                <p className="text-sm text-muted-foreground">Role: {deletingUser.role}</p>
+                <p className="text-sm text-muted-foreground">
+                  {deletingUser.email}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Role: {deletingUser.role}
+                </p>
               </div>
             </div>
           )}

@@ -115,7 +115,7 @@ export default function AccountPage() {
           <CardContent className="flex flex-col items-center space-y-4">
             <Avatar className="h-24 w-24">
               <AvatarImage
-                src={user.avatar || "/placeholder.svg"}
+                src="/placeholder.svg"
                 alt={user.name}
               />
               <AvatarFallback>

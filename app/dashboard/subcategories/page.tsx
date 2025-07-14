@@ -9,6 +9,7 @@ interface SubCategoriesPageProps {
     categoryId?: string;
     dateFrom?: string;
     dateTo?: string;
+    productCount?: string;
   };
 }
 
@@ -19,6 +20,7 @@ export default async function SubCategoriesPage({ searchParams }: SubCategoriesP
   const categoryId = searchParams.categoryId;
   const dateFrom = searchParams.dateFrom;
   const dateTo = searchParams.dateTo;
+  const productCount = searchParams.productCount;
 
   const [subCategoriesData, categories] = await Promise.all([
     getSubCategoriesAction({ 
@@ -27,7 +29,8 @@ export default async function SubCategoriesPage({ searchParams }: SubCategoriesP
       search, 
       categoryId,
       dateFrom, 
-      dateTo 
+      dateTo,
+      productCount 
     }),
     getCategoriesAction(),
   ]);
