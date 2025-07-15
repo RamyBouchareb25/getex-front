@@ -34,11 +34,21 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     }),
     getUsersAction(),
   ]);
+  const searchParamsKey = JSON.stringify({
+    page: searchParams.page,
+    limit: searchParams.limit,
+    search: searchParams.search,
+    status: searchParams.status,
+    userId: searchParams.userId,
+    dateFrom: searchParams.dateFrom,
+    dateTo: searchParams.dateTo,
+  });
 
   return (
-    <OrdersTable 
-      ordersData={ordersData} 
-      users={users} 
+    <OrdersTable
+      key={searchParamsKey} // This will force a complete re-mount
+      ordersData={ordersData}
+      users={users}
       currentPage={page}
       limit={limit}
     />

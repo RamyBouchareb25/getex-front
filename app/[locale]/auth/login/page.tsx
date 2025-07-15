@@ -17,12 +17,16 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,17 +45,17 @@ export default function LoginPage() {
       console.log("SignIn result:", result);
       if (result?.error) {
         const message = result.error.includes("CredentialsSignin")
-          ? "Invalid email or password"
+          ? t('invalidCredentials')
           : result.error;
         setErrorMessage(message);
       } else if (result?.ok) {
-        const redirectUrl = searchParams.get("callbackUrl") || "/dashboard";
+        const redirectUrl = searchParams.get("callbackUrl") || `/${locale}/dashboard`;
         router.push(redirectUrl);
       } else {
-        setErrorMessage("An unexpected error occurred. Please try again.");
+        setErrorMessage(t('unexpectedError'));
       }
     } catch (error) {
-      setErrorMessage("Invalid email or password");
+      setErrorMessage(t('invalidCredentials'));
     } finally {
       setIsLoading(false);
     }
@@ -62,47 +66,47 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Admin Login
+            {t('adminLogin')}
           </CardTitle>
           <CardDescription className="text-center">
-            Enter your credentials to access the admin dashboard
+            {t('enterCredentials')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {errorMessage && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>{tCommon('error')}</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="admin@example.com"
+                placeholder={t('emailPlaceholder')}
                 required
                 disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Link
-                  href="/auth/forgot-password"
+                  href={`/${locale}/auth/forgot-password`}
                   className="text-xs text-blue-600 hover:underline"
                 >
-                  Forgot password?
+                  {t('forgotPassword')}
                 </Link>
               </div>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="password"
+                placeholder={t('passwordPlaceholder')}
                 required
                 disabled={isLoading}
               />
@@ -111,17 +115,17 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
-                  Signing in...
+                  {t('signingIn')}
                 </>
               ) : (
-                "Sign In"
+                t('signIn')
               )}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="text-center text-sm text-muted-foreground">
           <p className="w-full">
-            By continuing, you agree to our Terms of Service and Privacy Policy.
+            {t('termsAndPrivacy')}
           </p>
         </CardFooter>
       </Card>

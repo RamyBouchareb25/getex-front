@@ -33,86 +33,91 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-// import { logoutAction } from "@/lib/actions/auth";
 import { useRouter } from "next/navigation";
 import { logoutAction } from "@/lib/actions/logout";
 import { useSession } from "next-auth/react";
-
-// Menu items.
-const items = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: Gauge,
-  },
-  {
-    title: "Dashboard (Mock Data)",
-    url: "/dashboard/mock",
-    icon: Home,
-  },
-  {
-    title: "Users",
-    url: "/dashboard/users",
-    icon: Users,
-  },
-  {
-    title: "Companies",
-    url: "/dashboard/companies",
-    icon: Building2,
-  },
-  {
-    title: "Categories",
-    url: "/dashboard/categories",
-    icon: Tag,
-  },
-  {
-    title: "Sub Categories",
-    url: "/dashboard/subcategories",
-    icon: Tag,
-  },
-  {
-    title: "Products",
-    url: "/dashboard/products",
-    icon: Package,
-  },
-  {
-    title: "Stock",
-    url: "/dashboard/stock",
-    icon: Warehouse,
-  },
-  {
-    title: "Orders",
-    url: "/dashboard/orders",
-    icon: ShoppingCart,
-  },
-];
+import { useTranslations, useLocale } from 'next-intl';
+import { LanguageSwitcher } from './language-switcher';
 
 export function AppSidebar() {
   const router = useRouter();
   const { data: session } = useSession();
-  const { user } = session!;
+  const user = session?.user;
+  const t = useTranslations('navigation');
+  const locale = useLocale();
+
+  // Menu items with translations
+  const items = [
+    {
+      title: t('dashboard'),
+      url: `/${locale}/dashboard`,
+      icon: Gauge,
+    },
+    {
+      title: "Dashboard (Mock Data)",
+      url: `/${locale}/dashboard/mock`,
+      icon: Home,
+    },
+    {
+      title: t('users'),
+      url: `/${locale}/dashboard/users`,
+      icon: Users,
+    },
+    {
+      title: t('companies'),
+      url: `/${locale}/dashboard/companies`,
+      icon: Building2,
+    },
+    {
+      title: t('categories'),
+      url: `/${locale}/dashboard/categories`,
+      icon: Tag,
+    },
+    {
+      title: t('subcategories'),
+      url: `/${locale}/dashboard/subcategories`,
+      icon: Tag,
+    },
+    {
+      title: t('products'),
+      url: `/${locale}/dashboard/products`,
+      icon: Package,
+    },
+    {
+      title: t('stock'),
+      url: `/${locale}/dashboard/stock`,
+      icon: Warehouse,
+    },
+    {
+      title: t('orders'),
+      url: `/${locale}/dashboard/orders`,
+      icon: ShoppingCart,
+    },
+  ];
+
   const handleLogout = async () => {
     try {
       await logoutAction();
-      router.push("/auth/login");
+      router.push(`/${locale}/auth/login`);
     } catch (error) {
       console.error("Logout error:", error);
       // Fallback: redirect anyway
-      router.push("/auth/login");
+      router.push(`/${locale}/auth/login`);
     }
   };
-
+  console.log("AppSidebar loaded for locale:", locale);
   return (
-    <Sidebar>
+    <Sidebar side={locale === 'ar' ? 'right' : 'left'} className={locale === 'ar' ? 'rtl' : 'ltr'}>
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-4 py-2">
+        <div className={`flex items-center gap-2 px-4 py-2 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
             <Building2 className="size-4" />
           </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
+          <div className={`grid flex-1 text-left text-sm leading-tight ${locale === 'ar' ? 'text-right' : 'text-left'}`}>
             <span className="truncate font-semibold">Admin Dashboard</span>
             <span className="truncate text-xs">Inventory Management</span>
           </div>
+          <LanguageSwitcher />
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -139,9 +144,9 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton>
-                  <User2 /> {user.name}
-                  <ChevronUp className="ml-auto" />
+                <SidebarMenuButton className={locale === 'ar' ? 'flex-row-reverse' : ''}>
+                  <User2 /> {user?.name}
+                  <ChevronUp className={locale === 'ar' ? 'mr-auto' : 'ml-auto'} />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -149,10 +154,10 @@ export function AppSidebar() {
                 className="w-[--radix-popper-anchor-width]"
               >
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/account">Account</Link>
+                  <Link href={`/${locale}/dashboard/account`}>{t('account')}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
-                  <span>Sign out</span>
+                  <span>{t('logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

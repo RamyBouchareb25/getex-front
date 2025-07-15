@@ -30,8 +30,15 @@ const CategoriesPage = async ({ searchParams }: CategoriesPageProps) => {
     if (!categoriesData) {
       return <div>Error loading categories</div>;
     }
+    const searchParamsKey = JSON.stringify({
+      page: searchParams.page,
+      limit: searchParams.limit,
+      search: searchParams.search,
+      dateFrom: searchParams.dateFrom,
+      dateTo: searchParams.dateTo,
+    });
 
-    return <CategoriesTable categoriesData={categoriesData} currentPage={page} limit={limit} />;
+    return <CategoriesTable key={searchParamsKey} categoriesData={categoriesData} currentPage={page} limit={limit} />;
   } catch (error) {
     console.error("Error fetching categories:", error);
     return <div>Error loading categories</div>;

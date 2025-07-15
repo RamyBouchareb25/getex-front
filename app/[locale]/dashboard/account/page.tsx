@@ -19,12 +19,16 @@ import { updateProfileAction, changePasswordAction } from "@/lib/account";
 import { AlertCircle, Check, User } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useSession } from "next-auth/react";
+import { useTranslations } from 'next-intl';
 
 export default function AccountPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const t = useTranslations('account');
+  const tCommon = useTranslations('common');
+  const tAuth = useTranslations('auth');
 
   async function handleUpdateProfile(formData: FormData) {
     setIsUpdating(true);
@@ -33,9 +37,9 @@ export default function AccountPage() {
 
     try {
       await updateProfileAction(formData);
-      setSuccessMessage("Profile updated successfully");
+      setSuccessMessage(t('profileUpdated'));
     } catch (error) {
-      setErrorMessage("Failed to update profile");
+      setErrorMessage(t('failedToUpdate'));
     } finally {
       setIsUpdating(false);
     }
@@ -58,19 +62,19 @@ export default function AccountPage() {
     const confirmPassword = formData.get("confirmPassword") as string;
 
     if (newPassword !== confirmPassword) {
-      setErrorMessage("New passwords do not match");
+      setErrorMessage(tAuth('passwordsDoNotMatch'));
       setIsChangingPassword(false);
       return;
     }
 
     try {
       await changePasswordAction(formData);
-      setSuccessMessage("Password changed successfully");
+      setSuccessMessage(t('passwordChanged'));
       // Reset form
       const form = document.getElementById("password-form") as HTMLFormElement;
       if (form) form.reset();
     } catch (error) {
-      setErrorMessage("Failed to change password");
+      setErrorMessage(t('failedToChangePassword'));
     } finally {
       setIsChangingPassword(false);
     }
@@ -100,17 +104,17 @@ export default function AccountPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
         <p className="text-muted-foreground">
-          Manage your account settings and preferences
+          {t('personalInfo')}
         </p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
         <Card className="md:w-1/3">
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
-            <CardDescription>Your personal information</CardDescription>
+            <CardTitle>{t('profile')}</CardTitle>
+            <CardDescription>{t('personalInfo')}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-4">
             <Avatar className="h-24 w-24">
@@ -131,7 +135,7 @@ export default function AccountPage() {
             </div>
             <div className="w-full text-sm">
               <div className="flex justify-between py-1 border-b">
-                <span className="text-muted-foreground">Company</span>
+                <span className="text-muted-foreground">{tCommon('company')}</span>
                 {loading ? (
                   <span className="text-muted-foreground">Loading...</span>
                 ) : (
@@ -139,7 +143,7 @@ export default function AccountPage() {
                 )}
               </div>
               <div className="flex justify-between py-1 border-b">
-                <span className="text-muted-foreground">Member since</span>
+                <span className="text-muted-foreground">{t('joinDate')}</span>
                 {loading ? (
                   <span className="text-muted-foreground">Loading...</span>
                 ) : (
@@ -156,15 +160,15 @@ export default function AccountPage() {
         <div className="flex-1">
           <Tabs defaultValue="general">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
+              <TabsTrigger value="general">{t('personalInfo')}</TabsTrigger>
+              <TabsTrigger value="security">{t('securitySettings')}</TabsTrigger>
             </TabsList>
             <TabsContent value="general" className="mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>General Information</CardTitle>
+                  <CardTitle>{t('personalInfo')}</CardTitle>
                   <CardDescription>
-                    Update your account information
+                    {t('updateProfile')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -184,7 +188,7 @@ export default function AccountPage() {
                   )}
                   <form action={handleUpdateProfile} className="space-y-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="name">Full Name</Label>
+                      <Label htmlFor="name">{tCommon('name')}</Label>
                       <Input
                         id="name"
                         name="name"
@@ -193,7 +197,7 @@ export default function AccountPage() {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">{tCommon('email')}</Label>
                       <Input
                         id="email"
                         name="email"
@@ -203,7 +207,7 @@ export default function AccountPage() {
                       />
                     </div>
                     <Button type="submit" disabled={isUpdating}>
-                      {isUpdating ? "Updating..." : "Update Profile"}
+                      {isUpdating ? t('updating') : t('updateProfile')}
                     </Button>
                   </form>
                 </CardContent>
@@ -212,8 +216,8 @@ export default function AccountPage() {
             <TabsContent value="security" className="mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Change Password</CardTitle>
-                  <CardDescription>Update your password</CardDescription>
+                  <CardTitle>{t('changePassword')}</CardTitle>
+                  <CardDescription>{t('changePassword')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {successMessage && (
@@ -236,7 +240,7 @@ export default function AccountPage() {
                     className="space-y-4"
                   >
                     <div className="grid gap-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <Label htmlFor="currentPassword">{t('currentPassword')}</Label>
                       <Input
                         id="currentPassword"
                         name="currentPassword"
@@ -245,7 +249,7 @@ export default function AccountPage() {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="newPassword">New Password</Label>
+                      <Label htmlFor="newPassword">{tAuth('newPassword')}</Label>
                       <Input
                         id="newPassword"
                         name="newPassword"
@@ -255,7 +259,7 @@ export default function AccountPage() {
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="confirmPassword">
-                        Confirm New Password
+                        {tAuth('confirmPassword')}
                       </Label>
                       <Input
                         id="confirmPassword"
@@ -266,8 +270,8 @@ export default function AccountPage() {
                     </div>
                     <Button type="submit" disabled={isChangingPassword}>
                       {isChangingPassword
-                        ? "Changing Password..."
-                        : "Change Password"}
+                        ? t('changingPassword')
+                        : t('changePassword')}
                     </Button>
                   </form>
                 </CardContent>

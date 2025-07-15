@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -140,6 +141,9 @@ export default function OrdersTable({
   currentPage: number;
   limit: number;
 }) {
+  const t = useTranslations();
+  const tCommon = useTranslations('common');
+  const tOrders = useTranslations('orders');
   const router = useRouter();
   const pathname = usePathname();
 
@@ -399,28 +403,28 @@ export default function OrdersTable({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Create Order
+              {tOrders('createOrder')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Order</DialogTitle>
+              <DialogTitle>{tOrders('createOrder')}</DialogTitle>
               <DialogDescription>
-                Create a new order for a customer
+                {tOrders('createOrderDescription') || 'Create a new order for a customer'}
               </DialogDescription>
             </DialogHeader>
             <form action={handleCreateOrder}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="userId">Sender</Label>
+                  <Label htmlFor="userId">{tOrders('sender') || 'Sender'}</Label>
                   <Select name="userId" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select sender" />
+                      <SelectValue placeholder={tOrders('selectSender') || 'Select sender'} />
                     </SelectTrigger>
                     <SelectContent>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
-                          {user.email} - {user.name || "Unknown"}
+                          {user.email} - {user.name || tCommon('unknown') || "Unknown"}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -428,15 +432,15 @@ export default function OrdersTable({
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="receiverId">Receiver</Label>
+                  <Label htmlFor="receiverId">{tOrders('receiver') || 'Receiver'}</Label>
                   <Select name="receiverId" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select receiver" />
+                      <SelectValue placeholder={tOrders('selectReceiver') || 'Select receiver'} />
                     </SelectTrigger>
                     <SelectContent>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
-                          {user.email} - {user.name || "Unknown"}
+                          {user.email} - {user.name || tCommon('unknown') || "Unknown"}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -444,11 +448,11 @@ export default function OrdersTable({
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="shippingAddress">Shipping Address</Label>
+                  <Label htmlFor="shippingAddress">{tOrders('shippingAddress') || 'Shipping Address'}</Label>
                   <Input id="shippingAddress" name="shippingAddress" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="total">Total Amount</Label>
+                  <Label htmlFor="total">{tOrders('totalAmount') || 'Total Amount'}</Label>
                   <Input
                     id="total"
                     name="total"
@@ -458,25 +462,25 @@ export default function OrdersTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="status">{tCommon('status')}</Label>
                   <Select name="status" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder={tOrders('selectStatus') || 'Select status'} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PENDING">Pending</SelectItem>
-                      <SelectItem value="ACCEPTED">Accepted</SelectItem>
-                      <SelectItem value="REJECTED">Rejected</SelectItem>
-                      <SelectItem value="SHIPPING">Shipping</SelectItem>
-                      <SelectItem value="COMPLETED">Completed</SelectItem>
-                      <SelectItem value="CANCELED">Canceled</SelectItem>
+                      <SelectItem value="PENDING">{tOrders('pending')}</SelectItem>
+                      <SelectItem value="ACCEPTED">{tOrders('accepted') || 'Accepted'}</SelectItem>
+                      <SelectItem value="REJECTED">{tOrders('rejected') || 'Rejected'}</SelectItem>
+                      <SelectItem value="SHIPPING">{tOrders('shipping') || 'Shipping'}</SelectItem>
+                      <SelectItem value="COMPLETED">{tOrders('completed') || 'Completed'}</SelectItem>
+                      <SelectItem value="CANCELED">{tOrders('cancelled')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
-                  {isCreating ? "Creating..." : "Create Order"}
+                  {isCreating ? tCommon('loading') : tOrders('createOrder')}
                 </Button>
               </DialogFooter>
             </form>
@@ -486,14 +490,14 @@ export default function OrdersTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>All Orders</CardTitle>
-          <CardDescription>A list of all customer orders</CardDescription>
+          <CardTitle>{tOrders('title')}</CardTitle>
+          <CardDescription>{tOrders('description') || 'A list of all customer orders'}</CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 disabled={isUpdating || isSearching}
-                placeholder="Search orders..."
+                placeholder={tCommon('search') + ' ' + tOrders('title').toLowerCase() + '...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
@@ -650,14 +654,15 @@ export default function OrdersTable({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>From</TableHead>
-                    <TableHead>To</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{tOrders('orderID') || 'Order ID'}</TableHead>
+                    <TableHead>{tOrders('from') || 'From'}</TableHead>
+                    <TableHead>{tOrders('to') || 'To'}</TableHead>
+                    <TableHead>{tOrders('totalHT') || 'Total H.T'}</TableHead>
+                    <TableHead>{tOrders('totalTTC') || 'Total T.T.C'}</TableHead>
+                    <TableHead>{tCommon('status')}</TableHead>
+                    <TableHead>{tOrders('items') || 'Items'}</TableHead>
+                    <TableHead>{tOrders('createdAt') || 'Created At'}</TableHead>
+                    <TableHead>{tCommon('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -700,6 +705,7 @@ export default function OrdersTable({
                           </div>
                         </TableCell>
                         <TableCell>{order.total.toFixed(2)} DA</TableCell>
+                        <TableCell>{(order.total * 119 / 100).toFixed(2)} DA</TableCell>
                         <TableCell>
                           <Badge variant={getStatusColor(order.status)}>
                             {order.status}
@@ -715,13 +721,15 @@ export default function OrdersTable({
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                           {order.status === "PENDING" && <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingOrder(order)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>}
+                            {order.status === "PENDING" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingOrder(order)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="outline"
                               size="sm"

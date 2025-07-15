@@ -45,8 +45,21 @@ export default async function StockPage({ searchParams }: StockPageProps) {
     getProductsAction(),
     getUsersAction(),
   ]);
+  const searchParamsKey = JSON.stringify({
+    page: searchParams.page,
+    limit: searchParams.limit,
+    search: searchParams.search,
+    productId: searchParams.productId,
+    ownerId: searchParams.ownerId,
+    stockStatus: searchParams.stockStatus,
+    visibility: searchParams.visibility,
+    dateFrom: searchParams.dateFrom,
+    dateTo: searchParams.dateTo,
+  });
+
   return (
     <StockTable
+      key={searchParamsKey} // This will force a complete re-mount
       stockData={stockData}
       products={products}
       users={users}

@@ -563,7 +563,14 @@ export default function UsersTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {usersData.users.map((user) => (
+                {usersData.users.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      No users found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  usersData.users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
                       {user.name || "Unknown"}
@@ -626,7 +633,8 @@ export default function UsersTable({
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                ))
+                )}
               </TableBody>
             </Table>
           </div>

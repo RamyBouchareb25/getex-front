@@ -12,6 +12,7 @@ import {
 import DashboardCharts from "@/components/dashboard-charts";
 
 export default async function DashboardPage() {
+  console.log("DashboardPage loaded");
   const [
     dashboardStats,
     revenueData,
@@ -33,6 +34,7 @@ export default async function DashboardPage() {
     getRecentOrdersAction(),
     getQuickStatsAction(),
   ]);  
+  
   return (
     <DashboardCharts
       dashboardStats={dashboardStats}

@@ -446,7 +446,14 @@ export default function CategoriesTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCategories.map((category) => (
+              {filteredCategories.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No categories found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredCategories.map((category) => (
                 <TableRow key={category.id}>
                   <TableCell>
                     <Image
@@ -499,7 +506,8 @@ export default function CategoriesTable({
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

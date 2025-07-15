@@ -24,10 +24,13 @@ export function DynamicBreadcrumb() {
   // Split the pathname into segments and filter out empty ones
   const pathSegments = pathname.split("/").filter(Boolean);
   
+  // Remove the first segment (language) if it exists
+  const filteredSegments = pathSegments.length > 0 ? pathSegments.slice(1) : [];
+  
   // Build breadcrumb items
-  const breadcrumbItems = pathSegments.map((segment, index) => {
-    const href = "/" + pathSegments.slice(0, index + 1).join("/");
-    const isLast = index === pathSegments.length - 1;
+  const breadcrumbItems = filteredSegments.map((segment, index) => {
+    const href = "/" + pathSegments[0] + "/" + filteredSegments.slice(0, index + 1).join("/");
+    const isLast = index === filteredSegments.length - 1;
     const displayName = formatPathSegment(segment);
     
     return {

@@ -350,7 +350,14 @@ export default function CompaniesTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCompanies.map((company) => (
+                {filteredCompanies.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                      No companies found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredCompanies.map((company) => (
                   <TableRow key={company.id}>
                     <TableCell className="font-medium">
                       {company.raisonSocial}
@@ -403,7 +410,8 @@ export default function CompaniesTable({
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                ))
+                )}
               </TableBody>
             </Table>
           </div>

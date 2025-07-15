@@ -19,6 +19,14 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
   const wilaya = searchParams.wilaya;
   const dateFrom = searchParams.dateFrom;
   const dateTo = searchParams.dateTo;
+  const searchParamsKey = JSON.stringify({
+    page: searchParams.page,
+    limit: searchParams.limit,
+    search: searchParams.search,
+    wilaya: searchParams.wilaya,
+    dateFrom: searchParams.dateFrom,
+    dateTo: searchParams.dateTo,
+  });
 
   const companiesData = await getCompaniesAction({ 
     page, 
@@ -29,6 +37,6 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
     dateTo 
   });
 
-  return <CompaniesTable companiesData={companiesData} currentPage={page} limit={limit} />;
+  return <CompaniesTable key={searchParamsKey} companiesData={companiesData} currentPage={page} limit={limit} />;
 }
  

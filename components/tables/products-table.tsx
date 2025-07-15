@@ -67,6 +67,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 interface Product {
   id: string;
   name: string;
+  reference?: string;
   description?: string;
   image?: string;
   subCategoryId: string;
@@ -576,6 +577,7 @@ export default function ProductsTable({
               <TableHeader>
                 <TableRow>
                   <TableHead>Image</TableHead>
+                  <TableHead>Reference</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Sub Category</TableHead>
@@ -606,6 +608,9 @@ export default function ProductsTable({
                           height={50}
                           className="rounded-md object-cover"
                         />
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {product.reference}
                       </TableCell>
                       <TableCell className="font-medium">
                         {product.name}

@@ -13,10 +13,10 @@ interface UsersPageProps {
 const UsersPage = async ({ searchParams }: UsersPageProps) => {
   const page = parseInt(searchParams.page || "1");
   const search = searchParams.search || "";
-  const roles = Array.isArray(searchParams.roles) 
-    ? searchParams.roles 
-    : searchParams.roles 
-    ? [searchParams.roles] 
+  const roles = Array.isArray(searchParams.roles)
+    ? searchParams.roles
+    : searchParams.roles
+    ? [searchParams.roles]
     : [];
   const dateFilter = searchParams.dateFilter || "";
 
@@ -25,11 +25,17 @@ const UsersPage = async ({ searchParams }: UsersPageProps) => {
     limit: 10,
     search,
     roles,
-    dateFilter
+    dateFilter,
   });
-
+  const searchParamsKey = JSON.stringify({
+    page: searchParams.page,
+    search: searchParams.search,
+    roles: searchParams.roles,
+    dateFilter: searchParams.dateFilter,
+  });
   return (
-    <UsersTable 
+    <UsersTable
+      key={searchParamsKey} // This will force a complete re-mount
       initialData={usersData}
       initialPage={page}
       initialSearch={search}

@@ -34,8 +34,17 @@ export default async function SubCategoriesPage({ searchParams }: SubCategoriesP
     }),
     getCategoriesAction(),
   ]);
-
+  const searchParamsKey = JSON.stringify({
+    page: searchParams.page,
+    limit: searchParams.limit,
+    search: searchParams.search,
+    categoryId: searchParams.categoryId,
+    dateFrom: searchParams.dateFrom,
+    dateTo: searchParams.dateTo,
+    productCount: searchParams.productCount,
+  });
   return <SubCategoriesTable 
+    key={searchParamsKey} // This will force a complete re-mount
     subCategoriesData={subCategoriesData} 
     categories={categories} 
     currentPage={page} 
