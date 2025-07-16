@@ -38,7 +38,33 @@
     "success": "Success",
     "error": "Error",
     "warning": "Warning",
-    "info": "Info"
+    "info": "Info",
+    "image": "Image",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "visibility": "Visibility",
+    "visible": "Visible",
+    "hidden": "Hidden",
+    "owner": "Owner",
+    "code": "Code",
+    "barcode": "Barcode",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "selectRole": "Select role",
+    "resetFilters": "Reset Filters",
+    "applyFilters": "Apply Filters",
+    "noDataFound": "No data found",
+    "showing": "Showing",
+    "of": "of",
+    "results": "results",
+    "manage": "Manage",
+    "manageUserAccounts": "Manage user accounts and permissions",
+    "manageProductCatalog": "Manage your product catalog",
+    "manageProductCategories": "Manage product categories",
+    "manageCompanyInformation": "Manage company information",
+    "manageProductSubCategories": "Manage product sub categories",
+    "manageInventoryLevels": "Monitor and manage inventory levels",
+    "manageCustomerOrders": "Manage customer orders and their status"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -50,6 +76,9 @@
     "users": "Users",
     "stock": "Stock",
     "account": "Account",
+    "camions": "Trucks",
+    "chauffeurs": "Drivers",
+    "factures": "Invoices",
     "logout": "Logout"
   },
   "auth": {
@@ -128,7 +157,19 @@
     "nis": "NIS",
     "rc": "RC",
     "wilaya": "Wilaya",
-    "commune": "Commune"
+    "commune": "Commune",
+    "searchPlaceholder": "Search companies...",
+    "allCompanies": "All Companies",
+    "allCompaniesDescription": "A list of all companies in the system",
+    "dateRange": "Date Range",
+    "from": "From",
+    "to": "To",
+    "resetFilters": "Reset Filters",
+    "applyFilters": "Apply Filters",
+    "perPage": "per page",
+    "anyWilaya": "Any Wilaya",
+    "applying": "Applying...",
+    "searching": "Searching..."
   },
   "products": {
     "title": "Products",
@@ -219,7 +260,9 @@
     "categoryUpdated": "Category updated successfully",
     "categoryDeleted": "Category deleted successfully",
     "categoryName": "Category Name",
-    "categoryDescription": "Category Description"
+    "categoryDescription": "Category Description",
+    "subCategories": "Sub Categories",
+    "subCategoriesCount": "Sub Categories Count"
   },
   "subcategories": {
     "title": "Subcategories",
@@ -230,7 +273,10 @@
     "subcategoryUpdated": "Subcategory updated successfully",
     "subcategoryDeleted": "Subcategory deleted successfully",
     "subcategoryName": "Subcategory Name",
-    "subcategoryDescription": "Subcategory Description"
+    "subcategoryDescription": "Subcategory Description",
+    "allSubCategories": "All Sub Categories",
+    "allSubCategoriesDescription": "A list of all product sub categories",
+    "searchSubCategories": "Search sub categories..."
   },
   "account": {
     "title": "Account",
@@ -300,5 +346,18 @@
       "description": "This is a dashboard with mock data for testing purposes",
       "note": "Note: This page contains sample data for demonstration"
     }
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "notFound": {
+    "title": "404 - Page Not Found",
+    "heading": "Oops! Page Not Found",
+    "message": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to Home",
+    "backDashboard": "Back to Dashboard"
   }
 }

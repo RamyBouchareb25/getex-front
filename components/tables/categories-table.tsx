@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -77,6 +78,9 @@ export default function CategoriesTable({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const tCategories = useTranslations('categories');
+  const tCommon = useTranslations('common');
+  const tPagination = useTranslations('pagination');
 
   // Handle both paginated and non-paginated data
   const categories = Array.isArray(categoriesData)
@@ -242,29 +246,29 @@ export default function CategoriesTable({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tCategories('title')}</h1>
           <p className="text-muted-foreground">Manage product categories</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Category
+              {tCategories('createCategory')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Category</DialogTitle>
+              <DialogTitle>{tCategories('createCategory')}</DialogTitle>
               <DialogDescription>Add a new product category</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateCategory}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Category Name</Label>
+                  <Label htmlFor="name">{tCategories('categoryName')}</Label>
                   <Input disabled={isCreating} id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{tCategories('categoryDescription')}</Label>
                   <Textarea
                     disabled={isCreating}
                     id="description"
@@ -438,11 +442,11 @@ export default function CategoriesTable({
             <TableHeader>
               <TableRow>
                 <TableHead>Image</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead>{tCommon('name')}</TableHead>
+                <TableHead>{tCommon('description')}</TableHead>
                 <TableHead>Sub Categories</TableHead>
                 <TableHead>Created At</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>{tCommon('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -457,7 +461,7 @@ export default function CategoriesTable({
                 <TableRow key={category.id}>
                   <TableCell>
                     <Image
-                      src={imageUrl(category.image ?? "") || "/placeholder.svg"}
+                      src={imageUrl(category.image) || "/placeholder.svg"}
                       alt={category.name}
                       width={50}
                       height={50}
@@ -466,7 +470,7 @@ export default function CategoriesTable({
                   </TableCell>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell className="max-w-xs truncate">
-                    {category.description}
+                    {category.description ?? "N/A"}
                   </TableCell>
                   <TableCell>
                     <Link

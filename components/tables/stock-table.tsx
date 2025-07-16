@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -119,6 +120,9 @@ export default function StockTable({
   currentPage: number;
   limit: number;
 }) {
+  const tStock = useTranslations('stock');
+  const tCommon = useTranslations('common');
+  const tPagination = useTranslations('pagination');
   const router = useRouter();
   const pathname = usePathname();
 
@@ -323,7 +327,7 @@ export default function StockTable({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Stock Management
+            {tStock('title')}
           </h1>
           <p className="text-muted-foreground">
             Monitor and manage inventory levels
@@ -333,12 +337,12 @@ export default function StockTable({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Stock
+              {tStock('createStock')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add New Stock</DialogTitle>
+              <DialogTitle>{tStock('createStock')}</DialogTitle>
               <DialogDescription>Add inventory for a product</DialogDescription>
             </DialogHeader>
             <form action={handleCreateStock}>

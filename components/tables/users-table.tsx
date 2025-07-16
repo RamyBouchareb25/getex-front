@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -98,6 +99,10 @@ export default function UsersTable({
   initialRoles,
   initialDateFilter,
 }: UsersTableProps) {
+  const tCommon = useTranslations('common');
+  const tUsers = useTranslations('users');
+  const tValidation = useTranslations('validation');
+  const tPagination = useTranslations('pagination');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -343,7 +348,7 @@ export default function UsersTable({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tUsers('title')}</h1>
           <p className="text-muted-foreground">
             Manage user accounts and permissions
           </p>
@@ -352,12 +357,12 @@ export default function UsersTable({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add User
+              {tUsers('createUser')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>Create New User</DialogTitle>
+              <DialogTitle>{tUsers('createUser')}</DialogTitle>
               <DialogDescription>
                 Add a new user to the system
               </DialogDescription>
@@ -365,15 +370,15 @@ export default function UsersTable({
             <form onSubmit={handleCreateUser}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">{tCommon('name')}</Label>
                   <Input id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{tCommon('email')}</Label>
                   <Input id="email" name="email" type="email" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{tCommon('password')}</Label>
                   <Input
                     id="password"
                     name="password"
@@ -391,13 +396,13 @@ export default function UsersTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="role">Role</Label>
+                  <Label htmlFor="role">{tUsers('role')}</Label>
                   <Select name="role" required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
+                      <SelectItem value="ADMIN">{tUsers('admin')}</SelectItem>
                       <SelectItem value="GROSSISTE">Grossiste</SelectItem>
                       <SelectItem value="POINT_DE_VENTE">
                         Point de Vente
@@ -461,7 +466,7 @@ export default function UsersTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle>{tUsers('title')}</CardTitle>
           <CardDescription>
             A list of all users in the system (Page {usersData.page} of{" "}
             {usersData.totalPages}, {usersData.total} total users)
@@ -470,7 +475,7 @@ export default function UsersTable({
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search users..."
+                placeholder={tCommon('search') + ' users...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -487,7 +492,7 @@ export default function UsersTable({
                     disabled={isPending}
                   >
                     <Filter className="h-4 w-4" />
-                    <span>Filter</span>
+                    <span>{tCommon('filter')}</span>
                     {(selectedRoles.length > 0 || dateFilter) && (
                       <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                     )}
@@ -554,12 +559,12 @@ export default function UsersTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{tCommon('name')}</TableHead>
+                  <TableHead>{tCommon('email')}</TableHead>
+                  <TableHead>{tUsers('role')}</TableHead>
+                  <TableHead>{tCommon('company')}</TableHead>
+                  <TableHead>{tUsers('createdAt')}</TableHead>
+                  <TableHead>{tCommon('actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

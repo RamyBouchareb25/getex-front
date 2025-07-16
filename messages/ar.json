@@ -38,7 +38,33 @@
     "success": "نجح",
     "error": "خطأ",
     "warning": "تحذير",
-    "info": "معلومات"
+    "info": "معلومات",
+    "image": "صورة",
+    "createdAt": "تاريخ الإنشاء",
+    "updatedAt": "تاريخ التحديث",
+    "visibility": "الرؤية",
+    "visible": "مرئي",
+    "hidden": "مخفي",
+    "owner": "المالك",
+    "code": "الكود",
+    "barcode": "الباركود",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "selectRole": "اختر الدور",
+    "resetFilters": "إعادة تعيين المرشحات",
+    "applyFilters": "تطبيق المرشحات",
+    "noDataFound": "لم يتم العثور على بيانات",
+    "showing": "عرض",
+    "of": "من",
+    "results": "نتائج",
+    "manage": "إدارة",
+    "manageUserAccounts": "إدارة حسابات المستخدمين والصلاحيات",
+    "manageProductCatalog": "إدارة كتالوج المنتجات",
+    "manageProductCategories": "إدارة فئات المنتجات",
+    "manageCompanyInformation": "إدارة معلومات الشركة",
+    "manageProductSubCategories": "إدارة الفئات الفرعية للمنتجات",
+    "manageInventoryLevels": "مراقبة وإدارة مستويات المخزون",
+    "manageCustomerOrders": "إدارة طلبات العملاء وحالتها"
   },
   "navigation": {
     "dashboard": "لوحة التحكم",
@@ -50,6 +76,9 @@
     "users": "المستخدمون",
     "stock": "المخزون",
     "account": "الحساب",
+    "camions": "الشاحنات",
+    "chauffeurs": "السائقون",
+    "factures": "الفواتير",
     "logout": "تسجيل الخروج"
   },
   "auth": {
@@ -128,7 +157,19 @@
     "nis": "رقم التأمين الاجتماعي",
     "rc": "السجل التجاري",
     "wilaya": "الولاية",
-    "commune": "البلدية"
+    "commune": "البلدية",
+    "searchPlaceholder": "البحث عن الشركات...",
+    "allCompanies": "جميع الشركات",
+    "allCompaniesDescription": "قائمة بجميع الشركات في النظام",
+    "dateRange": "نطاق التاريخ",
+    "from": "من",
+    "to": "إلى",
+    "resetFilters": "إعادة تعيين المرشحات",
+    "applyFilters": "تطبيق المرشحات",
+    "perPage": "في الصفحة",
+    "anyWilaya": "أي ولاية",
+    "applying": "جاري التطبيق...",
+    "searching": "جاري البحث..."
   },
   "products": {
     "title": "المنتجات",
@@ -300,5 +341,18 @@
       "description": "هذه لوحة تحكم تحتوي على بيانات تجريبية لأغراض الاختبار",
       "note": "ملاحظة: تحتوي هذه الصفحة على بيانات تجريبية للعرض التوضيحي"
     }
+  },
+  "theme": {
+    "toggle": "تبديل الوضع",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام"
+  },
+  "notFound": {
+    "title": "404 - الصفحة غير موجودة",
+    "heading": "عذراً! الصفحة غير موجودة",
+    "message": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    "backHome": "العودة إلى الرئيسية",
+    "backDashboard": "العودة إلى لوحة التحكم"
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -87,6 +88,9 @@ export default function SubCategoriesTable({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const tSubcategories = useTranslations('subcategories');
+  const tCommon = useTranslations('common');
+  const tPagination = useTranslations('pagination');
 
   // Handle both paginated and non-paginated data
   const subCategories = Array.isArray(subCategoriesData) ? subCategoriesData : subCategoriesData.subCategories;
@@ -271,19 +275,19 @@ export default function SubCategoriesTable({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Sub Categories</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tSubcategories('title')}</h1>
           <p className="text-muted-foreground">Manage product sub categories</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Sub Category
+              {tSubcategories('createSubcategory')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Sub Category</DialogTitle>
+              <DialogTitle>{tSubcategories('createSubcategory')}</DialogTitle>
               <DialogDescription>
                 Add a new product sub category
               </DialogDescription>
@@ -291,7 +295,7 @@ export default function SubCategoriesTable({
             <form action={handleCreateSubCategory}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Sub Category Name</Label>
+                  <Label htmlFor="name">{tSubcategories('subcategoryName')}</Label>
                   <Input id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
@@ -527,7 +531,7 @@ export default function SubCategoriesTable({
                       <TableCell>
                         <Image
                           src={
-                            imageUrl(subCategory.image ?? "") || "/placeholder.svg"
+                            imageUrl(subCategory.image) || "/placeholder.svg"
                           }
                           alt={subCategory.name}
                           width={50}
@@ -690,7 +694,7 @@ export default function SubCategoriesTable({
                     <div className="flex-shrink-0">
                       <Image
                         src={
-                          imageUrl(editingSubCategory.image ?? "") ||
+                          imageUrl(editingSubCategory.image) ||
                           "/placeholder.svg"
                         }
                         alt={editingSubCategory.name}

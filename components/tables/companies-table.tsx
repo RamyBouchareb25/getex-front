@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,7 +28,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Search, Edit, Filter, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  Edit,
+  Filter,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Popover,
@@ -79,11 +87,20 @@ export default function CompaniesTable({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-
+  const tCompanies = useTranslations("companies");
+  const tCommon = useTranslations("common");
+  const tPagination = useTranslations("pagination");
+  const t = useTranslations("companiesTable");
   // Handle both paginated and non-paginated data
-  const companies = Array.isArray(companiesData) ? companiesData : companiesData.companies;
-  const totalPages = Array.isArray(companiesData) ? Math.ceil(companies.length / limit) : companiesData.totalPages;
-  const total = Array.isArray(companiesData) ? companies.length : companiesData.total;
+  const companies = Array.isArray(companiesData)
+    ? companiesData
+    : companiesData.companies;
+  const totalPages = Array.isArray(companiesData)
+    ? Math.ceil(companies.length / limit)
+    : companiesData.totalPages;
+  const total = Array.isArray(companiesData)
+    ? companies.length
+    : companiesData.total;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
@@ -134,14 +151,14 @@ export default function CompaniesTable({
   const handleSearch = () => {
     setIsSearching(true);
     const params = new URLSearchParams();
-    params.set('page', '1');
-    params.set('limit', limit.toString());
-    
-    if (searchTerm) params.set('search', searchTerm);
-    if (wilayaFilter) params.set('wilaya', wilayaFilter);
-    if (dateFromFilter) params.set('dateFrom', dateFromFilter);
-    if (dateToFilter) params.set('dateTo', dateToFilter);
-    
+    params.set("page", "1");
+    params.set("limit", limit.toString());
+
+    if (searchTerm) params.set("search", searchTerm);
+    if (wilayaFilter) params.set("wilaya", wilayaFilter);
+    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
+    if (dateToFilter) params.set("dateTo", dateToFilter);
+
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -150,11 +167,11 @@ export default function CompaniesTable({
     setWilayaFilter("");
     setDateFromFilter("");
     setDateToFilter("");
-    
+
     const params = new URLSearchParams();
-    params.set('page', '1');
-    params.set('limit', limit.toString());
-    
+    params.set("page", "1");
+    params.set("limit", limit.toString());
+
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -184,8 +201,8 @@ export default function CompaniesTable({
 
   const handlePageChange = (newPage: number) => {
     const searchParams = new URLSearchParams();
-    searchParams.set('page', newPage.toString());
-    searchParams.set('limit', limit.toString());
+    searchParams.set("page", newPage.toString());
+    searchParams.set("limit", limit.toString());
     router.push(`${pathname}?${searchParams.toString()}`);
   };
 
@@ -205,14 +222,16 @@ export default function CompaniesTable({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Companies</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {tCompanies("title")}
+          </h1>
           <p className="text-muted-foreground">Manage company information</p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Companies</CardTitle>
+          <CardTitle>{tCompanies("title")}</CardTitle>
           <CardDescription>
             A list of all companies in the system
           </CardDescription>
@@ -221,18 +240,14 @@ export default function CompaniesTable({
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 disabled={isUpdating || isSearching}
-                placeholder="Search companies..."
+                placeholder={tCommon("search") + " companies..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 className="max-w-sm"
               />
-              <Button 
-                onClick={handleSearch} 
-                size="sm"
-                disabled={isSearching}
-              >
-                {isSearching ? "Searching..." : "Search"}
+              <Button onClick={handleSearch} size="sm" disabled={isSearching}>
+                {isSearching ? tCommon("loading") : tCommon("search")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -244,7 +259,7 @@ export default function CompaniesTable({
                     className="flex items-center gap-1"
                   >
                     <Filter className="h-4 w-4" />
-                    <span>Filter</span>
+                    <span>{tCommon("filter")}</span>
                     {(wilayaFilter || dateFromFilter || dateToFilter) && (
                       <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                     )}
@@ -253,13 +268,13 @@ export default function CompaniesTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">Wilaya</h4>
+                      <h4 className="font-medium">{tCompanies("wilaya")}</h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={wilayaFilter}
                         onChange={(e) => setWilayaFilter(e.target.value)}
                       >
-                        <option value="">Any Wilaya</option>
+                        <option value="">{tCompanies("anyWilaya")}</option>
                         {uniqueWilayas.map((wilaya) => (
                           <option key={wilaya} value={wilaya}>
                             {wilaya}
@@ -268,10 +283,12 @@ export default function CompaniesTable({
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Range</h4>
+                      <h4 className="font-medium">{tCompanies("dateRange")}</h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="text-xs text-muted-foreground">From</label>
+                          <label className="text-xs text-muted-foreground">
+                            {tCompanies("from")}
+                          </label>
                           <Input
                             disabled={isUpdating || isSearching}
                             type="date"
@@ -280,7 +297,9 @@ export default function CompaniesTable({
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-muted-foreground">To</label>
+                          <label className="text-xs text-muted-foreground">
+                            {tCompanies("to")}
+                          </label>
                           <Input
                             disabled={isUpdating || isSearching}
                             type="date"
@@ -297,36 +316,38 @@ export default function CompaniesTable({
                         onClick={handleResetFilters}
                         disabled={isSearching}
                       >
-                        Reset Filters
+                        {tCompanies("resetFilters")}
                       </Button>
-                      <Button 
+                      <Button
                         size="sm"
                         onClick={handleSearch}
                         disabled={isSearching}
                       >
-                        {isSearching ? "Applying..." : "Apply Filters"}
+                        {isSearching
+                          ? tCompanies("applying")
+                          : tCompanies("applyFilters")}
                       </Button>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
-              
+
               <select
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 value={limit}
                 onChange={(e) => {
                   const newLimit = parseInt(e.target.value);
                   const searchParams = new URLSearchParams();
-                  searchParams.set('page', '1');
-                  searchParams.set('limit', newLimit.toString());
+                  searchParams.set("page", "1");
+                  searchParams.set("limit", newLimit.toString());
                   router.push(`${pathname}?${searchParams.toString()}`);
                 }}
               >
-                <option value={2}>2 per page</option>
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
+                <option value={2}>2 {tCompanies("perPage")}</option>
+                <option value={5}>5 {tCompanies("perPage")}</option>
+                <option value={10}>10 {tCompanies("perPage")}</option>
+                <option value={20}>20 {tCompanies("perPage")}</option>
+                <option value={50}>50 {t("perPage")}</option>
               </select>
             </div>
           </div>
@@ -336,81 +357,90 @@ export default function CompaniesTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Raison Social</TableHead>
-                  <TableHead>Numero d&apos;identification fiscal</TableHead>
-                  <TableHead>
-                    Numero d&apos;identification statistique
-                  </TableHead>
-                  <TableHead>Registre de commerce</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("raisonSocial")}</TableHead>
+                  <TableHead>{t("nif")}</TableHead>
+                  <TableHead>{t("nis")}</TableHead>
+                  <TableHead>{t("rc")}</TableHead>
+                  <TableHead>{t("phone")}</TableHead>
+                  <TableHead>{t("user")}</TableHead>
+                  <TableHead>{t("address")}</TableHead>
+                  <TableHead>{t("createdAt")}</TableHead>
+                  <TableHead>{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredCompanies.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                      No companies found
+                    <TableCell
+                      colSpan={9}
+                      className="text-center py-8 text-muted-foreground"
+                    >
+                      {t("noCompaniesFound")}
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredCompanies.map((company) => (
-                  <TableRow key={company.id}>
-                    <TableCell className="font-medium">
-                      {company.raisonSocial}
-                    </TableCell>
-                    <TableCell className="text-center">{company.nif}</TableCell>{" "}
-                    <TableCell className="text-center">{company.nis}</TableCell>{" "}
-                    <TableCell className="text-center">{company.rc}</TableCell>
-                    <TableCell>{company.phone}</TableCell>
-                    <TableCell>
-                      {company.User ? (
-                        <Link
-                          href={`/dashboard/users?id=${company.userId}`}
-                          className="text-blue-600 hover:underline flex flex-col gap-2"
-                        >
-                          <div>{company.User.email}</div>
-                          <div>{company.User.name}</div>
-                        </Link>
-                      ) : (
-                        <span className="text-muted-foreground">No user</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {company.address ? (
-                        <div className="text-blue-600 flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {company.address.wilaya}, {company.address.commune}
+                    <TableRow key={company.id}>
+                      <TableCell className="font-medium">
+                        {company.raisonSocial}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {company.nif}
+                      </TableCell>{" "}
+                      <TableCell className="text-center">
+                        {company.nis}
+                      </TableCell>{" "}
+                      <TableCell className="text-center">
+                        {company.rc}
+                      </TableCell>
+                      <TableCell>{company.phone}</TableCell>
+                      <TableCell>
+                        {company.User ? (
+                          <Link
+                            href={`/dashboard/users?id=${company.userId}`}
+                            className="text-blue-600 hover:underline flex flex-col gap-2"
+                          >
+                            <div>{company.User.email}</div>
+                            <div>{company.User.name}</div>
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {t("noUser")}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {company.address ? (
+                          <div className="text-blue-600 flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {company.address.wilaya}, {company.address.commune}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {t("noAddress")}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {company.createdAt instanceof Date
+                          ? company.createdAt.toISOString().split("T")[0]
+                          : new Date(company.createdAt).toLocaleDateString(
+                              "fr-FR"
+                            )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingCompany(company)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
                         </div>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          No address
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {company.createdAt instanceof Date
-                        ? company.createdAt.toISOString().split("T")[0]
-                        : new Date(company.createdAt).toLocaleDateString(
-                            "fr-FR"
-                          )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingCompany(company)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>
@@ -421,7 +451,11 @@ export default function CompaniesTable({
       {/* Pagination Controls */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, total)} of {total} companies
+          {t("showing", {
+            from: (currentPage - 1) * limit + 1,
+            to: Math.min(currentPage * limit, total),
+            total,
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -431,9 +465,9 @@ export default function CompaniesTable({
             disabled={currentPage <= 1}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {t("previous")}
           </Button>
-          
+
           <div className="flex items-center space-x-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               let pageNumber;
@@ -446,7 +480,7 @@ export default function CompaniesTable({
               } else {
                 pageNumber = currentPage - 2 + i;
               }
-              
+
               return (
                 <Button
                   key={pageNumber}
@@ -467,7 +501,7 @@ export default function CompaniesTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
           >
-            Next
+            {t("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -480,8 +514,8 @@ export default function CompaniesTable({
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Company</DialogTitle>
-            <DialogDescription>Update company information</DialogDescription>
+            <DialogTitle>{t("editCompany")}</DialogTitle>
+            <DialogDescription>{t("updateCompanyInfo")}</DialogDescription>
           </DialogHeader>
           {editingCompany && (
             <form onSubmit={handleUpdateCompany}>
@@ -493,7 +527,7 @@ export default function CompaniesTable({
               />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-raisonSocial">Raison Social</Label>
+                  <Label htmlFor="edit-raisonSocial">{t("raisonSocial")}</Label>
                   <Input
                     disabled={isUpdating}
                     id="edit-raisonSocial"
@@ -504,7 +538,7 @@ export default function CompaniesTable({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="edit-nif">NIF</Label>
+                    <Label htmlFor="edit-nif">{t("nif")}</Label>
                     <Input
                       disabled={isUpdating}
                       id="edit-nif"
@@ -514,7 +548,7 @@ export default function CompaniesTable({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="edit-nis">NIS</Label>
+                    <Label htmlFor="edit-nis">{t("nis")}</Label>
                     <Input
                       disabled={isUpdating}
                       id="edit-nis"
@@ -525,7 +559,7 @@ export default function CompaniesTable({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-phone">Phone</Label>
+                  <Label htmlFor="edit-phone">{t("phone")}</Label>
                   <Input
                     disabled={isUpdating}
                     id="edit-phone"
@@ -537,7 +571,7 @@ export default function CompaniesTable({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="edit-wilaya">Wilaya</Label>
+                    <Label htmlFor="edit-wilaya">{t("wilaya")}</Label>
                     <Input
                       disabled={isUpdating}
                       id="edit-wilaya"
@@ -547,7 +581,7 @@ export default function CompaniesTable({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="edit-commune">Commune</Label>
+                    <Label htmlFor="edit-commune">{t("commune")}</Label>
                     <Input
                       disabled={isUpdating}
                       id="edit-commune"
@@ -563,10 +597,10 @@ export default function CompaniesTable({
                   {isUpdating ? (
                     <>
                       <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
-                      Updating...
+                      {t("updating")}...
                     </>
                   ) : (
-                    "Update Company"
+                    t("updateCompany")
                   )}
                 </Button>
               </DialogFooter>

@@ -29,17 +29,12 @@ export default async function LocaleLayout({
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  console.log("LocaleLayout loaded for locale:", locale);
-  console.log("Available locales:", locales);
-  console.log("locale check:", locales.includes(locale as any));
-  // Validate that the incoming `locale` parameter is valid
+// Validate that the incoming `locale` parameter is valid
   if (!locales.includes(locale as any)) {
     notFound();
   }
-  console.log("LocaleLayout - locale:", locale);
   const session = await getServerSession(authOptions);
   const messages = await getMessages({ locale });
-  console.log("LocaleLayout - messages loaded:");
   return (
     <html
       lang={locale}

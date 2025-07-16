@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -119,6 +120,9 @@ export default function ProductsTable({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const tProducts = useTranslations('products');
+  const tCommon = useTranslations('common');
+  const tPagination = useTranslations('pagination');
 
   // Handle both paginated and non-paginated data
   const products = Array.isArray(productsData)
@@ -325,19 +329,19 @@ export default function ProductsTable({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tProducts('title')}</h1>
           <p className="text-muted-foreground">Manage your product catalog</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Product
+              {tProducts('createProduct')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create New Product</DialogTitle>
+              <DialogTitle>{tProducts('createProduct')}</DialogTitle>
               <DialogDescription>
                 Add a new product to your catalog
               </DialogDescription>
@@ -345,11 +349,11 @@ export default function ProductsTable({
             <form action={handleCreateProduct}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Product Name</Label>
+                  <Label htmlFor="name">{tProducts('productName')}</Label>
                   <Input id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{tProducts('productDescription')}</Label>
                   <Textarea id="description" name="description" />
                 </div>
                 <div className="grid gap-2">
@@ -601,7 +605,7 @@ export default function ProductsTable({
                       <TableCell>
                         <Image
                           src={
-                            imageUrl(product.image ?? "") || "/placeholder.svg"
+                            imageUrl(product.image) || "/placeholder.svg"
                           }
                           alt={product.name}
                           width={50}
@@ -760,7 +764,7 @@ export default function ProductsTable({
                     <div className="flex-shrink-0">
                       <Image
                         src={
-                          imageUrl(editingProduct.image ?? "") ||
+                          imageUrl(editingProduct.image) ||
                           "/placeholder.svg"
                         }
                         alt={editingProduct.name}

@@ -38,7 +38,33 @@
     "success": "Succès",
     "error": "Erreur",
     "warning": "Avertissement",
-    "info": "Info"
+    "info": "Info",
+    "image": "Image",
+    "createdAt": "Créé le",
+    "updatedAt": "Mis à jour le",
+    "visibility": "Visibilité",
+    "visible": "Visible",
+    "hidden": "Caché",
+    "owner": "Propriétaire",
+    "code": "Code",
+    "barcode": "Code-barres",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "selectRole": "Sélectionner un rôle",
+    "resetFilters": "Réinitialiser les filtres",
+    "applyFilters": "Appliquer les filtres",
+    "noDataFound": "Aucune donnée trouvée",
+    "showing": "Affichage",
+    "of": "de",
+    "results": "résultats",
+    "manage": "Gérer",
+    "manageUserAccounts": "Gérer les comptes d'utilisateurs et les permissions",
+    "manageProductCatalog": "Gérer votre catalogue de produits",
+    "manageProductCategories": "Gérer les catégories de produits",
+    "manageCompanyInformation": "Gérer les informations de l'entreprise",
+    "manageProductSubCategories": "Gérer les sous-catégories de produits",
+    "manageInventoryLevels": "Surveiller et gérer les niveaux de stock",
+    "manageCustomerOrders": "Gérer les commandes clients et leur statut"
   },
   "navigation": {
     "dashboard": "Tableau de bord",
@@ -50,6 +76,9 @@
     "users": "Utilisateurs",
     "stock": "Stock",
     "account": "Compte",
+    "camions": "Camions",
+    "chauffeurs": "Chauffeurs",
+    "factures": "Factures",
     "logout": "Déconnexion"
   },
   "auth": {
@@ -129,7 +158,19 @@
     "nis": "NIS",
     "rc": "RC",
     "wilaya": "Wilaya",
-    "commune": "Commune"
+    "commune": "Commune",
+    "searchPlaceholder": "Rechercher des entreprises...",
+    "allCompanies": "Toutes les entreprises",
+    "allCompaniesDescription": "Une liste de toutes les entreprises du système",
+    "dateRange": "Plage de dates",
+    "from": "De",
+    "to": "À",
+    "resetFilters": "Réinitialiser les filtres",
+    "applyFilters": "Appliquer les filtres",
+    "perPage": "par page",
+    "anyWilaya": "Toute wilaya",
+    "applying": "Application...",
+    "searching": "Recherche..."
   },
   "products": {
     "title": "Produits",
@@ -220,7 +261,9 @@
     "categoryUpdated": "Catégorie mise à jour avec succès",
     "categoryDeleted": "Catégorie supprimée avec succès",
     "categoryName": "Nom de catégorie",
-    "categoryDescription": "Description de catégorie"
+    "categoryDescription": "Description de catégorie",
+    "subCategories": "Sous-catégories",
+    "subCategoriesCount": "Nombre de sous-catégories"
   },
   "subcategories": {
     "title": "Sous-catégories",
@@ -231,7 +274,10 @@
     "subcategoryUpdated": "Sous-catégorie mise à jour avec succès",
     "subcategoryDeleted": "Sous-catégorie supprimée avec succès",
     "subcategoryName": "Nom de sous-catégorie",
-    "subcategoryDescription": "Description de sous-catégorie"
+    "subcategoryDescription": "Description de sous-catégorie",
+    "allSubCategories": "Toutes les sous-catégories",
+    "allSubCategoriesDescription": "Une liste de toutes les sous-catégories de produits",
+    "searchSubCategories": "Rechercher des sous-catégories..."
   },
   "account": {
     "title": "Compte",
@@ -301,5 +347,18 @@
       "description": "Ceci est un tableau de bord avec des données fictives à des fins de test",
       "note": "Note : Cette page contient des données d'exemple à des fins de démonstration"
     }
+  },
+  "theme": {
+    "toggle": "Basculer le thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "notFound": {
+    "title": "404 - Page Non Trouvée",
+    "heading": "Oups ! Page Non Trouvée",
+    "message": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "backHome": "Retour à l'Accueil",
+    "backDashboard": "Retour au Tableau de Bord"
   }
 }

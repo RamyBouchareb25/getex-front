@@ -16,7 +16,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  console.log("DashboardLayout loaded");
   return (
     <SidebarProvider>
       <AppSidebar />

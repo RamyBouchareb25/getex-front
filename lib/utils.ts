@@ -6,7 +6,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function imageUrl(image:string): string {
+export function imageUrl(image: string | null | undefined): string | null {
+  if (!image) return null;
   return backendUrl + image;
 }
 
