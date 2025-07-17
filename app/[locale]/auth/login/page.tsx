@@ -44,9 +44,12 @@ export default function LoginPage() {
       });
       console.log("SignIn result:", result);
       if (result?.error) {
-        const message = result.error.includes("CredentialsSignin")
-          ? t('invalidCredentials')
-          : result.error;
+        let message = result.error;
+        if (result.error.includes("CredentialsSignin")) {
+          message = t('invalidCredentials');
+        } else if (result.error === "ADMIN_ONLY") {
+          message = t('adminOnly');
+        }
         setErrorMessage(message);
       } else if (result?.ok) {
         const redirectUrl = searchParams.get("callbackUrl") || `/${locale}/dashboard`;

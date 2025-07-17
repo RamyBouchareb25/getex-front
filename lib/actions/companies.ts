@@ -45,18 +45,20 @@ export const updateCompanyAction = async (formData: FormData) => {
   }
 };
 
-export const getCompaniesAction = async ({ 
-  page, 
-  limit, 
-  search, 
-  wilaya, 
-  dateFrom, 
-  dateTo 
-}: Pagination & { 
-  search?: string; 
-  wilaya?: string; 
-  dateFrom?: string; 
-  dateTo?: string; 
+export const getCompaniesAction = async ({
+  page,
+  limit,
+  search,
+  wilaya,
+  dateFrom,
+  dateTo,
+  companyId,
+}: Pagination & {
+  search?: string;
+  wilaya?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  companyId?: string;
 }) => {
   try {
     const params = new URLSearchParams({
@@ -64,11 +66,11 @@ export const getCompaniesAction = async ({
       limit: limit.toString(),
     });
 
-    if (search) params.append('search', search);
-    if (wilaya) params.append('wilaya', wilaya);
-    if (dateFrom) params.append('dateFrom', dateFrom);
-    if (dateTo) params.append('dateTo', dateTo);
-
+    if (search) params.append("search", search);
+    if (wilaya) params.append("wilaya", wilaya);
+    if (dateFrom) params.append("dateFrom", dateFrom);
+    if (dateTo) params.append("dateTo", dateTo);
+    if (companyId) params.append("companyId", companyId);
     const response = await serverApi.get(`/company?${params.toString()}`);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch companies: ${response.statusText}`);

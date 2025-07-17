@@ -10,6 +10,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales } from "@/i18n";
+import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -50,6 +51,7 @@ export default async function LocaleLayout({
               enableSystem
               disableTransitionOnChange
             >
+              <Toaster richColors  />
               {children}
             </ThemeProvider>
           </NextAuthSessionProvider>

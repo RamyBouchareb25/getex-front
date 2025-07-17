@@ -4,22 +4,22 @@ import { jwtDecode } from "jwt-decode";
 
 export const backendUrl =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-  // Interface for JWT token payload
-  export interface JWTTokenPayload {
-    sub: string;
-    email: string;
-    role: string;
-    raisonSocial: string;
-    rc: string;
-    phone: number;
-    commune: string;
-    wilaya: string;
-    nif: string;
-    nis: string;
-    name: string;
-    iat: number;
-    exp: number;
-  }
+// Interface for JWT token payload
+export interface JWTTokenPayload {
+  sub: string;
+  email: string;
+  role: string;
+  raisonSocial: string;
+  rc: string;
+  phone: number;
+  commune: string;
+  wilaya: string;
+  nif: string;
+  nis: string;
+  name: string;
+  iat: number;
+  exp: number;
+}
 // Registration function
 export async function registerUser(userData: {
   email: string;
@@ -88,26 +88,47 @@ export const authOptions: NextAuthOptions = {
           const data = await response.json();
           const { access_token: token } = data;
           if (token) {
-            const decodedToken = jwtDecode(token) as JWTTokenPayload;
+            const {
+              sub: id,
+              email,
+              role,
+              name,
+              raisonSocial,
+              rc,
+              phone,
+              commune,
+              wilaya,
+              nif,
+              nis,
+            } = jwtDecode(token) as JWTTokenPayload;
+            
+            // Check if user is an admin
+            if (role !== "ADMIN") {
+              throw new Error("ADMIN_ONLY");
+            }
+            
             return {
-              id: decodedToken.sub,
-              email: decodedToken.email,
-              role: decodedToken.role,
-              name: decodedToken.name,
+              id,
+              email,
+              role,
+              name,
+              raisonSocial,
+              rc,
+              phone,
+              commune,
+              wilaya,
+              nif,
+              nis,
               accessToken: token,
-              raisonSocial: decodedToken.raisonSocial,
-              rc: decodedToken.rc,
-              phone: decodedToken.phone,
-              commune: decodedToken.commune,
-              wilaya: decodedToken.wilaya,
-              nif: decodedToken.nif,
-              nis: decodedToken.nis,
             };
           }
 
           return null;
         } catch (error) {
           console.error("Authentication error:", error);
+          if (error instanceof Error && error.message === "ADMIN_ONLY") {
+            throw new Error("ADMIN_ONLY");
+          }
           return null;
         }
       },

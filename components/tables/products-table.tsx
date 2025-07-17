@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
+import TableEmptyState from "@/components/table-empty-state";
 import {
   Card,
   CardContent,
@@ -591,14 +592,14 @@ export default function ProductsTable({
               </TableHeader>
               <TableBody>
                 {filteredProducts.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center py-8 text-muted-foreground"
-                    >
-                      No products found
-                    </TableCell>
-                  </TableRow>
+                  <TableEmptyState
+                    colSpan={6}
+                    message={searchTerm ? tCommon('emptyState.noItemsFound') : "No products found"}
+                    description={searchTerm ? tCommon('emptyState.tryDifferentSearch') : "Products will appear here when they are created"}
+                    showAddButton={!searchTerm}
+                    onAddClick={() => setIsCreateOpen(true)}
+                    addButtonText="Create Product"
+                  />
                 ) : (
                   filteredProducts.map((product) => (
                     <TableRow key={product.id}>

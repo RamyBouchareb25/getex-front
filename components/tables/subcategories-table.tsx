@@ -543,7 +543,7 @@ export default function SubCategoriesTable({
                         {subCategory.name}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
-                        {subCategory.description}
+                        {subCategory.description ?? "No description available"}
                       </TableCell>
                       <TableCell>
                         <Link

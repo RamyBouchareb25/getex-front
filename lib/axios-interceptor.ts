@@ -56,12 +56,32 @@ if (typeof window !== "undefined") {
     }
   );
 }
+// Custom error class for HTTP errors
+class HttpError extends Error {
+  status: number;
+  statusText?: string;
+  data?: any;
+  url?: string;
 
+  constructor(
+    message: string,
+    status: number,
+    statusText?: string,
+    data?: any,
+    url?: string
+  ) {
+    super(message);
+    this.name = "HttpError";
+    this.status = status;
+    this.statusText = statusText;
+    this.data = data;
+    this.url = url;
+  }
+}
 // Server-side axios instance with response interceptor
 const serverAxios = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
 });
-
 // Setup server-side response interceptor
 serverAxios.interceptors.response.use(
   (response: AxiosResponse) => response,
@@ -69,7 +89,7 @@ serverAxios.interceptors.response.use(
     if (error.response?.status === 401) {
       throw new Error("UNAUTHORIZED");
     }
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
 );
 

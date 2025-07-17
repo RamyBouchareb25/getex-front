@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import TableEmptyState from "@/components/table-empty-state";
 import {
   Card,
   CardContent,
@@ -62,14 +63,12 @@ import {
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import { toast } from "sonner";
 interface User {
   id: string;
   email: string;
   name?: string;
   role: string;
-  CompanyDataId?: string;
   createdAt: Date | string;
   CompanyData?: {
     id: string;
@@ -99,10 +98,10 @@ export default function UsersTable({
   initialRoles,
   initialDateFilter,
 }: UsersTableProps) {
-  const tCommon = useTranslations('common');
-  const tUsers = useTranslations('users');
-  const tValidation = useTranslations('validation');
-  const tPagination = useTranslations('pagination');
+  const tCommon = useTranslations("common");
+  const tUsers = useTranslations("users");
+  const tValidation = useTranslations("validation");
+  const tPagination = useTranslations("pagination");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -122,10 +121,6 @@ export default function UsersTable({
     null
   );
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
-
-  // Message states
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
 
   // Loading states
   const [isCreating, setIsCreating] = useState(false);
@@ -225,44 +220,42 @@ export default function UsersTable({
   const handleCreateUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsCreating(true);
-    setErrorMessage("");
-    setSuccessMessage("");
     try {
       const formData = new FormData(event.currentTarget);
       const result = await createUserAction(formData);
       if (result.success) {
-        setSuccessMessage("User created successfully!");
+        toast.success("User created successfully!");
         setIsCreateOpen(false);
         // Refresh the current page to show the new user
         router.refresh();
       } else {
-        setErrorMessage(result.message || "Failed to create user");
+        toast.error(result.message || "Failed to create user");
       }
     } catch (error) {
       console.error("Error creating user:", error);
-      setErrorMessage("An unexpected error occurred while creating the user");
+      toast.error("An unexpected error occurred while creating the user");
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleUpdateUser = async (formData: FormData) => {
+  const handleUpdateUser = async (event: React.FormEvent<HTMLFormElement>) => {
     setIsUpdating(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+    event.preventDefault();
 
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await updateUserAction(formData);
       if (result.success) {
-        setSuccessMessage("User updated successfully!");
+        toast.success("User updated successfully!");
         setEditingUser(null);
-        router.refresh();
+        // router.refresh();
       } else {
-        setErrorMessage(result.message || "Failed to update user");
+        toast.error(result.message || "Failed to update user");
       }
     } catch (error) {
       console.error("Error updating user:", error);
-      setErrorMessage("An unexpected error occurred while updating the user");
+      toast.error("An unexpected error occurred while updating the user");
     } finally {
       setIsUpdating(false);
     }
@@ -270,41 +263,40 @@ export default function UsersTable({
 
   const handleDeleteUser = async (userId: string) => {
     setIsDeleting(userId);
-    setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       const result = await deleteUserAction(userId);
       if (result.success) {
-        setSuccessMessage("User deleted successfully!");
+        toast.success("User deleted successfully!");
         setDeletingUser(null);
         router.refresh();
       } else {
-        setErrorMessage(result.message || "Failed to delete user");
+        toast.error(result.message || "Failed to delete user");
       }
     } catch (error) {
       console.error("Error deleting user:", error);
-      setErrorMessage("An unexpected error occurred while deleting the user");
+      toast.error("An unexpected error occurred while deleting the user");
     } finally {
       setIsDeleting(null);
     }
   };
 
-  const handleResetPassword = async (formData: FormData) => {
+  const handleResetPassword = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     setIsResettingPassword(true);
-    setSuccessMessage("");
-    setErrorMessage("");
-
+    event.preventDefault();
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await resetUserPasswordAction(formData);
       if (result.success) {
-        setSuccessMessage(result.message);
+        toast.success(result.message);
         setTimeout(() => setChangingPasswordFor(null), 2000);
       } else {
-        setErrorMessage(result.message);
+        toast.error(result.message);
       }
     } catch (error) {
-      setErrorMessage("Failed to reset password");
+      toast.error("Failed to reset password");
     } finally {
       setIsResettingPassword(false);
     }
@@ -332,23 +324,11 @@ export default function UsersTable({
 
   return (
     <div className="space-y-6">
-      {/* Success/Error Messages */}
-      {successMessage && (
-        <Alert className="bg-green-50 text-green-800 dark:bg-green-900 dark:text-green-100">
-          <AlertTitle>Success</AlertTitle>
-          <AlertDescription>{successMessage}</AlertDescription>
-        </Alert>
-      )}
-      {errorMessage && (
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
-
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{tUsers('title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {tUsers("title")}
+          </h1>
           <p className="text-muted-foreground">
             Manage user accounts and permissions
           </p>
@@ -357,12 +337,12 @@ export default function UsersTable({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tUsers('createUser')}
+              {tUsers("createUser")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>{tUsers('createUser')}</DialogTitle>
+              <DialogTitle>{tUsers("createUser")}</DialogTitle>
               <DialogDescription>
                 Add a new user to the system
               </DialogDescription>
@@ -370,16 +350,23 @@ export default function UsersTable({
             <form onSubmit={handleCreateUser}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{tCommon('name')}</Label>
-                  <Input id="name" name="name" required />
+                  <Label htmlFor="name">{tCommon("name")}</Label>
+                  <Input disabled={isCreating} id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="email">{tCommon('email')}</Label>
-                  <Input id="email" name="email" type="email" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="password">{tCommon('password')}</Label>
+                  <Label htmlFor="email">{tCommon("email")}</Label>
                   <Input
+                    disabled={isCreating}
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password">{tCommon("password")}</Label>
+                  <Input
+                    disabled={isCreating}
                     id="password"
                     name="password"
                     type="password"
@@ -389,6 +376,7 @@ export default function UsersTable({
                 <div className="grid gap-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <Input
+                    disabled={isCreating}
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
@@ -396,13 +384,13 @@ export default function UsersTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="role">{tUsers('role')}</Label>
-                  <Select name="role" required>
+                  <Label htmlFor="role">{tUsers("role")}</Label>
+                  <Select disabled={isCreating} name="role" required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ADMIN">{tUsers('admin')}</SelectItem>
+                      <SelectItem value="ADMIN">{tUsers("admin")}</SelectItem>
                       <SelectItem value="GROSSISTE">Grossiste</SelectItem>
                       <SelectItem value="POINT_DE_VENTE">
                         Point de Vente
@@ -419,23 +407,27 @@ export default function UsersTable({
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label htmlFor="raisonSocial">Company Name</Label>
-                      <Input id="raisonSocial" name="raisonSocial" />
+                      <Input
+                        disabled={isCreating}
+                        id="raisonSocial"
+                        name="raisonSocial"
+                      />
                     </div>
                     <div>
                       <Label htmlFor="nif">NIF</Label>
-                      <Input id="nif" name="nif" />
+                      <Input disabled={isCreating} id="nif" name="nif" />
                     </div>
                     <div>
                       <Label htmlFor="nis">NIS</Label>
-                      <Input id="nis" name="nis" />
+                      <Input disabled={isCreating} id="nis" name="nis" />
                     </div>
                     <div>
                       <Label htmlFor="phone">Phone</Label>
-                      <Input id="phone" name="phone" />
+                      <Input disabled={isCreating} id="phone" name="phone" />
                     </div>
                     <div>
                       <Label htmlFor="rc">Registre de commerce</Label>
-                      <Input id="rc" name="rc" />
+                      <Input disabled={isCreating} id="rc" name="rc" />
                     </div>
                   </div>
                 </div>
@@ -445,11 +437,15 @@ export default function UsersTable({
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label htmlFor="wilaya">Wilaya</Label>
-                      <Input id="wilaya" name="wilaya" />
+                      <Input disabled={isCreating} id="wilaya" name="wilaya" />
                     </div>
                     <div>
                       <Label htmlFor="commune">Commune</Label>
-                      <Input id="commune" name="commune" />
+                      <Input
+                        disabled={isCreating}
+                        id="commune"
+                        name="commune"
+                      />
                     </div>
                   </div>
                 </div>
@@ -466,7 +462,7 @@ export default function UsersTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>{tUsers('title')}</CardTitle>
+          <CardTitle>{tUsers("title")}</CardTitle>
           <CardDescription>
             A list of all users in the system (Page {usersData.page} of{" "}
             {usersData.totalPages}, {usersData.total} total users)
@@ -475,7 +471,7 @@ export default function UsersTable({
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={tCommon('search') + ' users...'}
+                placeholder={tCommon("search") + " users..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -492,7 +488,7 @@ export default function UsersTable({
                     disabled={isPending}
                   >
                     <Filter className="h-4 w-4" />
-                    <span>{tCommon('filter')}</span>
+                    <span>{tCommon("filter")}</span>
                     {(selectedRoles.length > 0 || dateFilter) && (
                       <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                     )}
@@ -559,86 +555,91 @@ export default function UsersTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{tCommon('name')}</TableHead>
-                  <TableHead>{tCommon('email')}</TableHead>
-                  <TableHead>{tUsers('role')}</TableHead>
-                  <TableHead>{tCommon('company')}</TableHead>
-                  <TableHead>{tUsers('createdAt')}</TableHead>
-                  <TableHead>{tCommon('actions')}</TableHead>
+                  <TableHead>{tCommon("name")}</TableHead>
+                  <TableHead>{tCommon("email")}</TableHead>
+                  <TableHead>{tUsers("role")}</TableHead>
+                  <TableHead>{tCommon("company")}</TableHead>
+                  <TableHead>{tUsers("createdAt")}</TableHead>
+                  <TableHead>{tCommon("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {usersData.users.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      No users found
-                    </TableCell>
-                  </TableRow>
+                  <TableEmptyState
+                    colSpan={6}
+                    message={searchTerm ? tCommon('emptyState.noItemsFound') : "No users found"}
+                    description={searchTerm ? tCommon('emptyState.tryDifferentSearch') : "Users will appear here when they are created"}
+                    showAddButton={!searchTerm}
+                    onAddClick={() => setIsCreateOpen(true)}
+                    addButtonText={tUsers('createUser')}
+                  />
                 ) : (
                   usersData.users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      {user.name || "Unknown"}
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          user.role === "ADMIN" ? "default" : "secondary"
-                        }
-                      >
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {user.CompanyData ? (
-                        <Link
-                          href={`/dashboard/companies?id=${user.CompanyDataId}`}
-                          className="text-blue-600 hover:underline"
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">
+                        {user.name || "Unknown"}
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            user.role === "ADMIN" ? "default" : "secondary"
+                          }
                         >
-                          {user.CompanyData.raisonSocial}
-                        </Link>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          No company
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {user.createdAt instanceof Date
-                        ? user.createdAt.toISOString().split("T")[0]
-                        : new Date(user.createdAt).toLocaleDateString("fr-FR")}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingUser(user)}
-                          disabled={isUpdating || isPending}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setChangingPasswordFor(user)}
-                          disabled={isResettingPassword || isPending}
-                        >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDeletingUser(user)}
-                          disabled={isDeleting === user.id || isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {user.CompanyData ? (
+                          <Link
+                            href={`/dashboard/companies?id=${user.CompanyData.id}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {user.CompanyData.raisonSocial}
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            No company
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {user.createdAt instanceof Date
+                          ? user.createdAt.toISOString().split("T")[0]
+                          : new Date(user.createdAt).toLocaleDateString(
+                              "fr-FR"
+                            )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingUser(user)}
+                            disabled={isUpdating || isPending}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setChangingPasswordFor(user)}
+                            disabled={isResettingPassword || isPending}
+                          >
+                            <Key className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDeletingUser(user)}
+                            disabled={isDeleting === user.id || isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>
@@ -699,7 +700,7 @@ export default function UsersTable({
             <DialogDescription>Update user information</DialogDescription>
           </DialogHeader>
           {editingUser && (
-            <form action={handleUpdateUser}>
+            <form onSubmit={handleUpdateUser}>
               <input type="hidden" name="id" value={editingUser.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
@@ -709,6 +710,7 @@ export default function UsersTable({
                     name="name"
                     defaultValue={editingUser.name}
                     required
+                    disabled={isUpdating}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -719,11 +721,17 @@ export default function UsersTable({
                     type="email"
                     defaultValue={editingUser.email}
                     required
+                    disabled={isUpdating}
                   />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-role">Role</Label>
-                  <Select name="role" defaultValue={editingUser.role} required>
+                  <Select
+                    disabled={isUpdating}
+                    name="role"
+                    defaultValue={editingUser.role}
+                    required
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -809,16 +817,28 @@ export default function UsersTable({
           </DialogHeader>
           {changingPasswordFor && (
             <div>
-              <form action={handleResetPassword}>
+              <form onSubmit={handleResetPassword}>
                 <input
+                  disabled={isResettingPassword}
                   type="hidden"
                   name="userId"
                   value={changingPasswordFor.id}
                 />
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
+                    <Label htmlFor="oldPassword">Old Password</Label>
+                    <Input
+                      disabled={isResettingPassword}
+                      id="oldPassword"
+                      name="oldPassword"
+                      type="password"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
                     <Label htmlFor="newPassword">New Password</Label>
                     <Input
+                      disabled={isResettingPassword}
                       id="newPassword"
                       name="newPassword"
                       type="password"
@@ -828,6 +848,7 @@ export default function UsersTable({
                   <div className="grid gap-2">
                     <Label htmlFor="confirmPassword">Confirm Password</Label>
                     <Input
+                      disabled={isResettingPassword}
                       id="confirmPassword"
                       name="confirmPassword"
                       type="password"

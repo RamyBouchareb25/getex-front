@@ -64,7 +64,12 @@
     "manageCompanyInformation": "Manage company information",
     "manageProductSubCategories": "Manage product sub categories",
     "manageInventoryLevels": "Monitor and manage inventory levels",
-    "manageCustomerOrders": "Manage customer orders and their status"
+    "manageCustomerOrders": "Manage customer orders and their status",
+    "emptyState": {
+      "noItemsFound": "No items found",
+      "tryDifferentSearch": "Try adjusting your search or filter criteria",
+      "getStarted": "Get started by adding your first item"
+    }
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -79,6 +84,8 @@
     "camions": "Trucks",
     "chauffeurs": "Drivers",
     "factures": "Invoices",
+    "bellatStock": "Bellat Stock",
+    "allStocks": "All Stocks",
     "logout": "Logout"
   },
   "auth": {
@@ -93,6 +100,7 @@
     "newPassword": "New Password",
     "confirmPassword": "Confirm Password",
     "invalidCredentials": "Invalid credentials",
+    "adminOnly": "Only admin users can access this system",
     "loginSuccess": "Login successful",
     "logoutSuccess": "Logout successful",
     "adminLogin": "Admin Login",
@@ -108,6 +116,8 @@
     "backToLogin": "Back to Login",
     "sendResetLink": "Send Reset Link",
     "sending": "Sending...",
+    "checkEmailInstructions": "Please check your email for reset instructions.",
+    "sendAnotherEmail": "Send Another Email",
     "unexpectedError": "An unexpected error occurred. Please try again."
   },
   "dashboard": {
@@ -123,7 +133,22 @@
     "orderStatus": "Order Status",
     "stockLevels": "Stock Levels",
     "regionalSales": "Regional Sales",
-    "categoryPerformance": "Category Performance"
+    "categoryPerformance": "Category Performance",
+    "emptyState": {
+      "noData": "No data available",
+      "noRevenueData": "No revenue data to display",
+      "noOrderData": "No order data available",
+      "noProductData": "No product data available", 
+      "noStockData": "No stock data available",
+      "noRegionalData": "No regional sales data available",
+      "noCategoryData": "No category performance data available",
+      "noRecentOrders": "No recent orders to display",
+      "tryAgain": "Try refreshing the page or check back later"
+    },
+    "mobile": {
+      "chartsNotAvailable": "Charts are only available on desktop and tablet devices",
+      "viewOnPC": "View on PC or tablet for full dashboard experience"
+    }
   },
   "users": {
     "title": "Users",
@@ -352,6 +377,41 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "camions": {
+    "title": "Trucks",
+    "addTruck": "Add Truck",
+    "editTruck": "Edit Truck",
+    "deleteTruck": "Delete Truck",
+    "truckName": "Truck Name",
+    "plateNumber": "Plate Number",
+    "company": "Company",
+    "selectCompany": "Select Company",
+    "deleteTruckConfirm": "Are you sure you want to delete this truck?",
+    "truckDeletedSuccess": "Truck deleted successfully",
+    "truckCreatedSuccess": "Truck created successfully",
+    "truckUpdatedSuccess": "Truck updated successfully",
+    "truckDeleteError": "Failed to delete truck",
+    "truckCreateError": "Failed to create truck",
+    "truckUpdateError": "Failed to update truck"
+  },
+  "chauffeurs": {
+    "title": "Drivers",
+    "addDriver": "Add Driver",
+    "editDriver": "Edit Driver",
+    "deleteDriver": "Delete Driver",
+    "driverName": "Driver Name",
+    "phoneNumber": "Phone Number",
+    "company": "Company",
+    "selectCompany": "Select Company",
+    "deleteDriverConfirm": "Are you sure you want to delete this driver?",
+    "driverDeletedSuccess": "Driver deleted successfully",
+    "driverCreatedSuccess": "Driver created successfully",
+    "driverUpdatedSuccess": "Driver updated successfully",
+    "driverDeleteError": "Failed to delete driver",
+    "driverCreateError": "Failed to create driver",
+    "driverUpdateError": "Failed to update driver",
+    "assignedOrder": "Assigned Order"
   },
   "notFound": {
     "title": "404 - Page Not Found",

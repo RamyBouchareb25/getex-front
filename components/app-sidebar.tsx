@@ -15,6 +15,13 @@ import {
   Truck,
   UserRoundPen,
   ReceiptText,
+  ChevronDown,
+  UserCheck,
+  FileText,
+  Folder,
+  FolderOpen,
+  PackageCheck,
+  Boxes,
 } from "lucide-react";
 
 import {
@@ -28,6 +35,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -36,16 +45,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { logoutAction } from "@/lib/actions/logout";
 import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { LanguageSwitcher } from "./language-switcher";
 import { ThemeToggle } from "./theme-toggle";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@radix-ui/react-collapsible";
 
 export function AppSidebar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
   const t = useTranslations("navigation");
@@ -76,12 +92,12 @@ export function AppSidebar() {
     {
       title: t("categories"),
       url: `/${locale}/dashboard/categories`,
-      icon: Tag,
+      icon: FolderOpen,
     },
     {
       title: t("subcategories"),
       url: `/${locale}/dashboard/subcategories`,
-      icon: Tag,
+      icon: Folder,
     },
     {
       title: t("products"),
@@ -91,7 +107,19 @@ export function AppSidebar() {
     {
       title: t("stock"),
       url: `/${locale}/dashboard/stock`,
-      icon: Warehouse,
+        icon: Warehouse,
+      content: [
+        {
+          title: t("bellatStock"),
+          url: `/${locale}/dashboard/stock/self`,
+          icon: PackageCheck,
+        },
+        {
+          title: t("allStocks"),
+          url: `/${locale}/dashboard/stock`,
+          icon: Boxes,
+        },
+      ],
     },
     {
       title: t("orders"),
@@ -106,12 +134,12 @@ export function AppSidebar() {
     {
       title: t("chauffeurs"),
       url: `/${locale}/dashboard/drivers`,
-      icon: UserRoundPen,
+      icon: UserCheck,
     },
     {
       title: t("factures"),
       url: `/${locale}/dashboard/invoices`,
-      icon: ReceiptText,
+      icon: FileText,
     },
   ];
 
@@ -165,16 +193,86 @@ export function AppSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                // Special case for dashboard which should only highlight when exactly at the dashboard
+                const isDashboardRoute = item.url === `/${locale}/dashboard`;
+                const isActive = isDashboardRoute
+                  ? pathname === `/${locale}/dashboard`
+                  : pathname.startsWith(item.url);
+                
+                // For items with submenu, check if any of the subitems match the current path
+                const hasActiveSubItem = item.content 
+                  ? item.content.some(subItem => {
+                      // For exact paths like /en/dashboard/stock/self, check exact match
+                      if (subItem.url.split('/').length > 4) {
+                        return pathname === subItem.url;
+                      }
+                      // For general paths like /en/dashboard/stock, check if path starts with it
+                      return pathname.startsWith(subItem.url);
+                    })
+                  : false;
+                
+                if (item.content) {
+                  return (
+                    <Collapsible 
+                      defaultOpen={hasActiveSubItem} 
+                      className="group/collapsible"
+                      key={item.title}
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton 
+                            data-active={hasActiveSubItem}
+                          >
+                            <item.icon />
+                            <span>{item.title}</span>
+                            <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          {item.content.map((subItem) => {
+                            // For exact paths like /en/dashboard/stock/self, check exact match
+                            // For general paths like /en/dashboard/stock, check if path starts with it
+                            const isSubItemActive = subItem.url.split('/').length > 4
+                              ? pathname === subItem.url
+                              : pathname.startsWith(subItem.url);
+                            return (
+                              <SidebarMenuSub className="pb-2" key={subItem.title}>
+                                <SidebarMenuSubItem>
+                                  <Link
+                                    className={cn(
+                                      "flex flex-row gap-2 items-center",
+                                      isSubItemActive && "font-medium text-primary bg-sidebar-accent rounded-md"
+                                    )}
+                                    href={subItem.url}
+                                  >
+                                    <subItem.icon size={15} />
+                                    <span>{subItem.title}</span>
+                                  </Link>
+                                </SidebarMenuSubItem>
+                              </SidebarMenuSub>
+                            );
+                          })}
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  );
+                }
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild
+                      data-active={isActive}
+                    >
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

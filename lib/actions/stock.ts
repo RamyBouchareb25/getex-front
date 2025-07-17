@@ -96,24 +96,26 @@ export const deleteStockAction = async (stockId: string) => {
   }
 };
 
-export const getStockAction = async ({ 
-  page, 
-  limit, 
-  search, 
+export const getStockAction = async ({
+  page,
+  limit,
+  search,
   productId,
   ownerId,
   stockStatus,
   visibility,
-  dateFrom, 
-  dateTo 
-}: Pagination & { 
-  search?: string; 
+  dateFrom,
+  dateTo,
+  self,
+}: Pagination & {
+  search?: string;
   productId?: string;
   ownerId?: string;
   stockStatus?: string;
   visibility?: string;
-  dateFrom?: string; 
-  dateTo?: string; 
+  dateFrom?: string;
+  dateTo?: string;
+  self?: boolean;
 }) => {
   try {
     const params = new URLSearchParams({
@@ -121,15 +123,19 @@ export const getStockAction = async ({
       limit: limit.toString(),
     });
 
-    if (search) params.append('search', search);
-    if (productId) params.append('productId', productId);
-    if (ownerId) params.append('ownerId', ownerId);
-    if (stockStatus) params.append('stockStatus', stockStatus);
-    if (visibility) params.append('visibility', visibility);
-    if (dateFrom) params.append('dateFrom', dateFrom);
-    if (dateTo) params.append('dateTo', dateTo);
+    if (search) params.append("search", search);
+    if (productId) params.append("productId", productId);
+    if (ownerId) params.append("ownerId", ownerId);
+    if (stockStatus) params.append("stockStatus", stockStatus);
+    if (visibility) params.append("visibility", visibility);
+    if (dateFrom) params.append("dateFrom", dateFrom);
+    if (dateTo) params.append("dateTo", dateTo);
+    if (self) params.append("self", "true");
 
-    const response = await serverApi.get(`/stock/admin?${params.toString()}`);
+    const endpoint = self
+      ? `/stock/admin/self?${params.toString()}`
+      : `/stock/admin?${params.toString()}`;
+    const response = await serverApi.get(endpoint);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch stock: ${response.statusText}`);
     }
@@ -150,7 +156,7 @@ export const getProductsAction = async () => {
   } catch (error) {
     console.error("Error fetching products:", error);
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
-     throw new Error("UNAUTHORIZED");
+      throw new Error("UNAUTHORIZED");
     }
     return [];
   }
@@ -166,7 +172,7 @@ export const getUsersAction = async () => {
   } catch (error) {
     console.error("Error fetching users:", error);
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
-     throw new Error("UNAUTHORIZED");
+      throw new Error("UNAUTHORIZED");
     }
     return [];
   }

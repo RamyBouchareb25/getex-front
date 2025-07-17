@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { serverApi } from "../axios-interceptor";
+import { AxiosError } from "axios";
 
 export const createUserAction = async (formData: FormData) => {
   try {
@@ -32,17 +33,24 @@ export const createUserAction = async (formData: FormData) => {
       phone,
       wilaya,
       commune,
-      confirmPassword
+      confirmPassword,
     };
     const response = await serverApi.post("/user", payload);
     if (response.status !== 201) {
       throw new Error(`Failed to create user: ${response.statusText}`);
     }
-    console.log("User created successfully:", response.data);
 
     revalidatePath("/dashboard/users");
     return { success: true, message: "User created successfully" };
   } catch (error) {
+    if (error instanceof AxiosError && error.response) {
+      const { status, statusText } = error.response;
+      return {
+        success: false,
+        message: `Failed to create user: ${statusText || "Unknown error"}`,
+        status,
+      };
+    }
     console.error("Error creating user:", error);
     return { success: false, message: "Failed to create user" };
   }
@@ -104,7 +112,7 @@ export const resetUserPasswordAction = async (formData: FormData) => {
     const userId = formData.get("userId") as string;
     const newPassword = formData.get("newPassword") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
-
+    const oldPassword = formData.get("oldPassword") as string;
     if (!userId) {
       throw new Error("User ID is required for password reset");
     }
@@ -121,19 +129,29 @@ export const resetUserPasswordAction = async (formData: FormData) => {
     }
 
     const payload = {
-      password: newPassword,
+      newPassword,
+      oldPassword,
     };
 
-    const response = await serverApi.patch(`/user/${userId}/password`, payload);
-    if (response.status !== 200) {
-      throw new Error(`Failed to reset password: ${response.statusText}`);
+    const response = await serverApi.post(
+      `/user/${userId}/reset-password`,
+      payload
+    );
+    if (response.status !== 201) {
+      throw new Error(`Failed to reset password: ${response.data.message}`);
     }
-    console.log("Password reset successfully for user:", userId);
 
     revalidatePath("/dashboard/users");
     return { success: true, message: "Password reset successfully" };
   } catch (error) {
-    console.error("Error resetting password:", error);
+    if (error instanceof AxiosError && error.response) {
+      const { status, data } = error.response;
+      return {
+        success: false,
+        message: `Failed to reset password: ${data.message || "Unknown error"}`,
+        status,
+      };
+    }
     return { success: false, message: "Failed to reset password" };
   }
 };
@@ -144,25 +162,35 @@ export const getUsersAction = async (params?: {
   search?: string;
   roles?: string[];
   dateFilter?: string;
+  userId?: string;
 }) => {
   try {
     const searchParams = new URLSearchParams();
-    
-    if (params?.page) searchParams.append('page', params.page.toString());
-    if (params?.limit) searchParams.append('limit', params.limit.toString());
-    if (params?.search) searchParams.append('search', params.search);
-    if (params?.roles && params.roles.length > 0) {
-      params.roles.forEach(role => searchParams.append('roles', role));
-    }
-    if (params?.dateFilter) searchParams.append('dateFilter', params.dateFilter);
 
-    const url = `/user${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    if (params?.page) searchParams.append("page", params.page.toString());
+    if (params?.limit) searchParams.append("limit", params.limit.toString());
+    if (params?.search) searchParams.append("search", params.search);
+    if (params?.userId) searchParams.append("userId", params.userId);
+    if (params?.roles && params.roles.length > 0) {
+      params.roles.forEach((role) => searchParams.append("roles", role));
+    }
+    if (params?.dateFilter)
+      searchParams.append("dateFilter", params.dateFilter);
+
+    const url = `/user${
+      searchParams.toString() ? `?${searchParams.toString()}` : ""
+    }`;
+    console.log("Fetching users from URL:", url);
     const response = await serverApi.get(url);
-    
+
     if (response.status !== 200) {
       throw new Error(`Failed to fetch users: ${response.statusText}`);
     }
-    return response.data;
+    const filteredUsers = response.data.users?.filter((user: any) => user.id) || [];
+    return {
+      ...response.data,
+      users: filteredUsers
+    };
   } catch (error) {
     console.error("Error fetching users:", error);
     return { users: [], total: 0, page: 1, totalPages: 0 };

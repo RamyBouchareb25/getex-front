@@ -64,7 +64,12 @@
     "manageCompanyInformation": "Gérer les informations de l'entreprise",
     "manageProductSubCategories": "Gérer les sous-catégories de produits",
     "manageInventoryLevels": "Surveiller et gérer les niveaux de stock",
-    "manageCustomerOrders": "Gérer les commandes clients et leur statut"
+    "manageCustomerOrders": "Gérer les commandes clients et leur statut",
+    "emptyState": {
+      "noItemsFound": "Aucun élément trouvé",
+      "tryDifferentSearch": "Essayez d'ajuster vos critères de recherche ou de filtrage",
+      "getStarted": "Commencez par ajouter votre premier élément"
+    }
   },
   "navigation": {
     "dashboard": "Tableau de bord",
@@ -79,6 +84,8 @@
     "camions": "Camions",
     "chauffeurs": "Chauffeurs",
     "factures": "Factures",
+    "bellatStock": "stock Bellat",
+    "allStocks": "Tous les stocks",
     "logout": "Déconnexion"
   },
   "auth": {
@@ -93,6 +100,7 @@
     "newPassword": "Nouveau mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
     "invalidCredentials": "Identifiants invalides",
+    "adminOnly": "Seuls les administrateurs peuvent accéder à ce système",
     "loginSuccess": "Connexion réussie",
     "logoutSuccess": "Déconnexion réussie",
     "adminLogin": "Connexion Admin",
@@ -108,6 +116,8 @@
     "backToLogin": "Retour à la connexion",
     "sendResetLink": "Envoyer le lien de réinitialisation",
     "sending": "Envoi en cours...",
+    "checkEmailInstructions": "Veuillez vérifier votre email pour les instructions de réinitialisation.",
+    "sendAnotherEmail": "Envoyer un autre email",
     "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer.",
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas"
   },
@@ -124,7 +134,22 @@
     "orderStatus": "Statut des commandes",
     "stockLevels": "Niveaux de stock",
     "regionalSales": "Ventes régionales",
-    "categoryPerformance": "Performance des catégories"
+    "categoryPerformance": "Performance des catégories",
+    "emptyState": {
+      "noData": "Aucune donnée disponible",
+      "noRevenueData": "Aucune donnée de revenus à afficher",
+      "noOrderData": "Aucune donnée de commande disponible",
+      "noProductData": "Aucune donnée de produit disponible",
+      "noStockData": "Aucune donnée de stock disponible",
+      "noRegionalData": "Aucune donnée de ventes régionales disponible",
+      "noCategoryData": "Aucune donnée de performance des catégories disponible",
+      "noRecentOrders": "Aucune commande récente à afficher",
+      "tryAgain": "Essayez de rafraîchir la page ou revenez plus tard"
+    },
+    "mobile": {
+      "chartsNotAvailable": "Les graphiques ne sont disponibles que sur les appareils de bureau et tablette",
+      "viewOnPC": "Consultez sur PC ou tablette pour une expérience complète du tableau de bord"
+    }
   },
   "users": {
     "title": "Utilisateurs",
@@ -353,6 +378,41 @@
     "light": "Clair",
     "dark": "Sombre",
     "system": "Système"
+  },
+  "camions": {
+    "title": "Camions",
+    "addTruck": "Ajouter un Camion",
+    "editTruck": "Modifier le Camion",
+    "deleteTruck": "Supprimer le Camion",
+    "truckName": "Nom du Camion",
+    "plateNumber": "Numéro d'Immatriculation",
+    "company": "Société",
+    "selectCompany": "Sélectionner une Société",
+    "deleteTruckConfirm": "Êtes-vous sûr de vouloir supprimer ce camion?",
+    "truckDeletedSuccess": "Camion supprimé avec succès",
+    "truckCreatedSuccess": "Camion créé avec succès",
+    "truckUpdatedSuccess": "Camion mis à jour avec succès",
+    "truckDeleteError": "Échec de la suppression du camion",
+    "truckCreateError": "Échec de la création du camion",
+    "truckUpdateError": "Échec de la mise à jour du camion"
+  },
+  "chauffeurs": {
+    "title": "Chauffeurs",
+    "addDriver": "Ajouter un Chauffeur",
+    "editDriver": "Modifier le Chauffeur",
+    "deleteDriver": "Supprimer le Chauffeur",
+    "driverName": "Nom du Chauffeur",
+    "phoneNumber": "Numéro de Téléphone",
+    "company": "Société",
+    "selectCompany": "Sélectionner une Société",
+    "deleteDriverConfirm": "Êtes-vous sûr de vouloir supprimer ce chauffeur?",
+    "driverDeletedSuccess": "Chauffeur supprimé avec succès",
+    "driverCreatedSuccess": "Chauffeur créé avec succès",
+    "driverUpdatedSuccess": "Chauffeur mis à jour avec succès",
+    "driverDeleteError": "Échec de la suppression du chauffeur",
+    "driverCreateError": "Échec de la création du chauffeur",
+    "driverUpdateError": "Échec de la mise à jour du chauffeur",
+    "assignedOrder": "Commande Assignée"
   },
   "notFound": {
     "title": "404 - Page Non Trouvée",

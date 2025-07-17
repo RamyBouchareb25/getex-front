@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
+import TableEmptyState from "@/components/table-empty-state";
 import {
   Card,
   CardContent,
@@ -667,14 +668,11 @@ export default function OrdersTable({
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className="text-center py-8 text-muted-foreground"
-                      >
-                        No orders found
-                      </TableCell>
-                    </TableRow>
+                    <TableEmptyState
+                      colSpan={8}
+                      message={searchTerm ? tCommon('emptyState.noItemsFound') : "No orders found"}
+                      description={searchTerm ? tCommon('emptyState.tryDifferentSearch') : "Orders will appear here when customers place them"}
+                    />
                   ) : (
                     filteredOrders.map((order) => (
                       <TableRow key={order.id}>

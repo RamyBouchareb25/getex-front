@@ -19,15 +19,14 @@ enum Role {
 
 model User {
     id        String   @id @default(cuid())
-    name     String
+    name      String
     email     String   @unique
     password  String
     role      Role
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    CompanyDataId String       @unique
-    CompanyData   CompanyData? @relation(fields: [CompanyDataId], references: [id], onDelete: Cascade)
+    CompanyData CompanyData?
 
     Stock Stock[]
     Order Order[]
@@ -41,14 +40,17 @@ model CompanyData {
     raisonSocial String
     nif          BigInt
     nis          BigInt
+    rc           String
     phone        Int
     address      Address?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    userId String @unique
-    User   User?
+    userId    String      @unique
+    User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    Camion    Camion[]
+    Chauffeur Chauffeur[]
 }
 
 model Address {
@@ -66,11 +68,11 @@ model Stock {
     id               String   @id @default(cuid())
     productId        String
     quantity         Int
-    price            Float @default(0)
+    price            Float    @default(0)
     expirationDate   DateTime
     minQuantity      Int      @default(1)
     reductionPercent Float    @default(0)
-    visible          Boolean  @default(false)
+    visible          Boolean  @default(true)
     createdAt        DateTime @default(now())
     updatedAt        DateTime @updatedAt
 
@@ -133,31 +135,36 @@ enum OrderStatus {
     PENDING
     ACCEPTED
     REJECTED
+    CANCELED
+    PREPARING
     SHIPPING
     COMPLETED
-    CANCELED
+    RETURNED
 }
 
 model Order {
-    id        String      @id
-    userId    String
-    total     Float
-    status    OrderStatus @default(PENDING)
-    createdAt DateTime    @default(now())
-    updatedAt DateTime    @updatedAt
-
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    OrderItems OrderItem[]
+    id           String      @id
+    userId       String
+    total        Float
+    status       OrderStatus @default(PENDING)
+    createdAt    DateTime    @default(now())
+    updatedAt    DateTime    @updatedAt
+    note         String?
+    cancelReason String?
+    chauffeurId  String?
+    camionId     String?     @unique
+    user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    chauffeur    Chauffeur?
+    camion       Camion?
+    OrderItems   OrderItem[]
 }
 
 model OrderItem {
-    id       String  @id @default(cuid())
-    orderId  String?
-    cartId   String?
-    stockId  String
-    quantity Int
-
+    id        String   @id @default(cuid())
+    orderId   String?
+    cartId    String?
+    stockId   String
+    quantity  Int
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
@@ -176,4 +183,32 @@ model Cart {
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     CartItems OrderItem[]
+}
+
+model Chauffeur {
+    id              String  @id @default(cuid())
+    name            String
+    phone           Int
+    assignedOrderId String? @unique
+    companyId       String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    company       CompanyData @relation(fields: [companyId], references: [id], onDelete: Cascade)
+    assignedOrder Order?      @relation(fields: [assignedOrderId], references: [id], onDelete: Cascade)
+}
+
+model Camion {
+    id              String  @id @default(cuid())
+    name            String
+    plate           String
+    companyId       String
+    assignedOrderId String? @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    company       CompanyData @relation(fields: [companyId], references: [id], onDelete: Cascade)
+    assignedOrder Order?      @relation(fields: [assignedOrderId], references: [id], onDelete: Cascade)
 }

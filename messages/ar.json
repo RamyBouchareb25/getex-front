@@ -64,7 +64,12 @@
     "manageCompanyInformation": "إدارة معلومات الشركة",
     "manageProductSubCategories": "إدارة الفئات الفرعية للمنتجات",
     "manageInventoryLevels": "مراقبة وإدارة مستويات المخزون",
-    "manageCustomerOrders": "إدارة طلبات العملاء وحالتها"
+    "manageCustomerOrders": "إدارة طلبات العملاء وحالتها",
+    "emptyState": {
+      "noItemsFound": "لم يتم العثور على عناصر",
+      "tryDifferentSearch": "حاول تعديل معايير البحث أو التصفية",
+      "getStarted": "ابدأ بإضافة عنصرك الأول"
+    }
   },
   "navigation": {
     "dashboard": "لوحة التحكم",
@@ -79,6 +84,8 @@
     "camions": "الشاحنات",
     "chauffeurs": "السائقون",
     "factures": "الفواتير",
+    "bellatStock": "مخزون Bellat",
+    "allStocks": "جميع المخزونات",
     "logout": "تسجيل الخروج"
   },
   "auth": {
@@ -93,6 +100,7 @@
     "newPassword": "كلمة المرور الجديدة",
     "confirmPassword": "تأكيد كلمة المرور",
     "invalidCredentials": "بيانات الاعتماد غير صحيحة",
+    "adminOnly": "يمكن للمديرين فقط الوصول إلى هذا النظام",
     "loginSuccess": "تم تسجيل الدخول بنجاح",
     "logoutSuccess": "تم تسجيل الخروج بنجاح",
     "adminLogin": "تسجيل دخول المدير",
@@ -108,6 +116,8 @@
     "backToLogin": "العودة إلى تسجيل الدخول",
     "sendResetLink": "إرسال رابط الإعادة",
     "sending": "جاري الإرسال...",
+    "checkEmailInstructions": "يرجى التحقق من بريدك الإلكتروني للحصول على تعليمات الإعادة.",
+    "sendAnotherEmail": "إرسال بريد إلكتروني آخر",
     "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
   },
   "dashboard": {
@@ -123,7 +133,22 @@
     "orderStatus": "حالة الطلبات",
     "stockLevels": "مستويات المخزون",
     "regionalSales": "المبيعات الإقليمية",
-    "categoryPerformance": "أداء الفئات"
+    "categoryPerformance": "أداء الفئات",
+    "emptyState": {
+      "noData": "لا توجد بيانات متاحة",
+      "noRevenueData": "لا توجد بيانات إيرادات لعرضها",
+      "noOrderData": "لا توجد بيانات طلبات متاحة",
+      "noProductData": "لا توجد بيانات منتجات متاحة",
+      "noStockData": "لا توجد بيانات مخزون متاحة",
+      "noRegionalData": "لا توجد بيانات مبيعات إقليمية متاحة",
+      "noCategoryData": "لا توجد بيانات أداء الفئات متاحة",
+      "noRecentOrders": "لا توجد طلبات حديثة لعرضها",
+      "tryAgain": "حاول تحديث الصفحة أو تحقق لاحقًا"
+    },
+    "mobile": {
+      "chartsNotAvailable": "الرسوم البيانية متاحة فقط على أجهزة سطح المكتب والأجهزة اللوحية",
+      "viewOnPC": "اعرض على الكمبيوتر أو الجهاز اللوحي للحصول على تجربة كاملة للوحة التحكم"
+    }
   },
   "users": {
     "title": "المستخدمون",
@@ -354,5 +379,40 @@
     "message": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
     "backHome": "العودة إلى الرئيسية",
     "backDashboard": "العودة إلى لوحة التحكم"
+  },
+  "camions": {
+    "title": "الشاحنات",
+    "addTruck": "إضافة شاحنة",
+    "editTruck": "تعديل الشاحنة",
+    "deleteTruck": "حذف الشاحنة",
+    "truckName": "اسم الشاحنة",
+    "plateNumber": "رقم اللوحة",
+    "company": "الشركة",
+    "selectCompany": "اختر الشركة",
+    "deleteTruckConfirm": "هل أنت متأكد من رغبتك في حذف هذه الشاحنة؟",
+    "truckDeletedSuccess": "تم حذف الشاحنة بنجاح",
+    "truckCreatedSuccess": "تم إنشاء الشاحنة بنجاح",
+    "truckUpdatedSuccess": "تم تحديث الشاحنة بنجاح",
+    "truckDeleteError": "فشل في حذف الشاحنة",
+    "truckCreateError": "فشل في إنشاء الشاحنة",
+    "truckUpdateError": "فشل في تحديث الشاحنة"
+  },
+  "chauffeurs": {
+    "title": "السائقين",
+    "addDriver": "إضافة سائق",
+    "editDriver": "تعديل السائق",
+    "deleteDriver": "حذف السائق",
+    "driverName": "اسم السائق",
+    "phoneNumber": "رقم الهاتف",
+    "company": "الشركة",
+    "selectCompany": "اختر الشركة",
+    "deleteDriverConfirm": "هل أنت متأكد من رغبتك في حذف هذا السائق؟",
+    "driverDeletedSuccess": "تم حذف السائق بنجاح",
+    "driverCreatedSuccess": "تم إنشاء السائق بنجاح",
+    "driverUpdatedSuccess": "تم تحديث السائق بنجاح",
+    "driverDeleteError": "فشل في حذف السائق",
+    "driverCreateError": "فشل في إنشاء السائق",
+    "driverUpdateError": "فشل في تحديث السائق",
+    "assignedOrder": "الطلب المسند"
   }
 }

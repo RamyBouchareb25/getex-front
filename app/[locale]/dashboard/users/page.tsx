@@ -7,12 +7,14 @@ interface UsersPageProps {
     search?: string;
     roles?: string | string[];
     dateFilter?: string;
+    id?: string;
   };
 }
 
 const UsersPage = async ({ searchParams }: UsersPageProps) => {
   const page = parseInt(searchParams.page || "1");
   const search = searchParams.search || "";
+  const userId = searchParams.id || "";
   const roles = Array.isArray(searchParams.roles)
     ? searchParams.roles
     : searchParams.roles
@@ -26,12 +28,14 @@ const UsersPage = async ({ searchParams }: UsersPageProps) => {
     search,
     roles,
     dateFilter,
+    userId,
   });
   const searchParamsKey = JSON.stringify({
     page: searchParams.page,
     search: searchParams.search,
     roles: searchParams.roles,
     dateFilter: searchParams.dateFilter,
+    usersData: usersData,
   });
   return (
     <UsersTable
