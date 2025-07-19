@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTranslations } from 'next-intl';
+import { useState, useEffect, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,10 +52,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import TableEmptyState from "@/components/table-empty-state";
-import { 
-  createCamionAction, 
-  updateCamionAction, 
-  deleteCamionAction 
+import {
+  createCamionAction,
+  updateCamionAction,
+  deleteCamionAction,
 } from "@/lib/actions/camions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -76,7 +76,7 @@ interface Company {
   raisonSocial: string;
 }
 
-interface PaginationData {
+interface CamionsData {
   camions: Camion[];
   total: number;
   page: number;
@@ -84,145 +84,184 @@ interface PaginationData {
   limit: number;
 }
 
-export default function CamionsTable({
-  camionsData,
-  companies,
-  currentPage,
-  limit,
-}: {
-  camionsData: PaginationData | Camion[];
+interface CamionsTableProps {
+  initialData: CamionsData;
   companies: Company[];
-  currentPage: number;
-  limit: number;
-}) {
+  initialPage: number;
+  initialSearch?: string;
+  initialCompanyFilter: string;
+  initialDateFromFilter: string;
+  initialDateToFilter: string;
+}
+
+export default function CamionsTable({
+  initialData,
+  companies,
+  initialPage,
+  initialSearch,
+  initialCompanyFilter,
+  initialDateFromFilter,
+  initialDateToFilter,
+}: CamionsTableProps) {
   const t = useTranslations();
-  const tCommon = useTranslations('common');
-  const tCamions = useTranslations('camions');
+  const tCommon = useTranslations("common");
+  const tCamions = useTranslations("camions");
   const router = useRouter();
   const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
 
-  // Handle both paginated and non-paginated data
-  const camions = Array.isArray(camionsData) ? camionsData : camionsData.camions;
-  const totalPages = Array.isArray(camionsData)
-    ? Math.ceil(camions.length / limit)
-    : camionsData.totalPages;
-  const total = Array.isArray(camionsData) ? camions.length : camionsData.total;
+  // Data state
+  const [camionsData, setCamionsData] = useState<CamionsData>(initialData);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState(initialSearch || "");
+  const [companyFilter, setCompanyFilter] = useState(initialCompanyFilter);
+  const [dateFromFilter, setDateFromFilter] = useState(initialDateFromFilter);
+  const [dateToFilter, setDateToFilter] = useState(initialDateToFilter);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+
+  // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCamion, setEditingCamion] = useState<Camion | null>(null);
-  const [companyFilter, setCompanyFilter] = useState<string>("");
-  const [dateFromFilter, setDateFromFilter] = useState<string>("");
-  const [dateToFilter, setDateToFilter] = useState<string>("");
 
   // Loading states
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
 
   // Error states
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const searchParams = useSearchParams();
-  const companyIdParam = searchParams.get("companyId");
+  // Update URL with new filters
+  const updateURL = (params: {
+    page?: number;
+    search?: string;
+    companyId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }) => {
+    const newSearchParams = new URLSearchParams();
 
-  // Initialize filters from URL params
-  useEffect(() => {
-    setSearchTerm(searchParams.get("search") || "");
-    setCompanyFilter(searchParams.get("companyId") || "");
-    setDateFromFilter(searchParams.get("dateFrom") || "");
-    setDateToFilter(searchParams.get("dateTo") || "");
-  }, [searchParams]);
+    if (params.page && params.page > 1)
+      newSearchParams.set("page", params.page.toString());
+    if (params.search) newSearchParams.set("search", params.search);
+    if (params.companyId) newSearchParams.set("companyId", params.companyId);
+    if (params.dateFrom) newSearchParams.set("dateFrom", params.dateFrom);
+    if (params.dateTo) newSearchParams.set("dateTo", params.dateTo);
 
-  // Handle loading state when URL changes
-  useEffect(() => {
-    setIsSearching(false);
-  }, [camions]);
+    const newUrl = `${pathname}${
+      newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""
+    }`;
 
-  // Since we're using server-side pagination, we don't filter on client
-  const filteredCamions = camions;
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams();
-    params.set("page", newPage.toString());
-    params.set("limit", limit.toString());
-
-    // Preserve existing filters
-    if (searchTerm.trim()) params.set("search", searchTerm.trim());
-    if (companyFilter) params.set("companyId", companyFilter);
-    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
-    if (dateToFilter) params.set("dateTo", dateToFilter);
-
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.push(newUrl);
+    });
   };
 
-  const handleSearch = () => {
-    setIsSearching(true);
-    const params = new URLSearchParams();
-    params.set("page", "1");
-    params.set("limit", limit.toString());
+  // Handle search input change with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== (initialSearch || "")) {
+        updateURL({
+          page: 1,
+          search: searchTerm,
+          companyId: companyFilter,
+          dateFrom: dateFromFilter,
+          dateTo: dateToFilter,
+        });
+      }
+    }, 500);
 
-    if (searchTerm.trim()) params.set("search", searchTerm.trim());
-    if (companyFilter) params.set("companyId", companyFilter);
-    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
-    if (dateToFilter) params.set("dateTo", dateToFilter);
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
-    router.push(`${pathname}?${params.toString()}`);
+  // Handle filter changes
+  const handleFilterChange = () => {
+    updateURL({
+      page: 1,
+      search: searchTerm,
+      companyId: companyFilter,
+      dateFrom: dateFromFilter,
+      dateTo: dateToFilter,
+    });
   };
 
-  const handleResetFilters = () => {
-    setIsSearching(true);
-    setSearchTerm("");
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    updateURL({
+      page,
+      search: searchTerm,
+      companyId: companyFilter,
+      dateFrom: dateFromFilter,
+      dateTo: dateToFilter,
+    });
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    handleFilterChange();
+  };
+
+  // Reset filters
+  const resetFilters = () => {
     setCompanyFilter("");
     setDateFromFilter("");
     setDateToFilter("");
-
-    const params = new URLSearchParams();
-    params.set("page", "1");
-    params.set("limit", limit.toString());
-
-    router.push(`${pathname}?${params.toString()}`);
+    setSearchTerm("");
+    updateURL({
+      page: 1,
+      search: "",
+      companyId: "",
+      dateFrom: "",
+      dateTo: "",
+    });
   };
 
-  const handleCreateCamion = async (formData: FormData) => {
+  const handleCreateCamion = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsCreating(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await createCamionAction(formData);
       if (result.success) {
-        setSuccess(tCamions('truckCreatedSuccess'));
+        setSuccess(tCamions("truckCreatedSuccess"));
         setIsCreateOpen(false);
+        router.refresh();
       } else {
-        setError(result.message || tCamions('truckCreateError'));
+        setError(result.message || tCamions("truckCreateError"));
       }
     } catch (error) {
       console.error("Error creating truck:", error);
-      setError(tCommon('error'));
+      setError(tCommon("error"));
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleUpdateCamion = async (formData: FormData) => {
+  const handleUpdateCamion = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsUpdating(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await updateCamionAction(formData);
       if (result.success) {
-        setSuccess(tCamions('truckUpdatedSuccess'));
+        setSuccess(tCamions("truckUpdatedSuccess"));
         setEditingCamion(null);
+        router.refresh();
       } else {
-        setError(result.message || tCamions('truckUpdateError'));
+        setError(result.message || tCamions("truckUpdateError"));
       }
     } catch (error) {
       console.error("Error updating truck:", error);
-      setError(tCommon('error'));
+      setError(tCommon("error"));
     } finally {
       setIsUpdating(false);
     }
@@ -232,63 +271,73 @@ export default function CamionsTable({
     setIsDeleting(id);
     setError(null);
     setSuccess(null);
-    
+
     try {
       const result = await deleteCamionAction(id);
       if (result.success) {
-        setSuccess(tCamions('truckDeletedSuccess'));
+        setSuccess(tCamions("truckDeletedSuccess"));
+        router.refresh();
       } else {
-        setError(result.message || tCamions('truckDeleteError'));
+        setError(result.message || tCamions("truckDeleteError"));
       }
     } catch (error) {
       console.error("Error deleting truck:", error);
-      setError(tCommon('error'));
+      setError(tCommon("error"));
     } finally {
       setIsDeleting(null);
     }
   };
 
-  return (
-    <div>
-      {error && (
-        <Alert className="mb-4 bg-destructive/15 text-destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {success && (
-        <Alert className="mb-4 bg-green-500/15 text-green-500">
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    const totalPages = camionsData.totalPages;
 
-      <div>
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Camions</h1>
+          <p className="text-muted-foreground">
+            Manage user accounts and permissions
+          </p>
+        </div>{" "}
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tCamions('addTruck')}
+              {tCamions("addTruck")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{tCamions('addTruck')}</DialogTitle>
+              <DialogTitle>{tCamions("addTruck")}</DialogTitle>
               <DialogDescription>
-                {tCommon('emptyState.getStarted')}
+                {tCommon("emptyState.getStarted")}
               </DialogDescription>
             </DialogHeader>
-            <form action={handleCreateCamion}>
+            <form onSubmit={handleCreateCamion}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{tCommon('name')}</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    required
-                    disabled={isCreating}
-                  />
+                  <Label htmlFor="name">{tCommon("name")}</Label>
+                  <Input id="name" name="name" required disabled={isCreating} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="plate">{tCamions('plateNumber')}</Label>
+                  <Label htmlFor="plate">{tCamions("plateNumber")}</Label>
                   <Input
                     id="plate"
                     name="plate"
@@ -297,10 +346,10 @@ export default function CamionsTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="companyId">{tCommon('company')}</Label>
+                  <Label htmlFor="companyId">{tCommon("company")}</Label>
                   <Select name="companyId" required>
                     <SelectTrigger disabled={isCreating}>
-                      <SelectValue placeholder={tCamions('selectCompany')} />
+                      <SelectValue placeholder={tCamions("selectCompany")} />
                     </SelectTrigger>
                     <SelectContent>
                       {companies.map((company) => (
@@ -314,7 +363,7 @@ export default function CamionsTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
-                  {isCreating ? tCommon('loading') : tCamions('addTruck')}
+                  {isCreating ? tCommon("loading") : tCamions("addTruck")}
                 </Button>
               </DialogFooter>
             </form>
@@ -324,31 +373,23 @@ export default function CamionsTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>{tCamions('title')}</CardTitle>
-          <CardDescription>{tCommon('manageInventoryLevels')}</CardDescription>
+          <CardTitle>{tCamions("title")}</CardTitle>
+          <CardDescription>
+            A list of all trucks in the system (Page {camionsData.page} of{" "}
+            {camionsData.totalPages}, {camionsData.total} total trucks)
+          </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                disabled={isUpdating || isSearching}
-                placeholder={`${tCommon('search')} ${tCamions('title').toLowerCase()}...`}
+                placeholder={`${tCommon("search")} ${tCamions(
+                  "title"
+                ).toLowerCase()}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSearch();
-                  }
-                }}
                 className="max-w-sm"
+                disabled={isPending}
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSearch}
-                disabled={isSearching}
-              >
-                {isSearching ? tCommon('loading') : tCommon('search')}
-              </Button>
             </div>
             <div className="flex items-center gap-2">
               <Popover>
@@ -357,9 +398,10 @@ export default function CamionsTable({
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1"
+                    disabled={isPending}
                   >
                     <Filter className="h-4 w-4" />
-                    <span>{tCommon('filter')}</span>
+                    <span>{tCommon("filter")}</span>
                     {(companyFilter || dateFromFilter || dateToFilter) && (
                       <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                     )}
@@ -368,13 +410,13 @@ export default function CamionsTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">{tCommon('company')}</h4>
+                      <h4 className="font-medium">{tCommon("company")}</h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={companyFilter}
                         onChange={(e) => setCompanyFilter(e.target.value)}
                       >
-                        <option value="">{"Any " + tCommon('company')}</option>
+                        <option value="">{"Any " + tCommon("company")}</option>
                         {companies.map((company) => (
                           <option key={company.id} value={company.id}>
                             {company.raisonSocial}
@@ -383,28 +425,30 @@ export default function CamionsTable({
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">{tCamions('dateRange') || "Date Range"}</h4>
+                      <h4 className="font-medium">
+                        {tCamions("dateRange") || "Date Range"}
+                      </h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            {tCamions('from') || "From"}
+                            {tCamions("from") || "From"}
                           </label>
                           <Input
-                            disabled={isUpdating || isSearching}
                             type="date"
                             value={dateFromFilter}
                             onChange={(e) => setDateFromFilter(e.target.value)}
+                            disabled={isPending}
                           />
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            {tCamions('to') || "To"}
+                            {tCamions("to") || "To"}
                           </label>
                           <Input
-                            disabled={isUpdating || isSearching}
                             type="date"
                             value={dateToFilter}
                             onChange={(e) => setDateToFilter(e.target.value)}
+                            disabled={isPending}
                           />
                         </div>
                       </div>
@@ -413,81 +457,66 @@ export default function CamionsTable({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleResetFilters}
-                        disabled={isSearching}
+                        onClick={resetFilters}
+                        disabled={isPending}
                       >
-                        {tCamions('resetFilters') || "Reset Filters"}
+                        {tCamions("resetFilters") || "Reset Filters"}
                       </Button>
                       <Button
                         size="sm"
-                        onClick={handleSearch}
-                        disabled={isSearching}
+                        onClick={applyFilters}
+                        disabled={isPending}
                       >
-                        {isSearching ? tCamions('applying') || "Applying..." : tCamions('applyFilters') || "Apply Filters"}
+                        {tCamions("applyFilters") || "Apply Filters"}
                       </Button>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
-
-              <select
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                value={limit}
-                onChange={(e) => {
-                  const newLimit = parseInt(e.target.value);
-                  const params = new URLSearchParams();
-                  params.set("page", "1");
-                  params.set("limit", newLimit.toString());
-
-                  // Preserve existing filters
-                  if (searchTerm.trim()) params.set("search", searchTerm.trim());
-                  if (companyFilter) params.set("companyId", companyFilter);
-                  if (dateFromFilter) params.set("dateFrom", dateFromFilter);
-                  if (dateToFilter) params.set("dateTo", dateToFilter);
-
-                  router.push(`${pathname}?${params.toString()}`);
-                }}
-              >
-                <option value={5}>5 {tCamions('perPage') || "per page"}</option>
-                <option value={10}>10 {tCamions('perPage') || "per page"}</option>
-                <option value={20}>20 {tCamions('perPage') || "per page"}</option>
-                <option value={50}>50 {tCamions('perPage') || "per page"}</option>
-              </select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {isSearching ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-b-transparent"></div>
-              <span className="ml-2">{tCamions('loadingCamions') || "Loading trucks..."}</span>
-            </div>
-          ) : (
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{tCommon('name')}</TableHead>
-                  <TableHead>{tCamions('plate') || "License Plate"}</TableHead>
-                  <TableHead>{tCommon('company')}</TableHead>
-                  <TableHead>{tCamions('createdAt') || "Created At"}</TableHead>
-                  <TableHead>{tCommon('actions')}</TableHead>
+                  <TableHead>{tCommon("name")}</TableHead>
+                  <TableHead>{tCamions("plate") || "License Plate"}</TableHead>
+                  <TableHead>{tCommon("company")}</TableHead>
+                  <TableHead>{tCamions("createdAt") || "Created At"}</TableHead>
+                  <TableHead>{tCommon("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCamions.length === 0 ? (
-                  <TableEmptyState 
-                    colSpan={5} 
-                    message={searchTerm ? tCommon('emptyState.noItemsFound') : tCamions('noCamionsFound') || "No trucks found"}
-                    description={searchTerm ? tCommon('emptyState.tryDifferentSearch') : tCamions('noCamionsDescription') || "Trucks will appear here when they're added to the system"}
+                {camionsData.camions.length === 0 ? (
+                  <TableEmptyState
+                    colSpan={5}
+                    message={
+                      searchTerm
+                        ? tCommon("emptyState.noItemsFound")
+                        : tCamions("noCamionsFound") || "No trucks found"
+                    }
+                    description={
+                      searchTerm
+                        ? tCommon("emptyState.tryDifferentSearch")
+                        : tCamions("noCamionsDescription") ||
+                          "Trucks will appear here when they're added to the system"
+                    }
+                    showAddButton={!searchTerm}
+                    onAddClick={() => setIsCreateOpen(true)}
+                    addButtonText={tCamions("addTruck")}
                   />
                 ) : (
-                  filteredCamions.map((camion) => (
+                  camionsData.camions.map((camion) => (
                     <TableRow key={camion.id}>
                       <TableCell className="font-medium">
                         {camion.name}
                       </TableCell>
                       <TableCell>{camion.plate}</TableCell>
-                      <TableCell>{camion.company?.raisonSocial || tCommon('unknown')}</TableCell>
+                      <TableCell>
+                        {camion.company?.raisonSocial || tCommon("unknown")}
+                      </TableCell>
                       <TableCell>
                         {new Date(camion.createdAt).toLocaleDateString()}
                       </TableCell>
@@ -497,6 +526,7 @@ export default function CamionsTable({
                             variant="outline"
                             size="sm"
                             onClick={() => setEditingCamion(camion)}
+                            disabled={isUpdating || isPending}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -504,7 +534,7 @@ export default function CamionsTable({
                             variant="outline"
                             size="sm"
                             onClick={() => handleDeleteCamion(camion.id)}
-                            disabled={isDeleting === camion.id}
+                            disabled={isDeleting === camion.id || isPending}
                           >
                             {isDeleting === camion.id ? (
                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent" />
@@ -519,72 +549,70 @@ export default function CamionsTable({
                 )}
               </TableBody>
             </Table>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4">
-              <div className="text-sm text-muted-foreground">
-                {tCamions('showing') || "Showing"} {Math.min((currentPage - 1) * limit + 1, total)} - {Math.min(currentPage * limit, total)} {tCamions('of') || "of"} {total}
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1 || isSearching}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  // Show pages centered around current page
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  return (
-                    <Button
-                      key={i}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePageChange(pageNum)}
-                      disabled={isSearching}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages || isSearching}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
+      {/* Pagination */}
+      <div className="flex items-center justify-between mt-4">
+        <div className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * camionsData.limit + 1} to{" "}
+          {Math.min(currentPage * camionsData.limit, camionsData.total)} of{" "}
+          {camionsData.total} trucks
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || isPending}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+
+          <div className="flex items-center space-x-1">
+            {generatePaginationNumbers().map((page) => (
+              <Button
+                key={page}
+                variant={page === currentPage ? "default" : "outline"}
+                size="sm"
+                onClick={() => handlePageChange(page)}
+                disabled={isPending}
+                className="w-8 h-8 p-0"
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= camionsData.totalPages || isPending}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
       {/* Edit Camion Dialog */}
-      <Dialog open={!!editingCamion} onOpenChange={() => setEditingCamion(null)}>
+      <Dialog
+        open={!!editingCamion}
+        onOpenChange={() => setEditingCamion(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tCamions('editCamion') || "Edit Truck"}</DialogTitle>
+            <DialogTitle>{tCamions("editCamion") || "Edit Truck"}</DialogTitle>
           </DialogHeader>
           {editingCamion && (
-            <form action={handleUpdateCamion}>
+            <form onSubmit={handleUpdateCamion}>
               <div className="grid gap-4 py-4">
                 <input type="hidden" name="id" value={editingCamion.id} />
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-name">{tCommon('name')}</Label>
+                  <Label htmlFor="edit-name">{tCommon("name")}</Label>
                   <Input
                     id="edit-name"
                     name="name"
@@ -594,7 +622,9 @@ export default function CamionsTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-plate">{tCamions('plate') || "License Plate"}</Label>
+                  <Label htmlFor="edit-plate">
+                    {tCamions("plate") || "License Plate"}
+                  </Label>
                   <Input
                     id="edit-plate"
                     name="plate"
@@ -604,8 +634,11 @@ export default function CamionsTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-companyId">{tCommon('company')}</Label>
-                  <Select name="companyId" defaultValue={editingCamion.companyId}>
+                  <Label htmlFor="edit-companyId">{tCommon("company")}</Label>
+                  <Select
+                    name="companyId"
+                    defaultValue={editingCamion.companyId}
+                  >
                     <SelectTrigger disabled={isUpdating}>
                       <SelectValue />
                     </SelectTrigger>
@@ -624,10 +657,10 @@ export default function CamionsTable({
                   {isUpdating ? (
                     <>
                       <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
-                      {tCommon('updating') || "Updating..."}
+                      {tCommon("updating") || "Updating..."}
                     </>
                   ) : (
-                    tCommon('update') || "Update"
+                    tCommon("update") || "Update"
                   )}
                 </Button>
               </DialogFooter>

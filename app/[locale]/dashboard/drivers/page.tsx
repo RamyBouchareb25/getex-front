@@ -1,13 +1,10 @@
-import {
-  getChauffeursAction
-} from "@/lib/actions/chauffeurs";
+import { getChauffeursAction } from "@/lib/actions/chauffeurs";
 import { getCompaniesAction } from "@/lib/actions/companies";
 import ChauffeursTable from "@/components/tables/chauffeurs-table";
 
 interface DriversPageProps {
   searchParams: {
     page?: string;
-    limit?: string;
     search?: string;
     companyId?: string;
     dateFrom?: string;
@@ -15,20 +12,17 @@ interface DriversPageProps {
   };
 }
 
-export default async function DriversPage({
-  searchParams,
-}: DriversPageProps) {
+export default async function DriversPage({ searchParams }: DriversPageProps) {
   const page = parseInt(searchParams.page || "1");
-  const limit = parseInt(searchParams.limit || "10");
-  const search = searchParams.search;
-  const companyId = searchParams.companyId;
-  const dateFrom = searchParams.dateFrom;
-  const dateTo = searchParams.dateTo;
+  const search = searchParams.search || "";
+  const companyId = searchParams.companyId || "";
+  const dateFrom = searchParams.dateFrom || "";
+  const dateTo = searchParams.dateTo || "";
 
-  const [chauffeursData, {companies}] = await Promise.all([
+  const [chauffeursData, { companies }] = await Promise.all([
     getChauffeursAction({
       page,
-      limit,
+      limit: 10,
       search,
       companyId,
       dateFrom,
@@ -36,26 +30,29 @@ export default async function DriversPage({
     }),
     getCompaniesAction({
       page: 1,
-      limit: 100
-    })
+      limit: 100,
+    }),
   ]);
-  
+
   const searchParamsKey = JSON.stringify({
     page: searchParams.page,
-    limit: searchParams.limit,
     search: searchParams.search,
     companyId: searchParams.companyId,
     dateFrom: searchParams.dateFrom,
     dateTo: searchParams.dateTo,
+    chauffeursData: chauffeursData,
   });
-
+  console.log("Chauffeurs Data:", chauffeursData);
   return (
     <ChauffeursTable
       key={searchParamsKey} // This will force a complete re-mount
-      chauffeursData={chauffeursData}
+      initialData={chauffeursData}
       companies={companies}
-      currentPage={page}
-      limit={limit}
+      initialPage={page}
+      initialSearch={search}
+      initialCompanyId={companyId}
+      initialDateFrom={dateFrom}
+      initialDateTo={dateTo}
     />
   );
 }

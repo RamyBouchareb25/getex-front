@@ -104,7 +104,7 @@ export const getChauffeursAction = async ({
     if (dateFrom) params.append('dateFrom', dateFrom);
     if (dateTo) params.append('dateTo', dateTo);
 
-    const response = await serverApi.get(`/chauffeur?${params.toString()}`);
+    const response = await serverApi.get(`/chauffeur/admin?${params.toString()}`);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch drivers: ${response.statusText}`);
     }

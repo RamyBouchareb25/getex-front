@@ -65,6 +65,10 @@
     "manageProductSubCategories": "إدارة الفئات الفرعية للمنتجات",
     "manageInventoryLevels": "مراقبة وإدارة مستويات المخزون",
     "manageCustomerOrders": "إدارة طلبات العملاء وحالتها",
+    "creating": "جاري الإنشاء",
+    "updating": "جاري التحديث",
+    "deleting": "جاري الحذف",
+    "all": "الكل",
     "emptyState": {
       "noItemsFound": "لم يتم العثور على عناصر",
       "tryDifferentSearch": "حاول تعديل معايير البحث أو التصفية",
@@ -399,6 +403,7 @@
   },
   "chauffeurs": {
     "title": "السائقين",
+    "description": "إدارة سائقي منظمتك",
     "addDriver": "إضافة سائق",
     "editDriver": "تعديل السائق",
     "deleteDriver": "حذف السائق",
@@ -413,6 +418,21 @@
     "driverDeleteError": "فشل في حذف السائق",
     "driverCreateError": "فشل في إنشاء السائق",
     "driverUpdateError": "فشل في تحديث السائق",
-    "assignedOrder": "الطلب المسند"
+    "assignedOrder": "الطلب المسند",
+    "createChauffeur": "إنشاء سائق",
+    "chauffeurCreated": "تم إنشاء السائق بنجاح",
+    "chauffeurUpdated": "تم تحديث السائق بنجاح",
+    "chauffeurDeleted": "تم حذف السائق بنجاح",
+    "noChauffeurs": "لا يوجد سائقون",
+    "searchChauffeurs": "البحث عن السائقين...",
+    "filterByCompany": "تصفية حسب الشركة",
+    "createdAt": "تاريخ الإنشاء",
+    "actions": "الإجراءات",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "required": "هذا الحقل مطلوب"
   }
 }

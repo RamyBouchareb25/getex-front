@@ -12,17 +12,14 @@ export const createStockAction = async (formData: FormData) => {
     const expirationDate = formData.get("expirationDate") as string;
     const reductionPercent = formData.get("reductionPercent") as string;
     const visible = formData.get("visible") as string;
-    const ownerId = formData.get("ownerId") as string;
-
     const payload = {
       productId,
       quantity: quantity ? parseInt(quantity) : undefined,
       price: price ? parseFloat(price) : undefined,
       minQuantity: minQuantity ? parseInt(minQuantity) : undefined,
-      expirationDate,
+      expireAt: expirationDate,
       reductionPercent: reductionPercent ? parseFloat(reductionPercent) : 0,
       visible: visible === "true",
-      ownerId,
     };
 
     const response = await serverApi.post("/stock", payload);
@@ -130,7 +127,6 @@ export const getStockAction = async ({
     if (visibility) params.append("visibility", visibility);
     if (dateFrom) params.append("dateFrom", dateFrom);
     if (dateTo) params.append("dateTo", dateTo);
-    if (self) params.append("self", "true");
 
     const endpoint = self
       ? `/stock/admin/self?${params.toString()}`

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -120,9 +120,9 @@ export default function StockTable({
   currentPage: number;
   limit: number;
 }) {
-  const tStock = useTranslations('stock');
-  const tCommon = useTranslations('common');
-  const tPagination = useTranslations('pagination');
+  const tStock = useTranslations("stock");
+  const tCommon = useTranslations("common");
+  const tPagination = useTranslations("pagination");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -248,12 +248,14 @@ export default function StockTable({
     );
   };
 
-  const handleCreateStock = async (formData: FormData) => {
+  const handleCreateStock = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsCreating(true);
     setError(null);
     setSuccess(null);
 
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await createStockAction(formData);
       if (result.success) {
         setSuccess("Stock created successfully!");
@@ -327,7 +329,7 @@ export default function StockTable({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {tStock('title')}
+            {tStock("title")}
           </h1>
           <p className="text-muted-foreground">
             Monitor and manage inventory levels
@@ -337,19 +339,23 @@ export default function StockTable({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tStock('createStock')}
+              {tStock("createStock")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{tStock('createStock')}</DialogTitle>
+              <DialogTitle>{tStock("createStock")}</DialogTitle>
               <DialogDescription>Add inventory for a product</DialogDescription>
             </DialogHeader>
-            <form action={handleCreateStock}>
+            <form onSubmit={handleCreateStock}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="productId">Product</Label>
-                  <Select name="productId" required>
+                  <Select
+                    disabled={isCreating || isUpdating}
+                    name="productId"
+                    required
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select product" />
                     </SelectTrigger>
@@ -366,6 +372,7 @@ export default function StockTable({
                   <div className="grid gap-2">
                     <Label htmlFor="quantity">Quantity</Label>
                     <Input
+                      disabled={isCreating || isUpdating}
                       id="quantity"
                       name="quantity"
                       type="number"
@@ -375,6 +382,7 @@ export default function StockTable({
                   <div className="grid gap-2">
                     <Label htmlFor="price">Price</Label>
                     <Input
+                      disabled={isCreating || isUpdating}
                       id="price"
                       name="price"
                       type="number"
@@ -387,6 +395,7 @@ export default function StockTable({
                   <div className="grid gap-2">
                     <Label htmlFor="minQuantity">Min Quantity</Label>
                     <Input
+                      disabled={isCreating || isUpdating}
                       id="minQuantity"
                       name="minQuantity"
                       type="number"
@@ -396,6 +405,7 @@ export default function StockTable({
                   <div className="grid gap-2">
                     <Label htmlFor="reductionPercent">Reduction %</Label>
                     <Input
+                      disabled={isCreating || isUpdating}
                       id="reductionPercent"
                       name="reductionPercent"
                       type="number"
@@ -407,30 +417,17 @@ export default function StockTable({
                 <div className="grid gap-2">
                   <Label htmlFor="expirationDate">Expiration Date</Label>
                   <Input
+                    disabled={isCreating || isUpdating}
                     id="expirationDate"
                     name="expirationDate"
                     type="date"
                     required
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="ownerId">Owner</Label>
-                  <Select name="ownerId" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select owner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="visible"
+                    disabled={isCreating || isUpdating}
                     name="visible"
                     value="true"
                     defaultChecked
@@ -439,7 +436,16 @@ export default function StockTable({
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Add Stock</Button>
+                <Button type="submit" disabled={isCreating || isUpdating}>
+                  {isCreating ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                      {tCommon("creating")}
+                    </>
+                  ) : (
+                    tStock("createStock")
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>

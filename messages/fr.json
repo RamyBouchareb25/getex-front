@@ -65,6 +65,10 @@
     "manageProductSubCategories": "Gérer les sous-catégories de produits",
     "manageInventoryLevels": "Surveiller et gérer les niveaux de stock",
     "manageCustomerOrders": "Gérer les commandes clients et leur statut",
+    "creating": "Création en cours...",
+    "updating": "Mise à jour en cours...",
+    "deleting": "Suppression en cours...",
+    "all": "Tout",
     "emptyState": {
       "noItemsFound": "Aucun élément trouvé",
       "tryDifferentSearch": "Essayez d'ajuster vos critères de recherche ou de filtrage",
@@ -398,6 +402,7 @@
   },
   "chauffeurs": {
     "title": "Chauffeurs",
+    "description": "Gérer les chauffeurs de votre organisation",
     "addDriver": "Ajouter un Chauffeur",
     "editDriver": "Modifier le Chauffeur",
     "deleteDriver": "Supprimer le Chauffeur",
@@ -412,7 +417,22 @@
     "driverDeleteError": "Échec de la suppression du chauffeur",
     "driverCreateError": "Échec de la création du chauffeur",
     "driverUpdateError": "Échec de la mise à jour du chauffeur",
-    "assignedOrder": "Commande Assignée"
+    "assignedOrder": "Commande Assignée",
+    "createChauffeur": "Créer un Chauffeur",
+    "chauffeurCreated": "Chauffeur créé avec succès",
+    "chauffeurUpdated": "Chauffeur mis à jour avec succès",
+    "chauffeurDeleted": "Chauffeur supprimé avec succès",
+    "noChauffeurs": "Aucun chauffeur trouvé",
+    "searchChauffeurs": "Rechercher des chauffeurs...",
+    "filterByCompany": "Filtrer par société",
+    "createdAt": "Créé le",
+    "actions": "Actions",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Sauvegarder",
+    "required": "Ce champ est requis"
   },
   "notFound": {
     "title": "404 - Page Non Trouvée",

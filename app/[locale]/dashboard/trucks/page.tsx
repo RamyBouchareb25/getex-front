@@ -35,7 +35,7 @@ export default async function TrucksPage({ searchParams }: TrucksPageProps) {
       limit: 100,
     }),
   ]);
-  
+
   const { companies } = companiesData;
 
   const searchParamsKey = JSON.stringify({
@@ -49,10 +49,13 @@ export default async function TrucksPage({ searchParams }: TrucksPageProps) {
   return (
     <CamionsTable
       key={searchParamsKey} // This will force a complete re-mount
-      camionsData={camionsData}
+      initialData={camionsData}
       companies={companies}
-      currentPage={page}
-      limit={limit}
+      initialPage={page}
+      initialSearch={search || ""}
+      initialCompanyFilter={companyId || ""}
+      initialDateFromFilter={dateFrom || ""}
+      initialDateToFilter={dateTo || ""}
     />
   );
 }

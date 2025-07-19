@@ -41,6 +41,7 @@ export default async function StockPage({ searchParams }: StockPageProps) {
       visibility,
       dateFrom,
       dateTo,
+      self: true,
     }),
     getProductsAction(),
     getUsersAction(),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,7 +30,17 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Edit, Trash2, Filter, Upload, Tag, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Filter,
+  Upload,
+  Tag,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Image from "next/image";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
@@ -59,7 +69,9 @@ interface SubCategory {
     id: string;
     name: string;
   };
-  productsCount?: number;
+  _count: {
+    products: number;
+  };
 }
 
 interface Category {
@@ -88,17 +100,24 @@ export default function SubCategoriesTable({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const tSubcategories = useTranslations('subcategories');
-  const tCommon = useTranslations('common');
-  const tPagination = useTranslations('pagination');
+  const tSubcategories = useTranslations("subcategories");
+  const tCommon = useTranslations("common");
+  const tPagination = useTranslations("pagination");
 
   // Handle both paginated and non-paginated data
-  const subCategories = Array.isArray(subCategoriesData) ? subCategoriesData : subCategoriesData.subCategories;
-  const totalPages = Array.isArray(subCategoriesData) ? Math.ceil(subCategories.length / limit) : subCategoriesData.totalPages;
-  const total = Array.isArray(subCategoriesData) ? subCategories.length : subCategoriesData.total;
+  const subCategories = Array.isArray(subCategoriesData)
+    ? subCategoriesData
+    : subCategoriesData.subCategories;
+  const totalPages = Array.isArray(subCategoriesData)
+    ? Math.ceil(subCategories.length / limit)
+    : subCategoriesData.totalPages;
+  const total = Array.isArray(subCategoriesData)
+    ? subCategories.length
+    : subCategoriesData.total;
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingSubCategory, setEditingSubCategory] = useState<SubCategory | null>(null);
+  const [editingSubCategory, setEditingSubCategory] =
+    useState<SubCategory | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dateFromFilter, setDateFromFilter] = useState<string>("");
   const [dateToFilter, setDateToFilter] = useState<string>("");
@@ -148,31 +167,33 @@ export default function SubCategoriesTable({
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams();
-    params.set('page', newPage.toString());
-    params.set('limit', limit.toString());
-    
+    params.set("page", newPage.toString());
+    params.set("limit", limit.toString());
+
     // Preserve existing filters
-    if (searchTerm.trim()) params.set('search', searchTerm.trim());
-    if (selectedCategories.length > 0) params.set('categoryId', selectedCategories[0]);
-    if (dateFromFilter) params.set('dateFrom', dateFromFilter);
-    if (dateToFilter) params.set('dateTo', dateToFilter);
-    if (productCountFilter) params.set('productCount', productCountFilter);
-    
+    if (searchTerm.trim()) params.set("search", searchTerm.trim());
+    if (selectedCategories.length > 0)
+      params.set("categoryId", selectedCategories[0]);
+    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
+    if (dateToFilter) params.set("dateTo", dateToFilter);
+    if (productCountFilter) params.set("productCount", productCountFilter);
+
     router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleSearch = () => {
     setIsSearching(true);
     const params = new URLSearchParams();
-    params.set('page', '1');
-    params.set('limit', limit.toString());
-    
-    if (searchTerm.trim()) params.set('search', searchTerm.trim());
-    if (selectedCategories.length > 0) params.set('categoryId', selectedCategories[0]);
-    if (dateFromFilter) params.set('dateFrom', dateFromFilter);
-    if (dateToFilter) params.set('dateTo', dateToFilter);
-    if (productCountFilter) params.set('productCount', productCountFilter);
-    
+    params.set("page", "1");
+    params.set("limit", limit.toString());
+
+    if (searchTerm.trim()) params.set("search", searchTerm.trim());
+    if (selectedCategories.length > 0)
+      params.set("categoryId", selectedCategories[0]);
+    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
+    if (dateToFilter) params.set("dateTo", dateToFilter);
+    if (productCountFilter) params.set("productCount", productCountFilter);
+
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -183,11 +204,11 @@ export default function SubCategoriesTable({
     setDateFromFilter("");
     setDateToFilter("");
     setProductCountFilter("");
-    
+
     const params = new URLSearchParams();
-    params.set('page', '1');
-    params.set('limit', limit.toString());
-    
+    params.set("page", "1");
+    params.set("limit", limit.toString());
+
     router.push(`${pathname}?${params.toString()}`);
   };
 
@@ -201,7 +222,7 @@ export default function SubCategoriesTable({
     setIsCreating(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       const result = await createSubCategoryAction(formData);
       if (result.success) {
@@ -222,7 +243,7 @@ export default function SubCategoriesTable({
     setIsUpdating(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       const result = await updateSubCategoryAction(formData);
       if (result.success) {
@@ -243,7 +264,7 @@ export default function SubCategoriesTable({
     setIsDeleting(subCategoryId);
     setError(null);
     setSuccess(null);
-    
+
     try {
       const result = await deleteSubCategoryAction(subCategoryId);
       if (result.success) {
@@ -275,19 +296,21 @@ export default function SubCategoriesTable({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{tSubcategories('title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {tSubcategories("title")}
+          </h1>
           <p className="text-muted-foreground">Manage product sub categories</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tSubcategories('createSubcategory')}
+              {tSubcategories("createSubcategory")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{tSubcategories('createSubcategory')}</DialogTitle>
+              <DialogTitle>{tSubcategories("createSubcategory")}</DialogTitle>
               <DialogDescription>
                 Add a new product sub category
               </DialogDescription>
@@ -295,7 +318,9 @@ export default function SubCategoriesTable({
             <form action={handleCreateSubCategory}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{tSubcategories('subcategoryName')}</Label>
+                  <Label htmlFor="name">
+                    {tSubcategories("subcategoryName")}
+                  </Label>
                   <Input id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
@@ -358,15 +383,15 @@ export default function SubCategoriesTable({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleSearch();
                   }
                 }}
                 className="max-w-sm"
               />
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleSearch}
                 disabled={isSearching}
               >
@@ -432,7 +457,9 @@ export default function SubCategoriesTable({
                       <h4 className="font-medium">Date Range</h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="text-xs text-muted-foreground">From</label>
+                          <label className="text-xs text-muted-foreground">
+                            From
+                          </label>
                           <Input
                             disabled={isUpdating || isSearching}
                             type="date"
@@ -441,7 +468,9 @@ export default function SubCategoriesTable({
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-muted-foreground">To</label>
+                          <label className="text-xs text-muted-foreground">
+                            To
+                          </label>
                           <Input
                             disabled={isUpdating || isSearching}
                             type="date"
@@ -460,7 +489,7 @@ export default function SubCategoriesTable({
                       >
                         Reset Filters
                       </Button>
-                      <Button 
+                      <Button
                         size="sm"
                         onClick={handleSearch}
                         disabled={isSearching}
@@ -471,23 +500,26 @@ export default function SubCategoriesTable({
                   </div>
                 </PopoverContent>
               </Popover>
-              
+
               <select
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 value={limit}
                 onChange={(e) => {
                   const newLimit = parseInt(e.target.value);
                   const params = new URLSearchParams();
-                  params.set('page', '1');
-                  params.set('limit', newLimit.toString());
-                  
+                  params.set("page", "1");
+                  params.set("limit", newLimit.toString());
+
                   // Preserve existing filters
-                  if (searchTerm.trim()) params.set('search', searchTerm.trim());
-                  if (selectedCategories.length > 0) params.set('categoryId', selectedCategories[0]);
-                  if (dateFromFilter) params.set('dateFrom', dateFromFilter);
-                  if (dateToFilter) params.set('dateTo', dateToFilter);
-                  if (productCountFilter) params.set('productCount', productCountFilter);
-                  
+                  if (searchTerm.trim())
+                    params.set("search", searchTerm.trim());
+                  if (selectedCategories.length > 0)
+                    params.set("categoryId", selectedCategories[0]);
+                  if (dateFromFilter) params.set("dateFrom", dateFromFilter);
+                  if (dateToFilter) params.set("dateTo", dateToFilter);
+                  if (productCountFilter)
+                    params.set("productCount", productCountFilter);
+
                   router.push(`${pathname}?${params.toString()}`);
                 }}
               >
@@ -521,7 +553,10 @@ export default function SubCategoriesTable({
               <TableBody>
                 {filteredSubCategories.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center py-8 text-muted-foreground"
+                    >
                       No subcategories found
                     </TableCell>
                   </TableRow>
@@ -559,7 +594,7 @@ export default function SubCategoriesTable({
                           href={`/dashboard/products?subCategoryId=${subCategory.id}`}
                           className="text-blue-600 hover:underline"
                         >
-                          {subCategory.productsCount || 0} products
+                          {subCategory._count.products || 0} products
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -573,15 +608,21 @@ export default function SubCategoriesTable({
                             variant="outline"
                             size="sm"
                             onClick={() => setEditingSubCategory(subCategory)}
-                            disabled={isUpdating || isDeleting === subCategory.id}
+                            disabled={
+                              isUpdating || isDeleting === subCategory.id
+                            }
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeleteSubCategory(subCategory.id)}
-                            disabled={isDeleting === subCategory.id || isUpdating}
+                            onClick={() =>
+                              handleDeleteSubCategory(subCategory.id)
+                            }
+                            disabled={
+                              isDeleting === subCategory.id || isUpdating
+                            }
                           >
                             {isDeleting === subCategory.id ? (
                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
@@ -603,7 +644,8 @@ export default function SubCategoriesTable({
       {/* Pagination Controls */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, total)} of {total} subcategories
+          Showing {(currentPage - 1) * limit + 1} to{" "}
+          {Math.min(currentPage * limit, total)} of {total} subcategories
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -615,7 +657,7 @@ export default function SubCategoriesTable({
             <ChevronLeft className="h-4 w-4" />
             Previous
           </Button>
-          
+
           <div className="flex items-center space-x-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               let pageNumber;
@@ -628,7 +670,7 @@ export default function SubCategoriesTable({
               } else {
                 pageNumber = currentPage - 2 + i;
               }
-              
+
               return (
                 <Button
                   key={pageNumber}

@@ -89,7 +89,15 @@ serverAxios.interceptors.response.use(
     if (error.response?.status === 401) {
       throw new Error("UNAUTHORIZED");
     }
-    return Promise.reject(error)
+    const { response } = error;
+    if (response) {
+      const { status, statusText, data, config } = response;
+      const errorMessage = (data as any)?.message || "An error occurred";
+      const errorUrl = config?.url || "Unknown URL";
+      throw new HttpError(errorMessage, status, statusText, data, errorUrl);
+    }
+    // If no response, it's a network error or similar
+    return Promise.reject(error);
   }
 );
 

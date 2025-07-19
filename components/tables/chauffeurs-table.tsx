@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTranslations } from 'next-intl';
+import { useState, useEffect, useTransition } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import TableEmptyState from "@/components/table-empty-state";
 import {
   Card,
   CardContent,
@@ -45,19 +47,17 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import {
+  createChauffeurAction,
+  updateChauffeurAction,
+  deleteChauffeurAction,
+} from "@/lib/actions/chauffeurs";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import TableEmptyState from "@/components/table-empty-state";
-import { 
-  createChauffeurAction, 
-  updateChauffeurAction, 
-  deleteChauffeurAction 
-} from "@/lib/actions/chauffeurs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface Chauffeur {
   id: string;
@@ -77,7 +77,7 @@ interface Company {
   raisonSocial: string;
 }
 
-interface PaginationData {
+interface ChauffeursData {
   chauffeurs: Chauffeur[];
   total: number;
   page: number;
@@ -85,106 +85,156 @@ interface PaginationData {
   limit: number;
 }
 
-export default function ChauffeursTable({
-  chauffeursData,
-  companies,
-  currentPage,
-  limit,
-}: {
-  chauffeursData: PaginationData | Chauffeur[];
+interface ChauffeursTableProps {
+  initialData: ChauffeursData;
   companies: Company[];
-  currentPage: number;
-  limit: number;
-}) {
+  initialPage: number;
+  initialSearch: string;
+  initialCompanyId: string;
+  initialDateFrom: string;
+  initialDateTo: string;
+}
+
+export default function ChauffeursTable({
+  initialData,
+  companies,
+  initialPage,
+  initialSearch,
+  initialCompanyId,
+  initialDateFrom,
+  initialDateTo,
+}: ChauffeursTableProps) {
   const t = useTranslations();
   const tCommon = useTranslations('common');
   const tChauffeurs = useTranslations('chauffeurs');
   const router = useRouter();
   const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
 
-  // Handle both paginated and non-paginated data
-  const chauffeurs = Array.isArray(chauffeursData) ? chauffeursData : chauffeursData.chauffeurs;
-  const totalPages = Array.isArray(chauffeursData)
-    ? Math.ceil(chauffeurs.length / limit)
-    : chauffeursData.totalPages;
-  const total = Array.isArray(chauffeursData) ? chauffeurs.length : chauffeursData.total;
+  // Data state
+  const [chauffeursData, setChauffeursData] = useState<ChauffeursData>(initialData);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [companyFilter, setCompanyFilter] = useState<string>(initialCompanyId);
+  const [dateFromFilter, setDateFromFilter] = useState<string>(initialDateFrom);
+  const [dateToFilter, setDateToFilter] = useState<string>(initialDateTo);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+
+  // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingChauffeur, setEditingChauffeur] = useState<Chauffeur | null>(null);
-  const [companyFilter, setCompanyFilter] = useState<string>("");
-  const [dateFromFilter, setDateFromFilter] = useState<string>("");
-  const [dateToFilter, setDateToFilter] = useState<string>("");
+  const [deletingChauffeur, setDeletingChauffeur] = useState<Chauffeur | null>(null);
 
   // Loading states
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
 
-  // Error states
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  // Update URL with new filters
+  const updateURL = (params: {
+    page?: number;
+    search?: string;
+    companyId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  }) => {
+    const newSearchParams = new URLSearchParams();
 
-  const searchParams = useSearchParams();
-  const companyIdParam = searchParams.get("companyId");
+    if (params.page && params.page > 1)
+      newSearchParams.set("page", params.page.toString());
+    if (params.search) newSearchParams.set("search", params.search);
+    if (params.companyId) newSearchParams.set("companyId", params.companyId);
+    if (params.dateFrom) newSearchParams.set("dateFrom", params.dateFrom);
+    if (params.dateTo) newSearchParams.set("dateTo", params.dateTo);
 
-  // Initialize filters from URL params
-  useEffect(() => {
-    setSearchTerm(searchParams.get("search") || "");
-    setCompanyFilter(searchParams.get("companyId") || "");
-    setDateFromFilter(searchParams.get("dateFrom") || "");
-    setDateToFilter(searchParams.get("dateTo") || "");
-  }, [searchParams]);
+    const newUrl = `${pathname}${
+      newSearchParams.toString() ? `?${newSearchParams.toString()}` : ""
+    }`;
 
-  // Handle loading state when URL changes
-  useEffect(() => {
-    setIsSearching(false);
-  }, [chauffeurs]);
-
-  // Since we're using server-side pagination, we don't filter on client
-  const filteredChauffeurs = chauffeurs;
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams();
-    params.set("page", newPage.toString());
-    params.set("limit", limit.toString());
-
-    // Preserve existing filters
-    if (searchTerm.trim()) params.set("search", searchTerm.trim());
-    if (companyFilter) params.set("companyId", companyFilter);
-    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
-    if (dateToFilter) params.set("dateTo", dateToFilter);
-
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.push(newUrl);
+    });
   };
 
-  const handleSearch = () => {
-    setIsSearching(true);
-    const params = new URLSearchParams();
-    params.set("page", "1");
-    params.set("limit", limit.toString());
+  // Handle search input change with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== initialSearch) {
+        updateURL({
+          page: 1,
+          search: searchTerm,
+          companyId: companyFilter,
+          dateFrom: dateFromFilter,
+          dateTo: dateToFilter,
+        });
+      }
+    }, 500);
 
-    if (searchTerm.trim()) params.set("search", searchTerm.trim());
-    if (companyFilter) params.set("companyId", companyFilter);
-    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
-    if (dateToFilter) params.set("dateTo", dateToFilter);
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
-    router.push(`${pathname}?${params.toString()}`);
+  // Handle filter changes
+  const handleFilterChange = () => {
+    updateURL({
+      page: 1,
+      search: searchTerm,
+      companyId: companyFilter,
+      dateFrom: dateFromFilter,
+      dateTo: dateToFilter,
+    });
   };
 
-  const handleResetFilters = () => {
-    setIsSearching(true);
-    setSearchTerm("");
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    updateURL({
+      page,
+      search: searchTerm,
+      companyId: companyFilter,
+      dateFrom: dateFromFilter,
+      dateTo: dateToFilter,
+    });
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    handleFilterChange();
+  };
+
+  // Reset filters
+  const resetFilters = () => {
     setCompanyFilter("");
     setDateFromFilter("");
     setDateToFilter("");
+    setSearchTerm("");
+    updateURL({
+      page: 1,
+      search: "",
+      companyId: "",
+      dateFrom: "",
+      dateTo: "",
+    });
+  };
 
-    const params = new URLSearchParams();
-    params.set("page", "1");
-    params.set("limit", limit.toString());
+  // Generate pagination numbers
+  const generatePaginationNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    const totalPages = chauffeursData.totalPages;
 
-    router.push(`${pathname}?${params.toString()}`);
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   };
 
   const formatPhoneNumber = (phone: number) => {
@@ -192,82 +242,86 @@ export default function ChauffeursTable({
     return phoneStr.replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, '+$1 $2 $3 $4');
   };
 
-  const handleCreateChauffeur = async (formData: FormData) => {
+  const handleCreateChauffeur = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsCreating(true);
-    setError(null);
-    setSuccess(null);
     
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await createChauffeurAction(formData);
       if (result.success) {
-        setSuccess(tChauffeurs('chauffeurCreated') || "Driver created successfully!");
+        toast.success(tChauffeurs('chauffeurCreated') || "Driver created successfully!");
         setIsCreateOpen(false);
+        // Refresh the current page to show the new driver
+        router.refresh();
       } else {
-        setError(result.message || tChauffeurs('failedToCreateChauffeur') || "Failed to create driver");
+        toast.error(result.message || tChauffeurs('failedToCreateChauffeur') || "Failed to create driver");
       }
     } catch (error) {
       console.error("Error creating driver:", error);
-      setError(tChauffeurs('unexpectedError') || "An unexpected error occurred while creating the driver");
+      toast.error(tChauffeurs('unexpectedError') || "An unexpected error occurred while creating the driver");
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleUpdateChauffeur = async (formData: FormData) => {
+  const handleUpdateChauffeur = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsUpdating(true);
-    setError(null);
-    setSuccess(null);
     
     try {
+      const formData = new FormData(event.currentTarget);
       const result = await updateChauffeurAction(formData);
       if (result.success) {
-        setSuccess(tChauffeurs('chauffeurUpdated') || "Driver updated successfully!");
+        toast.success(tChauffeurs('chauffeurUpdated') || "Driver updated successfully!");
         setEditingChauffeur(null);
+        // Refresh the current page to show the updated driver
+        router.refresh();
       } else {
-        setError(result.message || tChauffeurs('failedToUpdateChauffeur') || "Failed to update driver");
+        toast.error(result.message || tChauffeurs('failedToUpdateChauffeur') || "Failed to update driver");
       }
     } catch (error) {
       console.error("Error updating driver:", error);
-      setError(tChauffeurs('unexpectedError') || "An unexpected error occurred while updating the driver");
+      toast.error(tChauffeurs('unexpectedError') || "An unexpected error occurred while updating the driver");
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handleDeleteChauffeur = async (id: string) => {
-    setIsDeleting(id);
-    setError(null);
-    setSuccess(null);
+  const handleDeleteChauffeur = async () => {
+    if (!deletingChauffeur) return;
+    
+    setIsDeleting(deletingChauffeur.id);
     
     try {
-      const result = await deleteChauffeurAction(id);
+      const result = await deleteChauffeurAction(deletingChauffeur.id);
       if (result.success) {
-        setSuccess(tChauffeurs('chauffeurDeleted') || "Driver deleted successfully!");
+        toast.success(tChauffeurs('chauffeurDeleted') || "Driver deleted successfully!");
+        setDeletingChauffeur(null);
+        // Refresh the current page to show the updated list
+        router.refresh();
       } else {
-        setError(result.message || tChauffeurs('failedToDeleteChauffeur') || "Failed to delete driver");
+        toast.error(result.message || tChauffeurs('failedToDeleteChauffeur') || "Failed to delete driver");
       }
     } catch (error) {
       console.error("Error deleting driver:", error);
-      setError(tChauffeurs('unexpectedError') || "An unexpected error occurred while deleting the driver");
+      toast.error(tChauffeurs('unexpectedError') || "An unexpected error occurred while deleting the driver");
     } finally {
       setIsDeleting(null);
     }
   };
 
   return (
-    <div>
-      {error && (
-        <Alert className="mb-4 bg-destructive/15 text-destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {success && (
-        <Alert className="mb-4 bg-green-500/15 text-green-500">
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
-
-      <div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {tChauffeurs('title') || "Drivers"}
+          </h1>
+          <p className="text-muted-foreground">
+            {tChauffeurs('description') || "Manage drivers and their assignments"}
+          </p>
+        </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -282,7 +336,7 @@ export default function ChauffeursTable({
                 {tChauffeurs('createChauffeurDescription') || "Add a new driver to the system"}
               </DialogDescription>
             </DialogHeader>
-            <form action={handleCreateChauffeur}>
+            <form onSubmit={handleCreateChauffeur}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">{tCommon('name')}</Label>
@@ -321,7 +375,7 @@ export default function ChauffeursTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
-                  {isCreating ? tCommon('loading') : tChauffeurs('createChauffeur') || "Create Driver"}
+                  {isCreating ? (tCommon('creating') || "Creating...") : (tChauffeurs('createChauffeur') || "Create Driver")}
                 </Button>
               </DialogFooter>
             </form>
@@ -332,30 +386,20 @@ export default function ChauffeursTable({
       <Card>
         <CardHeader>
           <CardTitle>{tChauffeurs('title') || "Drivers"}</CardTitle>
-          <CardDescription>{tChauffeurs('description') || "A list of all drivers in the system"}</CardDescription>
+          <CardDescription>
+            A list of all drivers in the system (Page {chauffeursData.page} of{" "}
+            {chauffeursData.totalPages}, {chauffeursData.total} total drivers)
+          </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                disabled={isUpdating || isSearching}
                 placeholder={tCommon('search') + ' ' + (tChauffeurs('title') || 'drivers').toLowerCase() + '...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSearch();
-                  }
-                }}
                 className="max-w-sm"
+                disabled={isPending}
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSearch}
-                disabled={isSearching}
-              >
-                {isSearching ? tChauffeurs('searching') || "Searching..." : tCommon('search')}
-              </Button>
             </div>
             <div className="flex items-center gap-2">
               <Popover>
@@ -364,6 +408,7 @@ export default function ChauffeursTable({
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-1"
+                    disabled={isPending}
                   >
                     <Filter className="h-4 w-4" />
                     <span>{tCommon('filter')}</span>
@@ -376,100 +421,61 @@ export default function ChauffeursTable({
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <h4 className="font-medium">{tCommon('company')}</h4>
-                      <select
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                        value={companyFilter}
-                        onChange={(e) => setCompanyFilter(e.target.value)}
-                      >
-                        <option value="">{tChauffeurs('anyCompany') || "Any Company"}</option>
-                        {companies.map((company) => (
-                          <option key={company.id} value={company.id}>
-                            {company.raisonSocial}
-                          </option>
-                        ))}
-                      </select>
+                      <Select value={companyFilter} onValueChange={setCompanyFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={tChauffeurs('selectCompany') || "Select company"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">{tCommon('all')}</SelectItem>
+                          {companies.map((company) => (
+                            <SelectItem key={company.id} value={company.id}>
+                              {company.raisonSocial}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">{tChauffeurs('dateRange') || "Date Range"}</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="text-xs text-muted-foreground">
-                            {tChauffeurs('from') || "From"}
-                          </label>
-                          <Input
-                            disabled={isUpdating || isSearching}
-                            type="date"
-                            value={dateFromFilter}
-                            onChange={(e) => setDateFromFilter(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-muted-foreground">
-                            {tChauffeurs('to') || "To"}
-                          </label>
-                          <Input
-                            disabled={isUpdating || isSearching}
-                            type="date"
-                            value={dateToFilter}
-                            onChange={(e) => setDateToFilter(e.target.value)}
-                          />
-                        </div>
-                      </div>
+                      <h4 className="font-medium">{tChauffeurs('dateFrom') || "Date From"}</h4>
+                      <Input
+                        type="date"
+                        value={dateFromFilter}
+                        onChange={(e) => setDateFromFilter(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-medium">{tChauffeurs('dateTo') || "Date To"}</h4>
+                      <Input
+                        type="date"
+                        value={dateToFilter}
+                        onChange={(e) => setDateToFilter(e.target.value)}
+                      />
                     </div>
                     <div className="flex justify-between">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleResetFilters}
-                        disabled={isSearching}
+                        onClick={resetFilters}
+                        disabled={isPending}
                       >
-                        {tChauffeurs('resetFilters') || "Reset Filters"}
+                        {tCommon('resetFilters') || "Reset Filters"}
                       </Button>
                       <Button
                         size="sm"
-                        onClick={handleSearch}
-                        disabled={isSearching}
+                        onClick={applyFilters}
+                        disabled={isPending}
                       >
-                        {isSearching ? tChauffeurs('applying') || "Applying..." : tChauffeurs('applyFilters') || "Apply Filters"}
+                        {tCommon('applyFilters') || "Apply Filters"}
                       </Button>
                     </div>
                   </div>
                 </PopoverContent>
               </Popover>
-
-              <select
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                value={limit}
-                onChange={(e) => {
-                  const newLimit = parseInt(e.target.value);
-                  const params = new URLSearchParams();
-                  params.set("page", "1");
-                  params.set("limit", newLimit.toString());
-
-                  // Preserve existing filters
-                  if (searchTerm.trim()) params.set("search", searchTerm.trim());
-                  if (companyFilter) params.set("companyId", companyFilter);
-                  if (dateFromFilter) params.set("dateFrom", dateFromFilter);
-                  if (dateToFilter) params.set("dateTo", dateToFilter);
-
-                  router.push(`${pathname}?${params.toString()}`);
-                }}
-              >
-                <option value={5}>5 {tChauffeurs('perPage') || "per page"}</option>
-                <option value={10}>10 {tChauffeurs('perPage') || "per page"}</option>
-                <option value={20}>20 {tChauffeurs('perPage') || "per page"}</option>
-                <option value={50}>50 {tChauffeurs('perPage') || "per page"}</option>
-              </select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {isSearching ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-b-transparent"></div>
-              <span className="ml-2">{tChauffeurs('loadingChauffeurs') || "Loading drivers..."}</span>
-            </div>
-          ) : (
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -482,34 +488,29 @@ export default function ChauffeursTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredChauffeurs.length === 0 ? (
+                {chauffeursData.chauffeurs.length === 0 ? (
                   <TableEmptyState 
                     colSpan={6} 
-                    message={searchTerm ? tCommon('emptyState.noItemsFound') : tChauffeurs('noChauffeursFound') || "No drivers found"}
-                    description={searchTerm ? tCommon('emptyState.tryDifferentSearch') : tChauffeurs('noChauffeursDescription') || "Drivers will appear here when they're added to the system"}
+                    message={searchTerm ? (tCommon('emptyState.noItemsFound') || "No items found") : (tChauffeurs('noChauffeursFound') || "No drivers found")}
+                    description={searchTerm ? (tCommon('emptyState.tryDifferentSearch') || "Try a different search") : (tChauffeurs('noChauffeursDescription') || "Drivers will appear here when they're added to the system")}
                   />
                 ) : (
-                  filteredChauffeurs.map((chauffeur) => (
+                  chauffeursData.chauffeurs.map((chauffeur) => (
                     <TableRow key={chauffeur.id}>
                       <TableCell className="font-medium">
                         {chauffeur.name}
                       </TableCell>
                       <TableCell>{formatPhoneNumber(chauffeur.phone)}</TableCell>
-                      <TableCell>{chauffeur.company?.raisonSocial || tCommon('unknown')}</TableCell>
+                      <TableCell>{chauffeur.company?.raisonSocial || "N/A"}</TableCell>
                       <TableCell>
-                        {chauffeur.assignedOrderId ? (
-                          <a 
-                            href={`/dashboard/orders?id=${chauffeur.assignedOrderId}`} 
-                            className="text-blue-600 hover:underline"
-                          >
-                            #{chauffeur.assignedOrderId}
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">{tChauffeurs('notAssigned') || "Not assigned"}</span>
+                        {chauffeur.assignedOrderId || (
+                          <span className="text-muted-foreground">
+                            {tChauffeurs('noAssignedOrder') || "No assigned order"}
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>
-                        {new Date(chauffeur.createdAt).toLocaleDateString()}
+                        {new Date(chauffeur.createdAt).toLocaleDateString("fr-FR")}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -517,20 +518,17 @@ export default function ChauffeursTable({
                             variant="outline"
                             size="sm"
                             onClick={() => setEditingChauffeur(chauffeur)}
+                            disabled={isUpdating || isPending}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDeleteChauffeur(chauffeur.id)}
-                            disabled={isDeleting === chauffeur.id}
+                            onClick={() => setDeletingChauffeur(chauffeur)}
+                            disabled={isDeleting === chauffeur.id || isPending}
                           >
-                            {isDeleting === chauffeur.id ? (
-                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -539,70 +537,68 @@ export default function ChauffeursTable({
                 )}
               </TableBody>
             </Table>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4">
-              <div className="text-sm text-muted-foreground">
-                {tChauffeurs('showing') || "Showing"} {Math.min((currentPage - 1) * limit + 1, total)} - {Math.min(currentPage * limit, total)} {tChauffeurs('of') || "of"} {total}
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1 || isSearching}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  // Show pages centered around current page
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  return (
-                    <Button
-                      key={i}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePageChange(pageNum)}
-                      disabled={isSearching}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages || isSearching}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {(currentPage - 1) * 10 + 1} to{" "}
+          {Math.min(currentPage * 10, chauffeursData.total)} of {chauffeursData.total}{" "}
+          drivers
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || isPending}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+
+          <div className="flex items-center space-x-1">
+            {generatePaginationNumbers().map((page) => (
+              <Button
+                key={page}
+                variant={page === currentPage ? "default" : "outline"}
+                size="sm"
+                onClick={() => handlePageChange(page)}
+                disabled={isPending}
+                className="w-8 h-8 p-0"
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= chauffeursData.totalPages || isPending}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* Edit Chauffeur Dialog */}
       <Dialog open={!!editingChauffeur} onOpenChange={() => setEditingChauffeur(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{tChauffeurs('editChauffeur') || "Edit Driver"}</DialogTitle>
+            <DialogDescription>
+              {tChauffeurs('editChauffeurDescription') || "Update driver information"}
+            </DialogDescription>
           </DialogHeader>
           {editingChauffeur && (
-            <form action={handleUpdateChauffeur}>
+            <form onSubmit={handleUpdateChauffeur}>
+              <input type="hidden" name="id" value={editingChauffeur.id} />
               <div className="grid gap-4 py-4">
-                <input type="hidden" name="id" value={editingChauffeur.id} />
                 <div className="grid gap-2">
                   <Label htmlFor="edit-name">{tCommon('name')}</Label>
                   <Input
@@ -642,18 +638,52 @@ export default function ChauffeursTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
-                      {tCommon('updating') || "Updating..."}
-                    </>
-                  ) : (
-                    tCommon('update') || "Update"
-                  )}
+                  {isUpdating ? (tCommon('updating') || "Updating...") : (tCommon('update') || "Update")}
                 </Button>
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingChauffeur} onOpenChange={() => setDeletingChauffeur(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tChauffeurs('deleteChauffeur') || "Delete Driver"}</DialogTitle>
+            <DialogDescription>
+              {tChauffeurs('deleteChauffeurConfirmation') || "Are you sure you want to delete this driver? This action cannot be undone."}
+            </DialogDescription>
+          </DialogHeader>
+          {deletingChauffeur && (
+            <div className="py-4">
+              <p className="text-sm">
+                <strong>{tCommon('name')}:</strong> {deletingChauffeur.name}
+              </p>
+              <p className="text-sm">
+                <strong>{tCommon('phone')}:</strong> {formatPhoneNumber(deletingChauffeur.phone)}
+              </p>
+              <p className="text-sm">
+                <strong>{tCommon('company')}:</strong> {deletingChauffeur.company?.raisonSocial || "N/A"}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeletingChauffeur(null)}
+              disabled={isDeleting === deletingChauffeur?.id}
+            >
+              {tCommon('cancel') || "Cancel"}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteChauffeur}
+              disabled={isDeleting === deletingChauffeur?.id}
+            >
+              {isDeleting === deletingChauffeur?.id ? (tCommon('deleting') || "Deleting...") : (tCommon('delete') || "Delete")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
