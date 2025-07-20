@@ -58,6 +58,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface Chauffeur {
   id: string;
@@ -105,14 +106,15 @@ export default function ChauffeursTable({
   initialDateTo,
 }: ChauffeursTableProps) {
   const t = useTranslations();
-  const tCommon = useTranslations('common');
-  const tChauffeurs = useTranslations('chauffeurs');
+  const tCommon = useTranslations("common");
+  const tChauffeurs = useTranslations("chauffeurs");
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
   // Data state
-  const [chauffeursData, setChauffeursData] = useState<ChauffeursData>(initialData);
+  const [chauffeursData, setChauffeursData] =
+    useState<ChauffeursData>(initialData);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState(initialSearch);
@@ -123,8 +125,12 @@ export default function ChauffeursTable({
 
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingChauffeur, setEditingChauffeur] = useState<Chauffeur | null>(null);
-  const [deletingChauffeur, setDeletingChauffeur] = useState<Chauffeur | null>(null);
+  const [editingChauffeur, setEditingChauffeur] = useState<Chauffeur | null>(
+    null
+  );
+  const [deletingChauffeur, setDeletingChauffeur] = useState<Chauffeur | null>(
+    null
+  );
 
   // Loading states
   const [isCreating, setIsCreating] = useState(false);
@@ -239,50 +245,78 @@ export default function ChauffeursTable({
 
   const formatPhoneNumber = (phone: number) => {
     const phoneStr = phone.toString();
-    return phoneStr.replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, '+$1 $2 $3 $4');
+    if (phoneStr.startsWith("213")) {
+      return phoneStr.replace(
+        /^213(\d{3})(\d{2})(\d{2})(\d{2})/,
+        "+213 $1 $2 $3 $4"
+      );
+    }
+    return phoneStr.replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, "0$1 $2 $3 $4");
   };
 
-  const handleCreateChauffeur = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateChauffeur = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setIsCreating(true);
-    
+
     try {
       const formData = new FormData(event.currentTarget);
       const result = await createChauffeurAction(formData);
       if (result.success) {
-        toast.success(tChauffeurs('chauffeurCreated') || "Driver created successfully!");
+        toast.success(
+          tChauffeurs("chauffeurCreated") || "Driver created successfully!"
+        );
         setIsCreateOpen(false);
         // Refresh the current page to show the new driver
         router.refresh();
       } else {
-        toast.error(result.message || tChauffeurs('failedToCreateChauffeur') || "Failed to create driver");
+        toast.error(
+          result.message ||
+            tChauffeurs("failedToCreateChauffeur") ||
+            "Failed to create driver"
+        );
       }
     } catch (error) {
       console.error("Error creating driver:", error);
-      toast.error(tChauffeurs('unexpectedError') || "An unexpected error occurred while creating the driver");
+      toast.error(
+        tChauffeurs("unexpectedError") ||
+          "An unexpected error occurred while creating the driver"
+      );
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleUpdateChauffeur = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdateChauffeur = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setIsUpdating(true);
-    
+
     try {
       const formData = new FormData(event.currentTarget);
       const result = await updateChauffeurAction(formData);
       if (result.success) {
-        toast.success(tChauffeurs('chauffeurUpdated') || "Driver updated successfully!");
+        toast.success(
+          tChauffeurs("chauffeurUpdated") || "Driver updated successfully!"
+        );
         setEditingChauffeur(null);
         // Refresh the current page to show the updated driver
         router.refresh();
       } else {
-        toast.error(result.message || tChauffeurs('failedToUpdateChauffeur') || "Failed to update driver");
+        toast.error(
+          result.message ||
+            tChauffeurs("failedToUpdateChauffeur") ||
+            "Failed to update driver"
+        );
       }
     } catch (error) {
       console.error("Error updating driver:", error);
-      toast.error(tChauffeurs('unexpectedError') || "An unexpected error occurred while updating the driver");
+      toast.error(
+        tChauffeurs("unexpectedError") ||
+          "An unexpected error occurred while updating the driver"
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -290,22 +324,31 @@ export default function ChauffeursTable({
 
   const handleDeleteChauffeur = async () => {
     if (!deletingChauffeur) return;
-    
+
     setIsDeleting(deletingChauffeur.id);
-    
+
     try {
       const result = await deleteChauffeurAction(deletingChauffeur.id);
       if (result.success) {
-        toast.success(tChauffeurs('chauffeurDeleted') || "Driver deleted successfully!");
+        toast.success(
+          tChauffeurs("chauffeurDeleted") || "Driver deleted successfully!"
+        );
         setDeletingChauffeur(null);
         // Refresh the current page to show the updated list
         router.refresh();
       } else {
-        toast.error(result.message || tChauffeurs('failedToDeleteChauffeur') || "Failed to delete driver");
+        toast.error(
+          result.message ||
+            tChauffeurs("failedToDeleteChauffeur") ||
+            "Failed to delete driver"
+        );
       }
     } catch (error) {
       console.error("Error deleting driver:", error);
-      toast.error(tChauffeurs('unexpectedError') || "An unexpected error occurred while deleting the driver");
+      toast.error(
+        tChauffeurs("unexpectedError") ||
+          "An unexpected error occurred while deleting the driver"
+      );
     } finally {
       setIsDeleting(null);
     }
@@ -316,39 +359,38 @@ export default function ChauffeursTable({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {tChauffeurs('title') || "Drivers"}
+            {tChauffeurs("title") || "Drivers"}
           </h1>
           <p className="text-muted-foreground">
-            {tChauffeurs('description') || "Manage drivers and their assignments"}
+            {tChauffeurs("description") ||
+              "Manage drivers and their assignments"}
           </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tChauffeurs('createChauffeur') || "Create Driver"}
+              {tChauffeurs("createChauffeur") || "Create Driver"}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{tChauffeurs('createChauffeur') || "Create Driver"}</DialogTitle>
+              <DialogTitle>
+                {tChauffeurs("createChauffeur") || "Create Driver"}
+              </DialogTitle>
               <DialogDescription>
-                {tChauffeurs('createChauffeurDescription') || "Add a new driver to the system"}
+                {tChauffeurs("createChauffeurDescription") ||
+                  "Add a new driver to the system"}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateChauffeur}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{tCommon('name')}</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    required
-                    disabled={isCreating}
-                  />
+                  <Label htmlFor="name">{tCommon("name")}</Label>
+                  <Input id="name" name="name" required disabled={isCreating} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="phone">{tCommon('phone')}</Label>
+                  <Label htmlFor="phone">{tCommon("phone")}</Label>
                   <Input
                     id="phone"
                     name="phone"
@@ -358,10 +400,14 @@ export default function ChauffeursTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="companyId">{tCommon('company')}</Label>
+                  <Label htmlFor="companyId">{tCommon("company")}</Label>
                   <Select name="companyId" required>
                     <SelectTrigger disabled={isCreating}>
-                      <SelectValue placeholder={tChauffeurs('selectCompany') || "Select company"} />
+                      <SelectValue
+                        placeholder={
+                          tChauffeurs("selectCompany") || "Select company"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {companies.map((company) => (
@@ -375,7 +421,9 @@ export default function ChauffeursTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
-                  {isCreating ? (tCommon('creating') || "Creating...") : (tChauffeurs('createChauffeur') || "Create Driver")}
+                  {isCreating
+                    ? tCommon("creating") || "Creating..."
+                    : tChauffeurs("createChauffeur") || "Create Driver"}
                 </Button>
               </DialogFooter>
             </form>
@@ -385,7 +433,7 @@ export default function ChauffeursTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>{tChauffeurs('title') || "Drivers"}</CardTitle>
+          <CardTitle>{tChauffeurs("title") || "Drivers"}</CardTitle>
           <CardDescription>
             A list of all drivers in the system (Page {chauffeursData.page} of{" "}
             {chauffeursData.totalPages}, {chauffeursData.total} total drivers)
@@ -394,7 +442,12 @@ export default function ChauffeursTable({
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={tCommon('search') + ' ' + (tChauffeurs('title') || 'drivers').toLowerCase() + '...'}
+                placeholder={
+                  tCommon("search") +
+                  " " +
+                  (tChauffeurs("title") || "drivers").toLowerCase() +
+                  "..."
+                }
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -411,7 +464,7 @@ export default function ChauffeursTable({
                     disabled={isPending}
                   >
                     <Filter className="h-4 w-4" />
-                    <span>{tCommon('filter')}</span>
+                    <span>{tCommon("filter")}</span>
                     {(companyFilter || dateFromFilter || dateToFilter) && (
                       <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                     )}
@@ -420,13 +473,20 @@ export default function ChauffeursTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">{tCommon('company')}</h4>
-                      <Select value={companyFilter} onValueChange={setCompanyFilter}>
+                      <h4 className="font-medium">{tCommon("company")}</h4>
+                      <Select
+                        value={companyFilter}
+                        onValueChange={setCompanyFilter}
+                      >
                         <SelectTrigger>
-                          <SelectValue placeholder={tChauffeurs('selectCompany') || "Select company"} />
+                          <SelectValue
+                            placeholder={
+                              tChauffeurs("selectCompany") || "Select company"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">{tCommon('all')}</SelectItem>
+                          <SelectItem value="">{tCommon("all")}</SelectItem>
                           {companies.map((company) => (
                             <SelectItem key={company.id} value={company.id}>
                               {company.raisonSocial}
@@ -436,7 +496,9 @@ export default function ChauffeursTable({
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">{tChauffeurs('dateFrom') || "Date From"}</h4>
+                      <h4 className="font-medium">
+                        {tChauffeurs("dateFrom") || "Date From"}
+                      </h4>
                       <Input
                         type="date"
                         value={dateFromFilter}
@@ -444,7 +506,9 @@ export default function ChauffeursTable({
                       />
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">{tChauffeurs('dateTo') || "Date To"}</h4>
+                      <h4 className="font-medium">
+                        {tChauffeurs("dateTo") || "Date To"}
+                      </h4>
                       <Input
                         type="date"
                         value={dateToFilter}
@@ -458,14 +522,14 @@ export default function ChauffeursTable({
                         onClick={resetFilters}
                         disabled={isPending}
                       >
-                        {tCommon('resetFilters') || "Reset Filters"}
+                        {tCommon("resetFilters") || "Reset Filters"}
                       </Button>
                       <Button
                         size="sm"
                         onClick={applyFilters}
                         disabled={isPending}
                       >
-                        {tCommon('applyFilters') || "Apply Filters"}
+                        {tCommon("applyFilters") || "Apply Filters"}
                       </Button>
                     </div>
                   </div>
@@ -479,20 +543,34 @@ export default function ChauffeursTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{tCommon('name')}</TableHead>
-                  <TableHead>{tCommon('phone')}</TableHead>
-                  <TableHead>{tCommon('company')}</TableHead>
-                  <TableHead>{tChauffeurs('assignedOrder') || "Assigned Order"}</TableHead>
-                  <TableHead>{tChauffeurs('createdAt') || "Created At"}</TableHead>
-                  <TableHead>{tCommon('actions')}</TableHead>
+                  <TableHead>{tCommon("name")}</TableHead>
+                  <TableHead>{tCommon("phone")}</TableHead>
+                  <TableHead>{tCommon("company")}</TableHead>
+                  <TableHead>
+                    {tChauffeurs("assignedOrder") || "Assigned Order"}
+                  </TableHead>
+                  <TableHead>
+                    {tChauffeurs("createdAt") || "Created At"}
+                  </TableHead>
+                  <TableHead>{tCommon("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {chauffeursData.chauffeurs.length === 0 ? (
-                  <TableEmptyState 
-                    colSpan={6} 
-                    message={searchTerm ? (tCommon('emptyState.noItemsFound') || "No items found") : (tChauffeurs('noChauffeursFound') || "No drivers found")}
-                    description={searchTerm ? (tCommon('emptyState.tryDifferentSearch') || "Try a different search") : (tChauffeurs('noChauffeursDescription') || "Drivers will appear here when they're added to the system")}
+                  <TableEmptyState
+                    colSpan={6}
+                    message={
+                      searchTerm
+                        ? tCommon("emptyState.noItemsFound") || "No items found"
+                        : tChauffeurs("noChauffeursFound") || "No drivers found"
+                    }
+                    description={
+                      searchTerm
+                        ? tCommon("emptyState.tryDifferentSearch") ||
+                          "Try a different search"
+                        : tChauffeurs("noChauffeursDescription") ||
+                          "Drivers will appear here when they're added to the system"
+                    }
                   />
                 ) : (
                   chauffeursData.chauffeurs.map((chauffeur) => (
@@ -500,17 +578,36 @@ export default function ChauffeursTable({
                       <TableCell className="font-medium">
                         {chauffeur.name}
                       </TableCell>
-                      <TableCell>{formatPhoneNumber(chauffeur.phone)}</TableCell>
-                      <TableCell>{chauffeur.company?.raisonSocial || "N/A"}</TableCell>
                       <TableCell>
-                        {chauffeur.assignedOrderId || (
+                        {formatPhoneNumber(chauffeur.phone)}
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          className="text-blue-600 hover:underline"
+                          href={`/companies/${chauffeur.companyId}`}
+                        >
+                          {chauffeur.company?.raisonSocial || "N/A"}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        {chauffeur.assignedOrderId ? (
+                          <Link
+                            className="text-blue-600 hover:underline"
+                            href={`/orders/${chauffeur.assignedOrderId}`}
+                          >
+                            {chauffeur.assignedOrderId}
+                          </Link>
+                        ) : (
                           <span className="text-muted-foreground">
-                            {tChauffeurs('noAssignedOrder') || "No assigned order"}
+                            {tChauffeurs("noAssignedOrder") ||
+                              "No assigned order"}
                           </span>
                         )}
                       </TableCell>
                       <TableCell>
-                        {new Date(chauffeur.createdAt).toLocaleDateString("fr-FR")}
+                        {new Date(chauffeur.createdAt).toLocaleDateString(
+                          "fr-FR"
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -545,8 +642,8 @@ export default function ChauffeursTable({
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           Showing {(currentPage - 1) * 10 + 1} to{" "}
-          {Math.min(currentPage * 10, chauffeursData.total)} of {chauffeursData.total}{" "}
-          drivers
+          {Math.min(currentPage * 10, chauffeursData.total)} of{" "}
+          {chauffeursData.total} drivers
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -587,12 +684,18 @@ export default function ChauffeursTable({
       </div>
 
       {/* Edit Chauffeur Dialog */}
-      <Dialog open={!!editingChauffeur} onOpenChange={() => setEditingChauffeur(null)}>
+      <Dialog
+        open={!!editingChauffeur}
+        onOpenChange={() => setEditingChauffeur(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tChauffeurs('editChauffeur') || "Edit Driver"}</DialogTitle>
+            <DialogTitle>
+              {tChauffeurs("editChauffeur") || "Edit Driver"}
+            </DialogTitle>
             <DialogDescription>
-              {tChauffeurs('editChauffeurDescription') || "Update driver information"}
+              {tChauffeurs("editChauffeurDescription") ||
+                "Update driver information"}
             </DialogDescription>
           </DialogHeader>
           {editingChauffeur && (
@@ -600,7 +703,7 @@ export default function ChauffeursTable({
               <input type="hidden" name="id" value={editingChauffeur.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-name">{tCommon('name')}</Label>
+                  <Label htmlFor="edit-name">{tCommon("name")}</Label>
                   <Input
                     id="edit-name"
                     name="name"
@@ -610,7 +713,7 @@ export default function ChauffeursTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-phone">{tCommon('phone')}</Label>
+                  <Label htmlFor="edit-phone">{tCommon("phone")}</Label>
                   <Input
                     id="edit-phone"
                     name="phone"
@@ -621,8 +724,11 @@ export default function ChauffeursTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-companyId">{tCommon('company')}</Label>
-                  <Select name="companyId" defaultValue={editingChauffeur.companyId}>
+                  <Label htmlFor="edit-companyId">{tCommon("company")}</Label>
+                  <Select
+                    name="companyId"
+                    defaultValue={editingChauffeur.companyId}
+                  >
                     <SelectTrigger disabled={isUpdating}>
                       <SelectValue />
                     </SelectTrigger>
@@ -638,7 +744,9 @@ export default function ChauffeursTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? (tCommon('updating') || "Updating...") : (tCommon('update') || "Update")}
+                  {isUpdating
+                    ? tCommon("updating") || "Updating..."
+                    : tCommon("update") || "Update"}
                 </Button>
               </DialogFooter>
             </form>
@@ -647,24 +755,32 @@ export default function ChauffeursTable({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deletingChauffeur} onOpenChange={() => setDeletingChauffeur(null)}>
+      <Dialog
+        open={!!deletingChauffeur}
+        onOpenChange={() => setDeletingChauffeur(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tChauffeurs('deleteChauffeur') || "Delete Driver"}</DialogTitle>
+            <DialogTitle>
+              {tChauffeurs("deleteChauffeur") || "Delete Driver"}
+            </DialogTitle>
             <DialogDescription>
-              {tChauffeurs('deleteChauffeurConfirmation') || "Are you sure you want to delete this driver? This action cannot be undone."}
+              {tChauffeurs("deleteChauffeurConfirmation") ||
+                "Are you sure you want to delete this driver? This action cannot be undone."}
             </DialogDescription>
           </DialogHeader>
           {deletingChauffeur && (
             <div className="py-4">
               <p className="text-sm">
-                <strong>{tCommon('name')}:</strong> {deletingChauffeur.name}
+                <strong>{tCommon("name")}:</strong> {deletingChauffeur.name}
               </p>
               <p className="text-sm">
-                <strong>{tCommon('phone')}:</strong> {formatPhoneNumber(deletingChauffeur.phone)}
+                <strong>{tCommon("phone")}:</strong>{" "}
+                {formatPhoneNumber(deletingChauffeur.phone)}
               </p>
               <p className="text-sm">
-                <strong>{tCommon('company')}:</strong> {deletingChauffeur.company?.raisonSocial || "N/A"}
+                <strong>{tCommon("company")}:</strong>{" "}
+                {deletingChauffeur.company?.raisonSocial || "N/A"}
               </p>
             </div>
           )}
@@ -674,14 +790,16 @@ export default function ChauffeursTable({
               onClick={() => setDeletingChauffeur(null)}
               disabled={isDeleting === deletingChauffeur?.id}
             >
-              {tCommon('cancel') || "Cancel"}
+              {tCommon("cancel") || "Cancel"}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteChauffeur}
               disabled={isDeleting === deletingChauffeur?.id}
             >
-              {isDeleting === deletingChauffeur?.id ? (tCommon('deleting') || "Deleting...") : (tCommon('delete') || "Delete")}
+              {isDeleting === deletingChauffeur?.id
+                ? tCommon("deleting") || "Deleting..."
+                : tCommon("delete") || "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

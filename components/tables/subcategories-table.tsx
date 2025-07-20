@@ -282,17 +282,6 @@ export default function SubCategoriesTable({
 
   return (
     <div className="space-y-6">
-      {/* Error and Success Messages */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {success && (
-        <Alert>
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
 
       <div className="flex items-center justify-between">
         <div>

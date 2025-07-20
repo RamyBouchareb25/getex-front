@@ -6,12 +6,12 @@ import { Pagination } from "@/types";
 export const createChauffeurAction = async (formData: FormData) => {
   try {
     const name = formData.get("name") as string;
-    const phone = formData.get("phone") as string;
+    const phoneString = formData.get("phone") as string;
     const companyId = formData.get("companyId") as string;
 
     const payload = {
       name,
-      phone: parseInt(phone),
+      phoneString,
       companyId,
     };
 
@@ -33,7 +33,7 @@ export const updateChauffeurAction = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
     const name = formData.get("name") as string;
-    const phone = formData.get("phone") as string;
+    const phoneString = formData.get("phone") as string;
     const companyId = formData.get("companyId") as string;
 
     if (!id) {
@@ -42,10 +42,9 @@ export const updateChauffeurAction = async (formData: FormData) => {
 
     const payload = {
       name,
-      phone: parseInt(phone),
-      companyId
+      phoneString,
+      companyId,
     };
-
     const response = await serverApi.patch(`/chauffeur/${id}`, payload);
     if (response.status !== 200) {
       throw new Error(`Failed to update driver: ${response.statusText}`);
@@ -80,18 +79,18 @@ export const deleteChauffeurAction = async (chauffeurId: string) => {
   }
 };
 
-export const getChauffeursAction = async ({ 
-  page, 
-  limit, 
-  search, 
+export const getChauffeursAction = async ({
+  page,
+  limit,
+  search,
   companyId,
-  dateFrom, 
-  dateTo
-}: Pagination & { 
-  search?: string; 
+  dateFrom,
+  dateTo,
+}: Pagination & {
+  search?: string;
   companyId?: string;
-  dateFrom?: string; 
-  dateTo?: string; 
+  dateFrom?: string;
+  dateTo?: string;
 }) => {
   try {
     const params = new URLSearchParams({
@@ -99,12 +98,14 @@ export const getChauffeursAction = async ({
       limit: limit.toString(),
     });
 
-    if (search) params.append('search', search);
-    if (companyId) params.append('companyId', companyId);
-    if (dateFrom) params.append('dateFrom', dateFrom);
-    if (dateTo) params.append('dateTo', dateTo);
+    if (search) params.append("search", search);
+    if (companyId) params.append("companyId", companyId);
+    if (dateFrom) params.append("dateFrom", dateFrom);
+    if (dateTo) params.append("dateTo", dateTo);
 
-    const response = await serverApi.get(`/chauffeur/admin?${params.toString()}`);
+    const response = await serverApi.get(
+      `/chauffeur/admin?${params.toString()}`
+    );
     if (response.status !== 200) {
       throw new Error(`Failed to fetch drivers: ${response.statusText}`);
     }

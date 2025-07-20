@@ -58,6 +58,7 @@ import {
   deleteCamionAction,
 } from "@/lib/actions/camions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
 
 interface Camion {
   id: string;
@@ -219,7 +220,9 @@ export default function CamionsTable({
     });
   };
 
-  const handleCreateCamion = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateCamion = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setIsCreating(true);
     setError(null);
@@ -243,7 +246,9 @@ export default function CamionsTable({
     }
   };
 
-  const handleUpdateCamion = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdateCamion = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setIsUpdating(true);
     setError(null);
@@ -515,7 +520,12 @@ export default function CamionsTable({
                       </TableCell>
                       <TableCell>{camion.plate}</TableCell>
                       <TableCell>
-                        {camion.company?.raisonSocial || tCommon("unknown")}
+                        <Link
+                          className="text-blue-600 hover:underline"
+                          href={`/companies/${camion.companyId}`}
+                        >
+                          {camion.company?.raisonSocial || tCommon("unknown")}
+                        </Link>
                       </TableCell>
                       <TableCell>
                         {new Date(camion.createdAt).toLocaleDateString()}

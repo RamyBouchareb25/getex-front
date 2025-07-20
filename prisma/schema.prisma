@@ -104,6 +104,8 @@ model Product {
 
     subCategoryId String
     SubCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+    
+    nutritionalInfo NutritionalInfo?
 }
 
 model Category {
@@ -120,7 +122,7 @@ model Category {
 
 model SubCategory {
     id          String    @id @default(cuid())
-    name        String
+    name        String @unique
     image       String?
     description String?
     products    Product[]
@@ -211,4 +213,22 @@ model Camion {
 
     company       CompanyData @relation(fields: [companyId], references: [id], onDelete: Cascade)
     assignedOrder Order?      @relation(fields: [assignedOrderId], references: [id], onDelete: Cascade)
+}
+
+model NutritionalInfo {
+    id          String   @id @default(cuid())
+    type        String   @default("N/A")
+    graisse     String   @default("N/A")
+    acide       String   @default("N/A")
+    glucide     String   @default("N/A")
+    sucre       String   @default("N/A")
+    proteine    String   @default("N/A")
+    sel         String   @default("N/A")
+    fibre       String   @default("N/A")
+    energie     String   @default("N/A")
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    
+    productId   String   @unique
+    product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

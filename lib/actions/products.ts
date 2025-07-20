@@ -6,15 +6,21 @@ import { Pagination } from "@/types";
 export const createProductAction = async (formData: FormData) => {
   try {
     const name = formData.get("name") as string | undefined;
+    const reference = formData.get("reference") as string | undefined;
     const description = formData.get("description") as string | undefined;
     const subCategoryId = formData.get("subCategoryId") as string | undefined;
     const image = formData.get("image") as File;
+    const includeNutritionalInfo = formData.get("includeNutritionalInfo") === "true";
 
     // Create a new FormData object to send to the API
     const apiFormData = new FormData();
     
     if (name && name.trim()) {
       apiFormData.append("name", name.trim());
+    }
+    
+    if (reference && reference.trim()) {
+      apiFormData.append("reference", reference.trim());
     }
     
     if (description && description.trim()) {
@@ -28,6 +34,23 @@ export const createProductAction = async (formData: FormData) => {
     // Only append image if it's a valid file (not empty)
     if (image && image.size > 0) {
       apiFormData.append("image", image);
+    }
+    
+    // Handle nutritional information if included
+    if (includeNutritionalInfo) {
+      const nutritionalData = {
+        type: (formData.get("nutritionalType") as string) || "N/A",
+        graisse: (formData.get("graisse") as string) || "N/A",
+        acide: (formData.get("acide") as string) || "N/A", 
+        glucide: (formData.get("glucide") as string) || "N/A",
+        sucre: (formData.get("sucre") as string) || "N/A",
+        proteine: (formData.get("proteine") as string) || "N/A",
+        sel: (formData.get("sel") as string) || "N/A",
+        fibre: (formData.get("fibre") as string) || "N/A",
+        energie: (formData.get("energie") as string) || "N/A"
+      };
+      
+      apiFormData.append("nutritionalInfo", JSON.stringify(nutritionalData));
     }
 
     const response = await serverApi.post("/product", apiFormData);

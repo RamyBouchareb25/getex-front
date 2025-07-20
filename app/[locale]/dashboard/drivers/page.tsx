@@ -42,7 +42,6 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
     dateTo: searchParams.dateTo,
     chauffeursData: chauffeursData,
   });
-  console.log("Chauffeurs Data:", chauffeursData);
   return (
     <ChauffeursTable
       key={searchParamsKey} // This will force a complete re-mount

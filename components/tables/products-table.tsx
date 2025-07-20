@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import TableEmptyState from "@/components/table-empty-state";
 import {
@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   Search,
@@ -48,6 +49,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Tag,
+  Eye,
 } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -66,6 +68,22 @@ import {
 import { imageUrl } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+interface NutritionalInfo {
+  id: string;
+  type: string;
+  graisse: string;
+  acide: string;
+  glucide: string;
+  sucre: string;
+  proteine: string;
+  sel: string;
+  fibre: string;
+  energie: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  productId: string;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -82,6 +100,7 @@ interface Product {
       name: string;
     };
   };
+  nutritionalInfo?: NutritionalInfo;
 }
 
 interface SubCategory {
@@ -121,9 +140,9 @@ export default function ProductsTable({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const tProducts = useTranslations('products');
-  const tCommon = useTranslations('common');
-  const tPagination = useTranslations('pagination');
+  const tProducts = useTranslations("products");
+  const tCommon = useTranslations("common");
+  const tPagination = useTranslations("pagination");
 
   // Handle both paginated and non-paginated data
   const products = Array.isArray(productsData)
@@ -139,6 +158,8 @@ export default function ProductsTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [includeNutritionalInfo, setIncludeNutritionalInfo] = useState(false);
   const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>(
     []
   );
@@ -151,6 +172,7 @@ export default function ProductsTable({
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingProductDetails, setIsLoadingProductDetails] = useState(false);
 
   // Error states
   const [error, setError] = useState<string | null>(null);
@@ -258,12 +280,48 @@ export default function ProductsTable({
     setSuccess(null);
 
     try {
+      // If nutritional info is being included, validate that all fields are filled or none
+      if (includeNutritionalInfo) {
+        const type = formData.get("nutritionalType") as string;
+        const graisse = formData.get("graisse") as string;
+        const acide = formData.get("acide") as string;
+        const glucide = formData.get("glucide") as string;
+        const sucre = formData.get("sucre") as string;
+        const proteine = formData.get("proteine") as string;
+        const sel = formData.get("sel") as string;
+        const fibre = formData.get("fibre") as string;
+        const energie = formData.get("energie") as string;
+
+        // Check if any nutritional field is filled
+        const anyNutritionalFieldFilled =
+          (type && type.trim()) ||
+          (graisse && graisse.trim()) ||
+          (acide && acide.trim()) ||
+          (glucide && glucide.trim()) ||
+          (sucre && sucre.trim()) ||
+          (proteine && proteine.trim()) ||
+          (sel && sel.trim()) ||
+          (fibre && fibre.trim()) ||
+          (energie && energie.trim());
+
+        // If any field is filled, all should be filled
+        if (anyNutritionalFieldFilled) {
+          formData.append("includeNutritionalInfo", "true");
+        } else {
+          // No nutritional fields filled, don't include nutritional info
+          formData.append("includeNutritionalInfo", "false");
+        }
+      } else {
+        formData.append("includeNutritionalInfo", "false");
+      }
+
       const result = await createProductAction(formData);
       if (result.success) {
-        setSuccess("Product created successfully!");
+        setSuccess(tProducts("productCreated"));
         setIsCreateOpen(false);
+        setIncludeNutritionalInfo(false); // Reset state after successful creation
       } else {
-        setError(result.message || "Failed to create product");
+        setError(result.message || tProducts("productCreationFailed"));
       }
     } catch (error) {
       console.error("Error creating product:", error);
@@ -330,66 +388,150 @@ export default function ProductsTable({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{tProducts('title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {tProducts("title")}
+          </h1>
           <p className="text-muted-foreground">Manage your product catalog</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tProducts('createProduct')}
+              {tProducts("createProduct")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{tProducts('createProduct')}</DialogTitle>
+              <DialogTitle>{tProducts("createProduct")}</DialogTitle>
               <DialogDescription>
                 Add a new product to your catalog
               </DialogDescription>
             </DialogHeader>
             <form action={handleCreateProduct}>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">{tProducts('productName')}</Label>
-                  <Input id="name" name="name" required />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">{tProducts('productDescription')}</Label>
-                  <Textarea id="description" name="description" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="image">Product Image</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="image"
-                      name="image"
-                      type="file"
-                      accept="image/*"
-                    />
-                    <Button type="button" variant="outline" size="icon">
-                      <Upload className="h-4 w-4" />
-                    </Button>
+              <Tabs defaultValue="basic" className="pt-2">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="basic">Basic Information</TabsTrigger>
+                  <TabsTrigger
+                    value="nutritional"
+                    onClick={() => setIncludeNutritionalInfo(true)}
+                    onBlur={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                        setIncludeNutritionalInfo(false);
+                      }
+                    }}
+                  >
+                    Nutritional Information (Optional)
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="basic" className="mt-4">
+                  <div className="grid gap-4 py-2">
+                    <div className="grid gap-2">
+                      <Label htmlFor="name">{tProducts("productName")}</Label>
+                      <Input id="name" name="name" required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="reference">
+                        {tProducts("reference")}
+                      </Label>
+                      <Input id="reference" name="reference" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="description">
+                        {tProducts("productDescription")}
+                      </Label>
+                      <Textarea id="description" name="description" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="subCategoryId">
+                        {tCommon("subcategory")}
+                      </Label>
+                      <Select name="subCategoryId" required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select sub category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {subCategories.map((subCat) => (
+                            <SelectItem key={subCat.id} value={subCat.id}>
+                              {subCat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="subCategoryId">Sub Category</Label>
-                  <Select name="subCategoryId" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sub category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {subCategories.map((subCat) => (
-                        <SelectItem key={subCat.id} value={subCat.id}>
-                          {subCat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
+                </TabsContent>
+                <TabsContent value="nutritional" className="mt-4">
+                  <div className="grid gap-4 py-2">
+                    <div className="flex items-center p-3 rounded-md bg-muted/50 border border-muted">
+                      <p className="text-sm text-muted-foreground">
+                        {tProducts("nutritionalInfo")} is optional. You can
+                        leave all fields empty, but if you fill any field, we
+                        recommend filling all fields for complete nutritional
+                        data.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="nutritionalType">
+                          {tProducts("nutritionalType")}
+                        </Label>
+                        <Input id="nutritionalType" name="nutritionalType" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="graisse">
+                          {tProducts("nutritionalGraisse")}
+                        </Label>
+                        <Input id="graisse" name="graisse" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="acide">
+                          {tProducts("nutritionalAcide")}
+                        </Label>
+                        <Input id="acide" name="acide" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="glucide">
+                          {tProducts("nutritionalGlucide")}
+                        </Label>
+                        <Input id="glucide" name="glucide" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="sucre">
+                          {tProducts("nutritionalSucre")}
+                        </Label>
+                        <Input id="sucre" name="sucre" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="proteine">
+                          {tProducts("nutritionalProteine")}
+                        </Label>
+                        <Input id="proteine" name="proteine" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="sel">
+                          {tProducts("nutritionalSel")}
+                        </Label>
+                        <Input id="sel" name="sel" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="fibre">
+                          {tProducts("nutritionalFibre")}
+                        </Label>
+                        <Input id="fibre" name="fibre" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="energie">
+                          {tProducts("nutritionalEnergie")}
+                        </Label>
+                        <Input id="energie" name="energie" />
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+              <DialogFooter className="mt-6">
                 <Button type="submit" disabled={isCreating}>
-                  {isCreating ? "Creating..." : "Create Product"}
+                  {isCreating ? tCommon("loading") : tProducts("createProduct")}
                 </Button>
               </DialogFooter>
             </form>
@@ -594,8 +736,16 @@ export default function ProductsTable({
                 {filteredProducts.length === 0 ? (
                   <TableEmptyState
                     colSpan={6}
-                    message={searchTerm ? tCommon('emptyState.noItemsFound') : "No products found"}
-                    description={searchTerm ? tCommon('emptyState.tryDifferentSearch') : "Products will appear here when they are created"}
+                    message={
+                      searchTerm
+                        ? tCommon("emptyState.noItemsFound")
+                        : "No products found"
+                    }
+                    description={
+                      searchTerm
+                        ? tCommon("emptyState.tryDifferentSearch")
+                        : "Products will appear here when they are created"
+                    }
                     showAddButton={!searchTerm}
                     onAddClick={() => setIsCreateOpen(true)}
                     addButtonText="Create Product"
@@ -605,9 +755,7 @@ export default function ProductsTable({
                     <TableRow key={product.id}>
                       <TableCell>
                         <Image
-                          src={
-                            imageUrl(product.image) || "/placeholder.svg"
-                          }
+                          src={imageUrl(product.image) || "/placeholder.svg"}
                           alt={product.name}
                           width={50}
                           height={50}
@@ -644,8 +792,17 @@ export default function ProductsTable({
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => setViewingProduct(product)}
+                            title={tProducts("viewDetails")}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setEditingProduct(product)}
                             disabled={isUpdating || isDeleting === product.id}
+                            title={tCommon("edit")}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -654,6 +811,7 @@ export default function ProductsTable({
                             size="sm"
                             onClick={() => handleDeleteProduct(product.id)}
                             disabled={isDeleting === product.id || isUpdating}
+                            title={tCommon("delete")}
                           >
                             {isDeleting === product.id ? (
                               <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
@@ -765,8 +923,7 @@ export default function ProductsTable({
                     <div className="flex-shrink-0">
                       <Image
                         src={
-                          imageUrl(editingProduct.image) ||
-                          "/placeholder.svg"
+                          imageUrl(editingProduct.image) || "/placeholder.svg"
                         }
                         alt={editingProduct.name}
                         width={50}
@@ -808,6 +965,146 @@ export default function ProductsTable({
                 </Button>
               </DialogFooter>
             </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Product Details Dialog */}
+      <Dialog
+        open={!!viewingProduct}
+        onOpenChange={(open) => !open && setViewingProduct(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{tProducts("productDetails")}</DialogTitle>
+            <DialogDescription>{viewingProduct?.name}</DialogDescription>
+          </DialogHeader>
+          {viewingProduct && (
+            <div className="grid gap-6 py-4">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="md:w-1/3">
+                  <Image
+                    src={imageUrl(viewingProduct.image) || "/placeholder.svg"}
+                    alt={viewingProduct.name}
+                    width={300}
+                    height={300}
+                    className="rounded-md object-cover w-full h-auto"
+                  />
+                </div>
+                <div className="md:w-2/3 space-y-4">
+                  <div>
+                    <h3 className="text-lg font-medium">
+                      {tProducts("productName")}
+                    </h3>
+                    <p>{viewingProduct.name}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium">
+                      {tProducts("reference")}
+                    </h3>
+                    <p>{viewingProduct.reference || tCommon("unknown")}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium">
+                      {tProducts("productDescription")}
+                    </h3>
+                    <p>{viewingProduct.description || tCommon("unknown")}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium">
+                      {tCommon("subcategory")}
+                    </h3>
+                    <p>
+                      {viewingProduct.SubCategory?.name || tCommon("unknown")}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-medium">
+                      {tCommon("category")}
+                    </h3>
+                    <p>
+                      {viewingProduct.SubCategory?.category?.name ||
+                        tCommon("unknown")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nutritional Information */}
+              {viewingProduct.nutritionalInfo && (
+                <div className="pt-4 border-t">
+                  <h2 className="text-xl font-bold mb-4">
+                    {tProducts("nutritionalInfo")}
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalType")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.type}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalGraisse")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.graisse}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalAcide")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.acide}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalGlucide")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.glucide}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalSucre")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.sucre}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalProteine")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.proteine}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalSel")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.sel}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalFibre")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.fibre}</p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-md">
+                      <h3 className="font-medium">
+                        {tProducts("nutritionalEnergie")}
+                      </h3>
+                      <p>{viewingProduct.nutritionalInfo.energie}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <DialogFooter>
+                <Button onClick={() => setViewingProduct(null)}>
+                  {tCommon("close")}
+                </Button>
+              </DialogFooter>
+            </div>
           )}
         </DialogContent>
       </Dialog>
