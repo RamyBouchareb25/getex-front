@@ -52,13 +52,13 @@ export const acceptOrderAction = async (orderId: string) => {
   }
 };
 
-export const rejectOrderAction = async (orderId: string) => {
+export const rejectOrderAction = async (orderId: string, cancelReason: string) => {
   try {
     if (!orderId) {
       throw new Error("Order ID is required for rejection");
     }
-    const response = await serverApi.patch(`/order/${orderId}/status`, {
-      status: "REJECTED",
+    const response = await serverApi.patch(`/order/${orderId}/reject`, {
+      cancelReason,
     });
     if (response.status !== 200 && response.status !== 204) {
       throw new Error(`Failed to reject order: ${response.statusText}`);

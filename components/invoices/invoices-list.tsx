@@ -86,7 +86,7 @@ export default function InvoicesList({ documentType }: InvoicesListProps) {
   const handlePrint = async (orderId: string) => {
     try {
       // Open in a new tab
-      window.open(`/api/order/${orderId}/print/${documentType}`, "_blank");
+      window.open(`/api/orders/${orderId}/print/${documentType}`, "_blank");
     } catch (error) {
       console.error("Error printing document:", error);
     }

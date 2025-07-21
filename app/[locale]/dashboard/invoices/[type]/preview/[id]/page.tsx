@@ -6,22 +6,54 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Printer, ArrowLeft } from "lucide-react";
+
 import { getInvoicesForOrderAction } from "@/lib/actions/invoices";
 
-interface InvoicePreviewProps {
-  params: {
-    id: string;
-    type: string;
-  };
-}
+type CompanyInfo = {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+};
+
+type UserInfo = {
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  email?: string;
+};
+
+type ProductInfo = {
+  name: string;
+};
+
+type OrderItem = {
+  product: ProductInfo;
+  quantity: number;
+  price: number | string;
+};
+
+type InvoiceData = {
+  company: CompanyInfo;
+  user: UserInfo;
+  shippingAddress?: string;
+  orderItems: OrderItem[];
+  total: number;
+  note?: string;
+  cancelReason?: string;
+  chauffeur?: { name?: string };
+  camion?: { matricule?: string };
+};
+
+
 
 export default function InvoicePreviewPage() {
-  const t = useTranslations("Dashboard");
+  const t = useTranslations("dashboard");
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
   const documentType = params.type as string;
-  const [invoiceData, setInvoiceData] = useState<any>(null);
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +63,39 @@ export default function InvoicePreviewPage() {
         setLoading(true);
         const response = await getInvoicesForOrderAction(orderId, documentType);
         if (response.success && response.data) {
-          setInvoiceData(response.data);
+          // Compose company info (could be static or from API)
+          const company: CompanyInfo = {
+            name: response.data.company?.name || "BELLAT",
+            address: response.data.company?.address || "123 Company Street",
+            phone: response.data.company?.phone || "(123) 456-7890",
+            email: response.data.company?.email || "contact@bellat.com",
+          };
+          // Compose user info
+          const user: UserInfo = {
+            firstName: response.data.user?.firstName || "",
+            lastName: response.data.user?.lastName || "",
+            phoneNumber: response.data.user?.phoneNumber,
+            email: response.data.user?.email,
+          };
+          // Compose order items
+          const orderItems: OrderItem[] = (response.data.orderItems || []).map((item: any) => ({
+            product: { name: item.product?.name || "Product" },
+            quantity: item.quantity,
+            price: item.price,
+          }));
+          // Compose invoice data
+          const invoice: InvoiceData = {
+            company,
+            user,
+            shippingAddress: response.data.shippingAddress,
+            orderItems,
+            total: response.data.total || 0,
+            note: response.data.note,
+            cancelReason: response.data.cancelReason,
+            chauffeur: response.data.chauffeur,
+            camion: response.data.camion,
+          };
+          setInvoiceData(invoice);
           setError(null);
         } else {
           setError(response.message || "Failed to load invoice data");
@@ -72,7 +136,7 @@ export default function InvoicePreviewPage() {
 
   const handlePrint = async () => {
     try {
-      window.open(`/api/order/${orderId}/print/${documentType}`, "_blank");
+      window.open(`/api/orders/${orderId}/print/${documentType}`, "_blank");
     } catch (error) {
       console.error("Error printing document:", error);
     }
@@ -145,10 +209,10 @@ export default function InvoicePreviewPage() {
             <div className="flex justify-between">
               <div>
                 <h3 className="font-bold text-lg">Company Information</h3>
-                <p>BELLAT</p>
-                <p>Address: 123 Company Street</p>
-                <p>Phone: (123) 456-7890</p>
-                <p>Email: contact@bellat.com</p>
+                <p>{invoiceData.company.name}</p>
+                <p>Address: {invoiceData.company.address}</p>
+                <p>Phone: {invoiceData.company.phone}</p>
+                <p>Email: {invoiceData.company.email}</p>
               </div>
               <div className="text-right">
                 <h3 className="font-bold text-lg">Document Details</h3>
@@ -161,10 +225,10 @@ export default function InvoicePreviewPage() {
             {/* Customer Information */}
             <div>
               <h3 className="font-bold text-lg">Customer Information</h3>
-              <p>Name: {invoiceData.user?.firstName} {invoiceData.user?.lastName}</p>
+              <p>Name: {invoiceData.user.firstName} {invoiceData.user.lastName}</p>
               <p>Address: {invoiceData.shippingAddress || "N/A"}</p>
-              <p>Phone: {invoiceData.user?.phoneNumber || "N/A"}</p>
-              <p>Email: {invoiceData.user?.email || "N/A"}</p>
+              <p>Phone: {invoiceData.user.phoneNumber || "N/A"}</p>
+              <p>Email: {invoiceData.user.email || "N/A"}</p>
             </div>
 
             {/* Items Table */}
@@ -180,27 +244,27 @@ export default function InvoicePreviewPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {invoiceData.orderItems?.map((item: any, index: number) => (
+                  {invoiceData.orderItems.map((item, index) => (
                     <tr key={index} className="border-b">
-                      <td className="border p-2">{item.product?.name || "Product"}</td>
+                      <td className="border p-2">{item.product.name}</td>
                       <td className="border p-2 text-right">{item.quantity}</td>
-                      <td className="border p-2 text-right">${parseFloat(item.price).toFixed(2)}</td>
-                      <td className="border p-2 text-right">${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
+                      <td className="border p-2 text-right">${parseFloat(item.price as string).toFixed(2)}</td>
+                      <td className="border p-2 text-right">${(parseFloat(item.price as string) * item.quantity).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr className="font-bold">
                     <td colSpan={3} className="border p-2 text-right">Subtotal</td>
-                    <td className="border p-2 text-right">${invoiceData.total?.toFixed(2) || "0.00"}</td>
+                    <td className="border p-2 text-right">{invoiceData.total?.toFixed(2) || "0.00"} DZD</td>
                   </tr>
                   <tr className="font-bold">
-                    <td colSpan={3} className="border p-2 text-right">Tax (0%)</td>
-                    <td className="border p-2 text-right">$0.00</td>
+                    <td colSpan={3} className="border p-2 text-right">Tax (19%)</td>
+                    <td className="border p-2 text-right">{(invoiceData.total ? invoiceData.total * 0.19 : 0).toFixed(2)} DZD</td>
                   </tr>
                   <tr className="font-bold">
                     <td colSpan={3} className="border p-2 text-right">Total</td>
-                    <td className="border p-2 text-right">${invoiceData.total?.toFixed(2) || "0.00"}</td>
+                    <td className="border p-2 text-right">{(invoiceData.total ? invoiceData.total * 1.19 : 0).toFixed(2)} DZD</td>
                   </tr>
                 </tfoot>
               </table>

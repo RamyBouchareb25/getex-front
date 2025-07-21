@@ -25,21 +25,11 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Plus,
   Search,
   Edit,
   Trash2,
@@ -138,7 +128,6 @@ export default function OrdersTable({
   currentPage: number;
   limit: number;
 }) {
-  const t = useTranslations();
   const tCommon = useTranslations("common");
   const tOrders = useTranslations("orders");
   const router = useRouter();
@@ -152,7 +141,6 @@ export default function OrdersTable({
   const total = Array.isArray(ordersData) ? orders.length : ordersData.total;
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -161,9 +149,9 @@ export default function OrdersTable({
   const [dateToFilter, setDateToFilter] = useState<string>("");
 
   // Loading states
-  const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [cancelReason, setCancelReason] = useState<string>("");
   const [isPrinting, setIsPrinting] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -340,10 +328,11 @@ export default function OrdersTable({
     setSuccess(null);
 
     try {
-      const result = await rejectOrderAction(editingOrderId);
+      const result = await rejectOrderAction(editingOrderId, cancelReason);
       if (result.success) {
         setSuccess("Order rejected successfully!");
         setEditingOrder(null);
+        setCancelReason("");
       } else {
         setError(result.message || "Failed to reject order");
       }
@@ -882,6 +871,18 @@ export default function OrdersTable({
                 </Badge>
               </div>
 
+              <div className="grid gap-2">
+                <Label htmlFor="cancel-reason">Cancel Reason (required to deny)</Label>
+                <Input
+                  id="cancel-reason"
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="Enter reason for cancellation"
+                  disabled={isUpdating}
+                  required
+                />
+              </div>
+
               <div className="flex gap-2 pt-4">
                 <Button
                   variant="default"
@@ -897,9 +898,10 @@ export default function OrdersTable({
                   variant="destructive"
                   className="flex-1"
                   onClick={() => {
+                    if (!cancelReason.trim()) return;
                     handleRejectOrder(editingOrder.id);
                   }}
-                  disabled={isUpdating}
+                  disabled={isUpdating || !cancelReason.trim()}
                 >
                   {isUpdating ? "Processing..." : "Deny Order"}
                 </Button>
