@@ -68,6 +68,18 @@ interface Order {
   status: string;
   createdAt: Date | string;
   updatedAt: Date | string;
+  note?: string | null;
+  cancelReason?: string | null;
+  chauffeur?: {
+    id: string;
+    name?: string;
+    phone?: string;
+  };
+  camion?: {
+    id: string;
+    plate?: string;
+    name?: string;
+  };
   user?: {
     id: string;
     email: string;
@@ -872,7 +884,9 @@ export default function OrdersTable({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="cancel-reason">Cancel Reason (required to deny)</Label>
+                <Label htmlFor="cancel-reason">
+                  Cancel Reason (required to deny)
+                </Label>
                 <Input
                   id="cancel-reason"
                   value={cancelReason}
@@ -922,8 +936,11 @@ export default function OrdersTable({
           {viewingOrder && (
             <div className="py-4">
               <Tabs defaultValue="details">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="driver-and-truck">
+                    Driver and Truck
+                  </TabsTrigger>
                   <TabsTrigger value="items">Items</TabsTrigger>
                 </TabsList>
                 <TabsContent value="details" className="space-y-4 mt-4">
@@ -982,6 +999,28 @@ export default function OrdersTable({
                     </div>
                   </div>
                 </TabsContent>
+                <TabsContent value="driver-and-truck" className="mt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h3 className="font-medium">Driver Information</h3>
+                      <p className="text-sm">
+                        {viewingOrder.chauffeur?.name || "No driver assigned"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {viewingOrder.chauffeur?.phone || "No phone number"}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="font-medium">Truck Information</h3>
+                      <p className="text-sm">
+                        {viewingOrder.camion?.plate || "No truck assigned"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {viewingOrder.camion?.name || "No model specified"}
+                      </p>
+                    </div>
+                  </div>
+                </TabsContent>
                 <TabsContent value="items" className="mt-4">
                   <Table>
                     <TableHeader>
@@ -1009,7 +1048,15 @@ export default function OrdersTable({
                       ))}
                     </TableBody>
                   </Table>
-                  <div className="flex justify-end mt-4">
+                  <div className="flex justify-between mt-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground">
+                        Note
+                      </div>
+                      <div className="text-xl font-bold">
+                        {viewingOrder.note || "No note provided"}
+                      </div>
+                    </div>
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">
                         Total H.T
@@ -1020,7 +1067,15 @@ export default function OrdersTable({
                     </div>
                   </div>
 
-                  <div className="flex justify-end mt-4">
+                  <div className={`flex justify-${viewingOrder.status === "REJECTED" || viewingOrder.status === "CANCELLED" ? "between" : "end"} mt-4`}>
+                    {(viewingOrder.status === "REJECTED" || viewingOrder.status === "CANCELLED") && <div>
+                      <div className="text-sm text-muted-foreground">
+                        Cancel reason
+                      </div>
+                      <div className="text-xl font-bold">
+                        {viewingOrder.cancelReason || "No reason provided"}
+                      </div>
+                    </div>}
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">T.V.A</div>
                       <div className="text-xl font-bold">19%</div>

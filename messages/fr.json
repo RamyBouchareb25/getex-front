@@ -91,6 +91,7 @@
     "bellatStock": "stock Bellat",
     "foodTrucks": "Food Trucks",
     "allStocks": "Tous les stocks",
+    "ordersHistory": "Historique des commandes",
     "logout": "Déconnexion"
   },
   "auth": {

@@ -91,6 +91,7 @@
     "bellatStock": "مخزون Bellat",
     "allStocks": "جميع المخزونات",
     "foodTrucks": "شاحنات الطعام",
+    "ordersHistory": "تاريخ الطلبات",
     "logout": "تسجيل الخروج"
   },
   "auth": {

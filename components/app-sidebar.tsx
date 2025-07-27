@@ -23,6 +23,7 @@ import {
   PackageCheck,
   Boxes,
   Hamburger,
+  History,
 } from "lucide-react";
 
 import {
@@ -126,6 +127,11 @@ export function AppSidebar() {
       title: t("orders"),
       url: `/${locale}/dashboard/orders`,
       icon: ShoppingCart,
+    },
+    {
+      title: t("ordersHistory"),
+      url: `/${locale}/dashboard/order-history`,
+      icon: History,
     },
     {
       title: t("camions"),

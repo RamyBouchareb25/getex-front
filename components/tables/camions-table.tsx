@@ -45,7 +45,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Popover,
   PopoverContent,
@@ -57,7 +57,6 @@ import {
   updateCamionAction,
   deleteCamionAction,
 } from "@/lib/actions/camions";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 
 interface Camion {
@@ -65,6 +64,10 @@ interface Camion {
   name: string;
   plate: string;
   companyId: string;
+  assignedOrderId?: string;
+  assignedOrder?: {
+    id: string;
+  };
   company: {
     raisonSocial: string;
   };
@@ -107,6 +110,7 @@ export default function CamionsTable({
   const t = useTranslations();
   const tCommon = useTranslations("common");
   const tCamions = useTranslations("camions");
+  const tChauffeur = useTranslations("chauffeurs");
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -489,6 +493,7 @@ export default function CamionsTable({
                   <TableHead>{tCommon("name")}</TableHead>
                   <TableHead>{tCamions("plate") || "License Plate"}</TableHead>
                   <TableHead>{tCommon("company")}</TableHead>
+                  <TableHead>{tChauffeur("assignedOrder")}</TableHead>
                   <TableHead>{tCamions("createdAt") || "Created At"}</TableHead>
                   <TableHead>{tCommon("actions")}</TableHead>
                 </TableRow>
@@ -526,6 +531,18 @@ export default function CamionsTable({
                         >
                           {camion.company?.raisonSocial || tCommon("unknown")}
                         </Link>
+                      </TableCell>
+                      <TableCell>
+                        {camion.assignedOrder ? (
+                          <Link
+                            className="text-blue-600 hover:underline"
+                            href={`/orders?id=${camion.assignedOrderId}`}
+                          >
+                            #{camion.assignedOrder.id || tChauffeur("unknown")}
+                          </Link>
+                        ) : (
+                          tChauffeur("notAssigned") || "Not Assigned"
+                        )}
                       </TableCell>
                       <TableCell>
                         {new Date(camion.createdAt).toLocaleDateString()}
