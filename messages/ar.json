@@ -92,6 +92,7 @@
     "allStocks": "جميع المخزونات",
     "foodTrucks": "شاحنات الطعام",
     "ordersHistory": "تاريخ الطلبات",
+    "orderList": "قائمة الطلبات",
     "logout": "تسجيل الخروج"
   },
   "auth": {

@@ -24,6 +24,7 @@ import {
   Boxes,
   Hamburger,
   History,
+  ClipboardList,
 } from "lucide-react";
 
 import {
@@ -125,13 +126,20 @@ export function AppSidebar() {
     },
     {
       title: t("orders"),
-      url: `/${locale}/dashboard/orders`,
+      url: `/${locale}/dashboard/stock`,
       icon: ShoppingCart,
-    },
-    {
-      title: t("ordersHistory"),
-      url: `/${locale}/dashboard/order-history`,
-      icon: History,
+      content: [
+        {
+          title: t("orderList"),
+          url: `/${locale}/dashboard/orders`,
+          icon: ClipboardList,
+        },
+        {
+          title: t("ordersHistory"),
+          url: `/${locale}/dashboard/order-history`,
+          icon: History,
+        },
+      ],
     },
     {
       title: t("camions"),

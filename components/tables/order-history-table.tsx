@@ -497,10 +497,10 @@ export default function OrderHistoryTable({
                     <TableCell>{order.OrderItems?.length || 0} items</TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{order.createdAt}</div>
+                        <div className="font-medium">{new Date(order.createdAt).toLocaleDateString("fr-FR")}</div>
                         {order.deliveryDate && (
                           <div className="text-xs text-muted-foreground">
-                            Delivered: {order.deliveryDate}
+                            Delivered: {new Date(order.deliveryDate).toLocaleDateString("fr-FR")}
                           </div>
                         )}
                       </div>

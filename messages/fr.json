@@ -92,6 +92,7 @@
     "foodTrucks": "Food Trucks",
     "allStocks": "Tous les stocks",
     "ordersHistory": "Historique des commandes",
+    "orderList": "Liste des commandes",
     "logout": "Déconnexion"
   },
   "auth": {

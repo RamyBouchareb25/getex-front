@@ -92,6 +92,7 @@
     "allStocks": "All Stocks",
     "foodTrucks": "Food Trucks",
     "ordersHistory": "Orders History",
+    "orderList": "Order List",
     "logout": "Logout"
   },
   "auth": {

@@ -725,13 +725,6 @@ export default function OrdersTable({
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
-                            {/* <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingOrder(order)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button> */}
                             <Button
                               variant="outline"
                               size="sm"
@@ -810,62 +803,7 @@ export default function OrdersTable({
           </Button>
         </div>
       </div>
-      {/* Edit Order Dialog
-      <Dialog open={!!editingOrder} onOpenChange={() => setEditingOrder(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Order</DialogTitle>
-            <DialogDescription>Update order information</DialogDescription>
-          </DialogHeader>
-          {editingOrder && (
-            <form action={handleUpdateOrder}>
-              <input type="hidden" name="id" value={editingOrder.id} />
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-total">Total Amount</Label>
-                  <Input
-                    id="edit-total"
-                    name="total"
-                    type="number"
-                    step="0.01"
-                    defaultValue={editingOrder.total}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-status">Status</Label>
-                  <Select name="status" defaultValue={editingOrder.status} required>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PENDING">Pending</SelectItem>
-                      <SelectItem value="ACCEPTED">Accepted</SelectItem>
-                      <SelectItem value="REJECTED">Rejected</SelectItem>
-                      <SelectItem value="SHIPPING">Shipping</SelectItem>
-                      <SelectItem value="COMPLETED">Completed</SelectItem>
-                      <SelectItem value="CANCELED">Canceled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-shippingAddress">Shipping Address</Label>
-                  <Input
-                    id="edit-shippingAddress"
-                    name="shippingAddress"
-                    defaultValue={editingOrder.shippingAddress}
-                    required
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit">Update Order</Button>
-              </DialogFooter>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog> */}
-      {/* Edit Order Dialog */}
+      
       <Dialog open={!!editingOrder} onOpenChange={() => setEditingOrder(null)}>
         <DialogContent>
           <DialogHeader>
@@ -1050,9 +988,7 @@ export default function OrdersTable({
                   </Table>
                   <div className="flex justify-between mt-4">
                     <div>
-                      <div className="text-sm text-muted-foreground">
-                        Note
-                      </div>
+                      <div className="text-sm text-muted-foreground">Note</div>
                       <div className="text-xl font-bold">
                         {viewingOrder.note || "No note provided"}
                       </div>
@@ -1067,22 +1003,25 @@ export default function OrdersTable({
                     </div>
                   </div>
 
-                  <div className={`flex justify-${viewingOrder.status === "REJECTED" || viewingOrder.status === "CANCELLED" ? "between" : "end"} mt-4`}>
-                    {(viewingOrder.status === "REJECTED" || viewingOrder.status === "CANCELLED") && <div>
-                      <div className="text-sm text-muted-foreground">
-                        Cancel reason
+                  <div
+                    className={`flex justify-${
+                      viewingOrder.status === "REJECTED" ||
+                      viewingOrder.status === "CANCELLED"
+                        ? "between"
+                        : "end"
+                    } mt-4`}
+                  >
+                    {(viewingOrder.status === "REJECTED" ||
+                      viewingOrder.status === "CANCELLED") && (
+                      <div>
+                        <div className="text-sm text-muted-foreground">
+                          Cancel reason
+                        </div>
+                        <div className="text-xl font-bold">
+                          {viewingOrder.cancelReason || "No reason provided"}
+                        </div>
                       </div>
-                      <div className="text-xl font-bold">
-                        {viewingOrder.cancelReason || "No reason provided"}
-                      </div>
-                    </div>}
-                    <div className="text-right">
-                      <div className="text-sm text-muted-foreground">T.V.A</div>
-                      <div className="text-xl font-bold">19%</div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end mt-4">
+                    )}
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">
                         Total T.T.C

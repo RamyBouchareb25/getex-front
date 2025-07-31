@@ -118,8 +118,7 @@ export default function InvoicesList({ documentType }: InvoicesListProps) {
         );
 
       case "bon-reception":
-        // This is left empty as mentioned in requirements
-        return false;
+        return status === OrderStatus.COMPLETED;
 
       case "facture":
         return (
@@ -138,8 +137,7 @@ export default function InvoicesList({ documentType }: InvoicesListProps) {
         );
 
       case "facture-avoir":
-        // This is left empty as mentioned in requirements
-        return false;
+        return status === OrderStatus.REJECTED;
 
       default:
         return false;

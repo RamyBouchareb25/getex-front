@@ -2,7 +2,7 @@ import { serverApi } from "@/lib/axios-interceptor";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  request: NextRequest,
+  _: NextRequest,
   { params }: { params: { orderId: string; documentType: string } }
 ) {
   try {
@@ -10,13 +10,15 @@ export async function GET(
 
     const response = await serverApi.get(
       `/order/${orderId}/print/${documentType}`,
-      { responseType: 'arraybuffer' }
+      { responseType: "arraybuffer" }
     );
 
     return new NextResponse(response.data, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${documentType}-${orderId}.pdf"`,
+        "Content-Disposition": `${
+          response.headers["content-disposition"] || "inline"
+        }; filename="order-${orderId}-${documentType}.pdf"`,
       },
     });
   } catch (error) {
