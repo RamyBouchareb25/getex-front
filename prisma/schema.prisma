@@ -15,6 +15,7 @@ enum Role {
     GROSSISTE
     POINT_DE_VENTE
     GRANDE_SURFACE
+    FOOD_TRUCK
 }
 
 model User {
@@ -27,12 +28,27 @@ model User {
     updatedAt DateTime @updatedAt
 
     CompanyData CompanyData?
+    FoodTruckData FoodTruckData?
 
     Stock Stock[]
     Order Order[]
 
     // Sale Sale[]
     Cart Cart?
+
+}
+
+model FoodTruckData {
+    id         String @id @default(cuid())
+    plate      String
+    carteGrise String
+    licence   String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String @unique
+    User   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CompanyData {
@@ -43,9 +59,10 @@ model CompanyData {
     rc           String
     phone        Int
     address      Address?
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    art          String?
+    logo         String?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 
     userId    String      @unique
     User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -102,10 +119,11 @@ model Product {
 
     stock Stock[]
 
-    subCategoryId String
-    SubCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
-    
+    subCategoryId   String
+    SubCategory     SubCategory      @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
     nutritionalInfo NutritionalInfo?
+
+    @@unique([name, subCategoryId])
 }
 
 model Category {
@@ -122,7 +140,7 @@ model Category {
 
 model SubCategory {
     id          String    @id @default(cuid())
-    name        String @unique
+    name        String    @unique
     image       String?
     description String?
     products    Product[]
@@ -145,20 +163,27 @@ enum OrderStatus {
 }
 
 model Order {
-    id           String      @id
-    userId       String
-    total        Float
-    status       OrderStatus @default(PENDING)
-    createdAt    DateTime    @default(now())
-    updatedAt    DateTime    @updatedAt
-    note         String?
-    cancelReason String?
-    chauffeurId  String?
-    camionId     String?     @unique
-    user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    chauffeur    Chauffeur?
-    camion       Camion?
-    OrderItems   OrderItem[]
+    id                  String      @id
+    userId              String
+    total               Float
+    status              OrderStatus @default(PENDING)
+    createdAt           DateTime    @default(now())
+    updatedAt           DateTime    @updatedAt
+    note                String?
+    cancelReason        String?
+    chauffeurId         String?
+    camionId            String?
+    // For assignedOrder reverse relation
+    chauffeurAssignedId String?     @unique
+    camionAssignedId    String?     @unique
+
+    user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    chauffeur         Chauffeur? @relation("ChauffeurOrders", fields: [chauffeurId], references: [id])
+    camion            Camion?    @relation("CamionOrders", fields: [camionId], references: [id])
+    assignedChauffeur Chauffeur? @relation("ChauffeurAssignedOrder", fields: [chauffeurAssignedId], references: [id])
+    assignedCamion    Camion?    @relation("CamionAssignedOrder", fields: [camionAssignedId], references: [id])
+
+    OrderItems OrderItem[]
 }
 
 model OrderItem {
@@ -191,14 +216,15 @@ model Chauffeur {
     id              String  @id @default(cuid())
     name            String
     phone           Int
-    assignedOrderId String? @unique
     companyId       String
+    assignedOrderId String? @unique
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     company       CompanyData @relation(fields: [companyId], references: [id], onDelete: Cascade)
-    assignedOrder Order?      @relation(fields: [assignedOrderId], references: [id], onDelete: Cascade)
+    assignedOrder Order?      @relation("ChauffeurAssignedOrder")
+    orders        Order[]     @relation("ChauffeurOrders")
 }
 
 model Camion {
@@ -212,23 +238,24 @@ model Camion {
     updatedAt DateTime @updatedAt
 
     company       CompanyData @relation(fields: [companyId], references: [id], onDelete: Cascade)
-    assignedOrder Order?      @relation(fields: [assignedOrderId], references: [id], onDelete: Cascade)
+    assignedOrder Order?      @relation("CamionAssignedOrder")
+    orders        Order[]     @relation("CamionOrders")
 }
 
 model NutritionalInfo {
-    id          String   @id @default(cuid())
-    type        String   @default("N/A")
-    graisse     String   @default("N/A")
-    acide       String   @default("N/A")
-    glucide     String   @default("N/A")
-    sucre       String   @default("N/A")
-    proteine    String   @default("N/A")
-    sel         String   @default("N/A")
-    fibre       String   @default("N/A")
-    energie     String   @default("N/A")
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    
-    productId   String   @unique
-    product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+    id        String   @id @default(cuid())
+    type      String   @default("N/A")
+    graisse   String   @default("N/A")
+    acide     String   @default("N/A")
+    glucide   String   @default("N/A")
+    sucre     String   @default("N/A")
+    proteine  String   @default("N/A")
+    sel       String   @default("N/A")
+    fibre     String   @default("N/A")
+    energie   String   @default("N/A")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    productId String  @unique
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

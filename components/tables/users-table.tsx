@@ -73,6 +73,13 @@ interface User {
   CompanyData?: {
     id: string;
     raisonSocial: string;
+    art?: string;
+  };
+  FoodTruckData?: {
+    id: string;
+    plate: string;
+    licence: string;
+    carteGrise: string;
   };
 }
 
@@ -125,6 +132,9 @@ export default function UsersTable({
   // Loading states
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  // Track selected role for create/edit dialogs
+  const [createRole, setCreateRole] = useState<string>(initialRoles[0] || "");
+  const [editRole, setEditRole] = useState<string>("");
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
 
@@ -222,11 +232,22 @@ export default function UsersTable({
     setIsCreating(true);
     try {
       const formData = new FormData(event.currentTarget);
+      // Add role from state (for Select component)
+      formData.set("role", createRole);
+      // Add art field
+      // Already included via input name="art"
+      // If FOOD_TRUCK, ensure plate, licence, carteGrise are included
+      if (createRole === "FOOD_TRUCK") {
+        // Already included via input names
+      } else {
+        formData.delete("plate");
+        formData.delete("licence");
+        formData.delete("carteGrise");
+      }
       const result = await createUserAction(formData);
       if (result.success) {
         toast.success("User created successfully!");
         setIsCreateOpen(false);
-        // Refresh the current page to show the new user
         router.refresh();
       } else {
         toast.error(result.message || "Failed to create user");
@@ -242,14 +263,24 @@ export default function UsersTable({
   const handleUpdateUser = async (event: React.FormEvent<HTMLFormElement>) => {
     setIsUpdating(true);
     event.preventDefault();
-
     try {
       const formData = new FormData(event.currentTarget);
+      // Add role from state (for Select component)
+      formData.set("role", editRole);
+      // Add art field
+      // Already included via input name="art"
+      // If FOOD_TRUCK, ensure plate, licence, carteGrise are included
+      if (editRole === "FOOD_TRUCK") {
+        // Already included via input names
+      } else {
+        formData.delete("plate");
+        formData.delete("licence");
+        formData.delete("carteGrise");
+      }
       const result = await updateUserAction(formData);
       if (result.success) {
         toast.success("User updated successfully!");
         setEditingUser(null);
-        // router.refresh();
       } else {
         toast.error(result.message || "Failed to update user");
       }
@@ -354,6 +385,10 @@ export default function UsersTable({
                   <Input disabled={isCreating} id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
+                  <Label htmlFor="art">Art</Label>
+                  <Input disabled={isCreating} id="art" name="art" required />
+                </div>
+                <div className="grid gap-2">
                   <Label htmlFor="email">{tCommon("email")}</Label>
                   <Input
                     disabled={isCreating}
@@ -385,7 +420,13 @@ export default function UsersTable({
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="role">{tUsers("role")}</Label>
-                  <Select disabled={isCreating} name="role" required>
+                  <Select
+                    disabled={isCreating}
+                    name="role"
+                    required
+                    value={createRole}
+                    onValueChange={setCreateRole}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -398,9 +439,47 @@ export default function UsersTable({
                       <SelectItem value="GRANDE_SURFACE">
                         Grande Surface
                       </SelectItem>
+                      <SelectItem value="FOOD_TRUCK">Food Truck</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                {/* FOOD_TRUCK extra fields */}
+                {createRole === "FOOD_TRUCK" && (
+                  <div className="grid gap-2">
+                    <Label>Food Truck Details</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor="plate">Plate</Label>
+                        <Input
+                          disabled={isCreating}
+                          id="plate"
+                          name="plate"
+                          required={createRole === "FOOD_TRUCK"}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="licence">Licence</Label>
+                        <Input
+                          disabled={isCreating}
+                          id="licence"
+                          name="licence"
+                          required={createRole === "FOOD_TRUCK"}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label htmlFor="carteGrise">Carte Grise (Image)</Label>
+                        <Input
+                          disabled={isCreating}
+                          id="carteGrise"
+                          name="carteGrise"
+                          type="file"
+                          accept="image/*"
+                          required={createRole === "FOOD_TRUCK"}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* Company Information */}
                 <div className="grid gap-2">
                   <Label>Company Information (Optional)</Label>
@@ -504,6 +583,7 @@ export default function UsersTable({
                           "GROSSISTE",
                           "POINT_DE_VENTE",
                           "GRANDE_SURFACE",
+                          "FOOD_TRUCK",
                         ].map((role) => (
                           <div
                             key={role}
@@ -567,11 +647,19 @@ export default function UsersTable({
                 {usersData.users.length === 0 ? (
                   <TableEmptyState
                     colSpan={6}
-                    message={searchTerm ? tCommon('emptyState.noItemsFound') : "No users found"}
-                    description={searchTerm ? tCommon('emptyState.tryDifferentSearch') : "Users will appear here when they are created"}
+                    message={
+                      searchTerm
+                        ? tCommon("emptyState.noItemsFound")
+                        : "No users found"
+                    }
+                    description={
+                      searchTerm
+                        ? tCommon("emptyState.tryDifferentSearch")
+                        : "Users will appear here when they are created"
+                    }
                     showAddButton={!searchTerm}
                     onAddClick={() => setIsCreateOpen(true)}
-                    addButtonText={tUsers('createUser')}
+                    addButtonText={tUsers("createUser")}
                   />
                 ) : (
                   usersData.users.map((user) => (
@@ -714,6 +802,16 @@ export default function UsersTable({
                   />
                 </div>
                 <div className="grid gap-2">
+                  <Label htmlFor="edit-art">Art</Label>
+                  <Input
+                    id="edit-art"
+                    name="art"
+                    defaultValue={editingUser.CompanyData?.art || ""}
+                    required
+                    disabled={isUpdating}
+                  />
+                </div>
+                <div className="grid gap-2">
                   <Label htmlFor="edit-email">Email</Label>
                   <Input
                     id="edit-email"
@@ -729,7 +827,8 @@ export default function UsersTable({
                   <Select
                     disabled={isUpdating}
                     name="role"
-                    defaultValue={editingUser.role}
+                    value={editRole || editingUser.role}
+                    onValueChange={setEditRole}
                     required
                   >
                     <SelectTrigger>
@@ -744,9 +843,54 @@ export default function UsersTable({
                       <SelectItem value="GRANDE_SURFACE">
                         Grande Surface
                       </SelectItem>
+                      <SelectItem value="FOOD_TRUCK">Food Truck</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                {/* FOOD_TRUCK extra fields for edit */}
+                {(editRole || editingUser.role) === "FOOD_TRUCK" && (
+                  <div className="grid gap-2">
+                    <Label>Food Truck Details</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label htmlFor="edit-plate">Plate</Label>
+                        <Input
+                          id="edit-plate"
+                          name="plate"
+                          defaultValue={editingUser.FoodTruckData?.plate || ""}
+                          required={
+                            (editRole || editingUser.role) === "FOOD_TRUCK"
+                          }
+                          disabled={isUpdating}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-licence">Licence</Label>
+                        <Input
+                          id="edit-licence"
+                          name="licence"
+                          defaultValue={editingUser.FoodTruckData?.licence || ""}
+                          required={
+                            (editRole || editingUser.role) === "FOOD_TRUCK"
+                          }
+                          disabled={isUpdating}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label htmlFor="edit-carteGrise">
+                          Carte Grise (Image)
+                        </Label>
+                        <Input
+                          id="edit-carteGrise"
+                          name="carteGrise"
+                          type="file"
+                          accept="image/*"
+                          disabled={isUpdating}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isUpdating}>

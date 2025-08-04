@@ -5,37 +5,33 @@ import { AxiosError } from "axios";
 
 export const createUserAction = async (formData: FormData) => {
   try {
-    const email = formData.get("email") as string;
-    const name = formData.get("name") as string;
-    const password = formData.get("password") as string;
-    const role = formData.get("role") as string;
-
-    // Company fields
-    const raisonSocial = formData.get("raisonSocial") as string;
-    const nif = formData.get("nif") as string;
-    const nis = formData.get("nis") as string;
-    const phone = formData.get("phone") as string;
-
-    // Address fields
-    const wilaya = formData.get("wilaya") as string;
-    const commune = formData.get("commune") as string;
-    const rc = formData.get("rc") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
-    const payload = {
-      email,
-      name,
-      password,
-      role,
-      raisonSocial,
-      nif,
-      nis,
-      rc,
-      phone,
-      wilaya,
-      commune,
-      confirmPassword,
-    };
-    const response = await serverApi.post("/user", payload);
+    const form = new FormData();
+    const fields = [
+      "email",
+      "name",
+      "password",
+      "role",
+      "raisonSocial",
+      "nif",
+      "nis",
+      "rc",
+      "phone",
+      "wilaya",
+      "commune",
+      "confirmPassword",
+      "licence",
+      "plate",
+      "art",
+      "carteGrise",
+    ];
+    for (const field of fields) {
+      const value = formData.get(field);
+      if (value !== null && value !== undefined) {
+        form.append(field, value);
+      }
+    }
+    console.log("Creating user with form data:", Object.fromEntries(form.entries()));
+    const response = await serverApi.post("/user", form);
     if (response.status !== 201) {
       throw new Error(`Failed to create user: ${response.statusText}`);
     }
@@ -62,23 +58,54 @@ export const updateUserAction = async (formData: FormData) => {
     const email = formData.get("email") as string;
     const name = formData.get("name") as string;
     const role = formData.get("role") as string;
+    const art = formData.get("art") as string;
 
     if (!id) {
       throw new Error("User ID is required for update");
     }
 
-    const payload = {
+    const payload: any = {
       email,
       name,
       role,
+      art,
     };
 
-    const response = await serverApi.patch(`/user/${id}`, payload);
-    if (response.status !== 200) {
-      throw new Error(`Failed to update user: ${response.statusText}`);
-    }
-    console.log("User updated successfully:", response.data);
+    // Handle FOOD_TRUCK specific fields
+    if (role === "FOOD_TRUCK") {
+      const plate = formData.get("plate") as string;
+      const licence = formData.get("licence") as string;
+      const carteGrise = formData.get("carteGrise") as File;
 
+      payload.plate = plate;
+      payload.licence = licence;
+
+      // If carteGrise is provided, use FormData for file upload
+      if (carteGrise && carteGrise.size > 0) {
+        const form = new FormData();
+        Object.keys(payload).forEach(key => {
+          form.append(key, payload[key]);
+        });
+        form.append("carteGrise", carteGrise);
+        
+        const response = await serverApi.patch(`/user/${id}`, form);
+        if (response.status !== 200) {
+          throw new Error(`Failed to update user: ${response.statusText}`);
+        }
+      } else {
+        const response = await serverApi.patch(`/user/${id}`, payload);
+        if (response.status !== 200) {
+          throw new Error(`Failed to update user: ${response.statusText}`);
+        }
+      }
+    } else {
+      const response = await serverApi.patch(`/user/${id}`, payload);
+      if (response.status !== 200) {
+        throw new Error(`Failed to update user: ${response.statusText}`);
+      }
+    }
+
+    console.log("User updated successfully");
     revalidatePath("/dashboard/users");
     return { success: true, message: "User updated successfully" };
   } catch (error) {
@@ -186,10 +213,11 @@ export const getUsersAction = async (params?: {
     if (response.status !== 200) {
       throw new Error(`Failed to fetch users: ${response.statusText}`);
     }
-    const filteredUsers = response.data.users?.filter((user: any) => user.id) || [];
+    const filteredUsers =
+      response.data.users?.filter((user: any) => user.id) || [];
     return {
       ...response.data,
-      users: filteredUsers
+      users: filteredUsers,
     };
   } catch (error) {
     console.error("Error fetching users:", error);

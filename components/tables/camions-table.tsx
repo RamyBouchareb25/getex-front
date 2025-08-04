@@ -491,7 +491,7 @@ export default function CamionsTable({
               <TableHeader>
                 <TableRow>
                   <TableHead>{tCommon("name")}</TableHead>
-                  <TableHead>{tCamions("plate") || "License Plate"}</TableHead>
+                  <TableHead>{tCamions("plate") || "licence Plate"}</TableHead>
                   <TableHead>{tCommon("company")}</TableHead>
                   <TableHead>{tChauffeur("assignedOrder")}</TableHead>
                   <TableHead>{tCamions("createdAt") || "Created At"}</TableHead>
@@ -650,7 +650,7 @@ export default function CamionsTable({
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-plate">
-                    {tCamions("plate") || "License Plate"}
+                    {tCamions("plate") || "licence Plate"}
                   </Label>
                   <Input
                     id="edit-plate"
