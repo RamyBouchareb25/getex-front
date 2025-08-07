@@ -120,7 +120,6 @@ export const getCategoriesAction = async ({
     if (search) params.append('search', search);
     if (dateFrom) params.append('dateFrom', dateFrom);
     if (dateTo) params.append('dateTo', dateTo);
-
     const response = await serverApi.get(`/category/admin?${params.toString()}`);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch categories: ${response.statusText}`);

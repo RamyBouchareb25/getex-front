@@ -45,6 +45,7 @@ import {
 import Link from "next/link";
 import { updateCompanyAction } from "@/lib/actions/companies";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import SalamiLoadingAnimation from "../ui/salami-loading";
 
 interface Company {
   id: string;

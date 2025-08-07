@@ -1,8 +1,13 @@
 import { Skeleton } from "@/components/ui/skeleton"
+import SalamiLoadingAnimation from "@/components/ui/salami-loading"
 
 export default function Loading() {
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      {/* Foreground Salami Loading Animation */}
+      <div className="absolute inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-sm">
+        <SalamiLoadingAnimation />
+      </div>
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">

@@ -62,6 +62,7 @@ import {
 } from "@/lib/actions/stock";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
+import SalamiLoadingAnimation from "../ui/salami-loading";
 
 interface Stock {
   id: string;

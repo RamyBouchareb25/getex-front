@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,6 +39,7 @@ import {
   Upload,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -54,8 +55,9 @@ import {
   updateCategoryAction,
   deleteCategoryAction,
 } from "@/lib/actions/categories";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import SalamiLoadingAnimation from "../ui/salami-loading";
+import { toast } from "sonner";
 
 interface PaginationData {
   categories: (Category & { _count: { SubCategories: number } })[];
@@ -78,9 +80,9 @@ export default function CategoriesTable({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const tCategories = useTranslations('categories');
-  const tCommon = useTranslations('common');
-  const tPagination = useTranslations('pagination');
+  const tCategories = useTranslations("categories");
+  const tCommon = useTranslations("common");
+  const tPagination = useTranslations("pagination");
 
   // Handle both paginated and non-paginated data
   const categories = Array.isArray(categoriesData)
@@ -95,6 +97,7 @@ export default function CategoriesTable({
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [deletingCategory, setDeletingCategory] = useState<any>(null);
   const [dateFromFilter, setDateFromFilter] = useState<string>("");
   const [dateToFilter, setDateToFilter] = useState<string>("");
   const [subCategoryCountFilter, setSubCategoryCountFilter] =
@@ -105,10 +108,6 @@ export default function CategoriesTable({
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-
-  // Error states
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
 
@@ -165,21 +164,20 @@ export default function CategoriesTable({
   ) => {
     event.preventDefault();
     setIsCreating(true);
-    setError(null);
-    setSuccess(null);
 
     try {
       const formData = new FormData(event.currentTarget);
       const result = await createCategoryAction(formData);
       if (result.success) {
-        setSuccess("Category created successfully!");
+        toast.success(result.message || "Category created successfully!");
         setIsCreateOpen(false);
+        router.refresh();
       } else {
-        setError(result.message || "Failed to create category");
+        toast.error(result.message || "Failed to create category");
       }
     } catch (error) {
       console.error("Error creating category:", error);
-      setError("An unexpected error occurred while creating the category");
+      toast.error("An unexpected error occurred while creating the category");
     } finally {
       setIsCreating(false);
     }
@@ -190,21 +188,20 @@ export default function CategoriesTable({
   ) => {
     event.preventDefault();
     setIsUpdating(true);
-    setError(null);
-    setSuccess(null);
 
     try {
       const formData = new FormData(event.currentTarget);
       const result = await updateCategoryAction(formData);
       if (result.success) {
-        setSuccess("Category updated successfully!");
+        toast.success(result.message || "Category updated successfully!");
         setEditingCategory(null);
+        router.refresh();
       } else {
-        setError(result.message || "Failed to update category");
+        toast.error(result.message || "Failed to update category");
       }
     } catch (error) {
       console.error("Error updating category:", error);
-      setError("An unexpected error occurred while updating the category");
+      toast.error("An unexpected error occurred while updating the category");
     } finally {
       setIsUpdating(false);
     }
@@ -212,19 +209,19 @@ export default function CategoriesTable({
 
   const handleDeleteCategory = async (categoryId: string) => {
     setIsDeleting(categoryId);
-    setError(null);
-    setSuccess(null);
 
     try {
       const result = await deleteCategoryAction(categoryId);
       if (result.success) {
-        setSuccess("Category deleted successfully!");
+        toast.success(result.message || "Category deleted successfully!");
+        setDeletingCategory(null);
+        router.refresh();
       } else {
-        setError(result.message || "Failed to delete category");
+        toast.error(result.message || "Failed to delete category");
       }
     } catch (error) {
       console.error("Error deleting category:", error);
-      setError("An unexpected error occurred while deleting the category");
+      toast.error("An unexpected error occurred while deleting the category");
     } finally {
       setIsDeleting(null);
     }
@@ -232,43 +229,35 @@ export default function CategoriesTable({
 
   return (
     <div className="space-y-6">
-      {/* Error and Success Messages */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {success && (
-        <Alert>
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
-
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{tCategories('title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {tCategories("title")}
+          </h1>
           <p className="text-muted-foreground">Manage product categories</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tCategories('createCategory')}
+              {tCategories("createCategory")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{tCategories('createCategory')}</DialogTitle>
+              <DialogTitle>{tCategories("createCategory")}</DialogTitle>
               <DialogDescription>Add a new product category</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateCategory}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{tCategories('categoryName')}</Label>
+                  <Label htmlFor="name">{tCategories("categoryName")}</Label>
                   <Input disabled={isCreating} id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="description">{tCategories('categoryDescription')}</Label>
+                  <Label htmlFor="description">
+                    {tCategories("categoryDescription")}
+                  </Label>
                   <Textarea
                     disabled={isCreating}
                     id="description"
@@ -442,75 +431,80 @@ export default function CategoriesTable({
             <TableHeader>
               <TableRow>
                 <TableHead>Image</TableHead>
-                <TableHead>{tCommon('name')}</TableHead>
-                <TableHead>{tCommon('description')}</TableHead>
+                <TableHead>{tCommon("name")}</TableHead>
+                <TableHead>{tCommon("description")}</TableHead>
                 <TableHead>Sub Categories</TableHead>
                 <TableHead>Created At</TableHead>
-                <TableHead>{tCommon('actions')}</TableHead>
+                <TableHead>{tCommon("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredCategories.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                     No categories found
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredCategories.map((category) => (
-                <TableRow key={category.id}>
-                  <TableCell>
-                    <Image
-                      src={imageUrl(category.image) || "/placeholder.svg"}
-                      alt={category.name}
-                      width={50}
-                      height={50}
-                      className="rounded-md object-cover"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{category.name}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {category.description ?? "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/subcategories?categoryId=${category.id}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {category._count.SubCategories} subcategories
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {category.createdAt
-                      ? category.createdAt.toString().split("T")[0]
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingCategory(category)}
-                        disabled={isUpdating || isDeleting === category.id}
+                  <TableRow key={category.id}>
+                    <TableCell>
+                      <Image
+                        src={imageUrl(category.image) || "/placeholder.svg"}
+                        alt={category.name}
+                        width={50}
+                        height={50}
+                        className="rounded-md object-cover"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {category.name}
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {category.description ?? "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/dashboard/subcategories?categoryId=${category.id}`}
+                        className="text-blue-600 hover:underline"
                       >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteCategory(category.id)}
-                        disabled={isDeleting === category.id || isUpdating}
-                      >
-                        {isDeleting === category.id ? (
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        {category._count.SubCategories} subcategories
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      {category.createdAt
+                        ? category.createdAt.toString().split("T")[0]
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingCategory(category)}
+                          disabled={isUpdating || isDeleting === category.id}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDeletingCategory(category)}
+                          disabled={isDeleting === category.id || isUpdating}
+                        >
+                          {isDeleting === category.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
@@ -644,6 +638,51 @@ export default function CategoriesTable({
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingCategory} onOpenChange={() => setDeletingCategory(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Confirm Deletion
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this category? This action cannot be
+              undone and will also delete all associated subcategories.
+            </DialogDescription>
+          </DialogHeader>
+          {deletingCategory && (
+            <div className="py-4">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <p className="font-medium">{deletingCategory.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {deletingCategory.description || "No description"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Subcategories: {deletingCategory._count.SubCategories}
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeletingCategory(null)}
+              disabled={isDeleting === deletingCategory?.id}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deletingCategory && handleDeleteCategory(deletingCategory.id)}
+              disabled={isDeleting === deletingCategory?.id}
+            >
+              {isDeleting === deletingCategory?.id ? "Deleting..." : "Delete Category"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

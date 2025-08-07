@@ -58,6 +58,7 @@ import {
   deleteCamionAction,
 } from "@/lib/actions/camions";
 import Link from "next/link";
+import SalamiLoadingAnimation from "../ui/salami-loading";
 
 interface Camion {
   id: string;

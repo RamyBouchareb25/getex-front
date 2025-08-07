@@ -18,6 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from 'next-intl';
+import SalamiLoadingAnimation from "@/components/ui/salami-loading";
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);

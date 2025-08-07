@@ -141,7 +141,7 @@ export default function DashboardCharts({
               </div>
             ) : (
               <>
-                <div className="text-lg md:text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString('en-US')}</div>
+                <div className="text-lg md:text-2xl font-bold">{dashboardStats.totalRevenue.toLocaleString('en-US')} DZD</div>
                 <p className="text-xs text-muted-foreground">+{dashboardStats.revenueGrowth}% from last month</p>
               </>
             )}

@@ -15,6 +15,7 @@ import Link from "next/link";
 import { AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useTranslations, useLocale } from 'next-intl';
+import SalamiLoadingAnimation from "@/components/ui/salami-loading";
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);

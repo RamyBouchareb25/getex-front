@@ -25,6 +25,7 @@ import {
   Hamburger,
   History,
   ClipboardList,
+  Bell,
 } from "lucide-react";
 
 import {
@@ -160,6 +161,11 @@ export function AppSidebar() {
       title: t("foodTrucks"),
       url: `/${locale}/dashboard/food-trucks`,
       icon: Hamburger,
+    },
+    {
+      title: t("notifications"),
+      url: `/${locale}/dashboard/notifications`,
+      icon: Bell,
     },
   ];
 

@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Printer, ArrowLeft } from "lucide-react";
 
 import { getInvoicesForOrderAction } from "@/lib/actions/invoices";
+import SalamiLoadingAnimation from "@/components/ui/salami-loading";
 
 type CompanyInfo = {
   name: string;
@@ -150,7 +151,7 @@ export default function InvoicePreviewPage() {
     return (
       <div className="container mx-auto p-8">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <SalamiLoadingAnimation size="md" showLoading={true} />
         </div>
       </div>
     );
@@ -248,8 +249,8 @@ export default function InvoicePreviewPage() {
                     <tr key={index} className="border-b">
                       <td className="border p-2">{item.product.name}</td>
                       <td className="border p-2 text-right">{item.quantity}</td>
-                      <td className="border p-2 text-right">${parseFloat(item.price as string).toFixed(2)}</td>
-                      <td className="border p-2 text-right">${(parseFloat(item.price as string) * item.quantity).toFixed(2)}</td>
+                      <td className="border p-2 text-right">{parseFloat(item.price as string).toFixed(2)} DZD</td>
+                      <td className="border p-2 text-right">{(parseFloat(item.price as string) * item.quantity).toFixed(2)} DZD</td>
                     </tr>
                   ))}
                 </tbody>
