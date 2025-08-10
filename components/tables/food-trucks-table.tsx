@@ -49,6 +49,8 @@ import {
   AlertTriangle,
   Truck,
   Eye,
+  FileCheck,
+  FileX,
 } from "lucide-react";
 import {
   createFoodTruckAction,
@@ -57,6 +59,7 @@ import {
 } from "@/lib/actions/food-trucks";
 import { toast } from "sonner";
 import Image from "next/image";
+import { imageUrl } from "@/lib/utils";
 
 interface FoodTruckUser {
   id: string;
@@ -69,6 +72,7 @@ interface FoodTruck {
   id: string;
   plate: string;
   licence: string;
+  license: string;
   carteGrise: string;
   createdAt: Date | string;
   updatedAt: Date | string;
@@ -108,13 +112,12 @@ export default function FoodTrucksTable({
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   // Modal states
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingFoodTruck, setEditingFoodTruck] = useState<FoodTruck | null>(null);
   const [deletingFoodTruck, setDeletingFoodTruck] = useState<FoodTruck | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
+  const [viewingFoodTruck, setViewingFoodTruck] = useState<FoodTruck | null>(null);
 
   // Loading states
-  const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
@@ -161,26 +164,7 @@ export default function FoodTrucksTable({
     });
   };
 
-  const handleCreateFoodTruck = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsCreating(true);
-    try {
-      const formData = new FormData(event.currentTarget);
-      const result = await createFoodTruckAction(formData);
-      if (result.success) {
-        toast.success("Food truck created successfully!");
-        setIsCreateOpen(false);
-        router.refresh();
-      } else {
-        toast.error(result.message || "Failed to create food truck");
-      }
-    } catch (error) {
-      console.error("Error creating food truck:", error);
-      toast.error("An unexpected error occurred while creating the food truck");
-    } finally {
-      setIsCreating(false);
-    }
-  };
+
 
   const handleUpdateFoodTruck = async (event: React.FormEvent<HTMLFormElement>) => {
     setIsUpdating(true);
@@ -255,80 +239,6 @@ export default function FoodTrucksTable({
             Manage food truck registrations and licenses
           </p>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Food Truck
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Add New Food Truck</DialogTitle>
-              <DialogDescription>
-                Register a new food truck in the system
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateFoodTruck}>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="userId">Food Truck Owner</Label>
-                  <Select name="userId" required disabled={isCreating}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a food truck user" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name} ({user.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="plate">License Plate</Label>
-                  <Input 
-                    disabled={isCreating} 
-                    id="plate" 
-                    name="plate" 
-                    placeholder="e.g., ABC-123-XYZ" 
-                    required 
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="licence">Business License</Label>
-                  <Input 
-                    disabled={isCreating} 
-                    id="licence" 
-                    name="licence" 
-                    placeholder="Business license number" 
-                    required 
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="carteGrise">Carte Grise (Registration Document)</Label>
-                  <Input 
-                    disabled={isCreating} 
-                    id="carteGrise" 
-                    name="carteGrise" 
-                    type="file" 
-                    accept="image/*,.pdf" 
-                    required 
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Upload the vehicle registration document (Image or PDF)
-                  </p>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" disabled={isCreating}>
-                  {isCreating ? "Creating..." : "Create Food Truck"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
 
       <Card>
@@ -358,7 +268,7 @@ export default function FoodTrucksTable({
                 <TableRow>
                   <TableHead>Owner</TableHead>
                   <TableHead>License Plate</TableHead>
-                  <TableHead>Business License</TableHead>
+                  <TableHead>License Document</TableHead>
                   <TableHead>Registration Doc</TableHead>
                   <TableHead>Created At</TableHead>
                   <TableHead>{tCommon("actions")}</TableHead>
@@ -367,12 +277,10 @@ export default function FoodTrucksTable({
               <TableBody>
                 {foodTrucksData.foodTrucks.length === 0 ? (
                   <TableEmptyState
-                    colSpan={6}
+                    colSpan={7}
                     message={searchTerm ? "No food trucks found" : "No food trucks registered"}
                     description={searchTerm ? "Try a different search term" : "Food trucks will appear here when they are registered"}
                     showAddButton={!searchTerm}
-                    onAddClick={() => setIsCreateOpen(true)}
-                    addButtonText="Add Food Truck"
                   />
                 ) : (
                   foodTrucksData.foodTrucks.map((foodTruck) => (
@@ -388,16 +296,35 @@ export default function FoodTrucksTable({
                           {foodTruck.plate}
                         </Badge>
                       </TableCell>
-                      <TableCell>{foodTruck.licence}</TableCell>
                       <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setViewingImage(foodTruck.carteGrise)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          {foodTruck.license ? (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <FileCheck className="h-3 w-3" />
+                              Uploaded
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="flex items-center gap-1">
+                              <FileX className="h-3 w-3" />
+                              Missing
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {foodTruck.carteGrise ? (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <FileCheck className="h-3 w-3" />
+                              Uploaded
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="flex items-center gap-1">
+                              <FileX className="h-3 w-3" />
+                              Missing
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {foodTruck.createdAt instanceof Date
@@ -406,6 +333,14 @@ export default function FoodTrucksTable({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setViewingFoodTruck(foodTruck)}
+                            disabled={isPending}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                           <Button
                             variant="outline"
                             size="sm"
@@ -492,26 +427,6 @@ export default function FoodTrucksTable({
               <input type="hidden" name="id" value={editingFoodTruck.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-userId">Food Truck Owner</Label>
-                  <Select 
-                    name="userId" 
-                    required 
-                    disabled={isUpdating}
-                    defaultValue={editingFoodTruck.userId}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name} ({user.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
                   <Label htmlFor="edit-plate">License Plate</Label>
                   <Input
                     id="edit-plate"
@@ -522,14 +437,17 @@ export default function FoodTrucksTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-licence">Business License</Label>
+                  <Label htmlFor="edit-license">Update License Document (Optional)</Label>
                   <Input
-                    id="edit-licence"
-                    name="licence"
-                    defaultValue={editingFoodTruck.licence}
-                    required
+                    id="edit-license"
+                    name="license"
+                    type="file"
+                    accept="image/*,.pdf"
                     disabled={isUpdating}
                   />
+                  <p className="text-sm text-muted-foreground">
+                    Leave empty to keep the current license document
+                  </p>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-carteGrise">Update Carte Grise (Optional)</Label>
@@ -573,9 +491,6 @@ export default function FoodTrucksTable({
                 <p className="font-medium">Owner: {deletingFoodTruck.User?.name}</p>
                 <p className="text-sm text-muted-foreground">
                   License Plate: {deletingFoodTruck.plate}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Business License: {deletingFoodTruck.licence}
                 </p>
               </div>
             </div>
@@ -628,6 +543,108 @@ export default function FoodTrucksTable({
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Food Truck Documents Viewing Dialog */}
+      <Dialog open={!!viewingFoodTruck} onOpenChange={() => setViewingFoodTruck(null)}>
+        <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Food Truck Documents</DialogTitle>
+            <DialogDescription>
+              View license and registration documents for {viewingFoodTruck?.User?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {viewingFoodTruck && (
+            <div className="space-y-6 py-4">
+              {/* Food Truck Info */}
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <h3 className="font-semibold mb-2">Food Truck Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Owner:</span> {viewingFoodTruck.User?.name}
+                  </div>
+                  <div>
+                    <span className="font-medium">Email:</span> {viewingFoodTruck.User?.email}
+                  </div>
+                  <div>
+                    <span className="font-medium">License Plate:</span> {viewingFoodTruck.plate}
+                  </div>
+                </div>
+              </div>
+
+              {/* License Document */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">License Document</h3>
+                {viewingFoodTruck.license ? (
+                  <div className="border rounded-lg p-4">
+                    {viewingFoodTruck.license.toLowerCase().endsWith('.pdf') ? (
+                      <div className="text-center">
+                        <p className="mb-4">PDF Document</p>
+                        <Button asChild>
+                          <a href={viewingFoodTruck.license} target="_blank" rel="noopener noreferrer">
+                            View License Document (PDF)
+                          </a>
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="relative w-full h-64">
+                        <Image
+                          src={imageUrl(viewingFoodTruck.license) || ""}
+                          alt="License Document"
+                          fill
+                          className="object-contain rounded"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <FileX className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">No license document uploaded</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Carte Grise Document */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Registration Document (Carte Grise)</h3>
+                {viewingFoodTruck.carteGrise ? (
+                  <div className="border rounded-lg p-4">
+                    {viewingFoodTruck.carteGrise.toLowerCase().endsWith('.pdf') ? (
+                      <div className="text-center">
+                        <p className="mb-4">PDF Document</p>
+                        <Button asChild>
+                          <a href={viewingFoodTruck.carteGrise} target="_blank" rel="noopener noreferrer">
+                            View Registration Document (PDF)
+                          </a>
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="relative w-full h-64">
+                        <Image
+                          src={imageUrl(viewingFoodTruck.carteGrise) || ""}
+                          alt="Carte Grise"
+                          fill
+                          className="object-contain rounded"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <FileX className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">No registration document uploaded</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewingFoodTruck(null)}>
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

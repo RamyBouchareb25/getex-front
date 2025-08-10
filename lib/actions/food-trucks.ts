@@ -10,6 +10,7 @@ export const createFoodTruckAction = async (formData: FormData) => {
       "userId",
       "plate", 
       "licence",
+      "license",
       "carteGrise",
     ];
     
@@ -49,6 +50,7 @@ export const updateFoodTruckAction = async (formData: FormData) => {
     const userId = formData.get("userId") as string;
     const plate = formData.get("plate") as string;
     const licence = formData.get("licence") as string;
+    const license = formData.get("license") as File;
 
     if (!id) {
       throw new Error("Food truck ID is required for update");
@@ -60,14 +62,23 @@ export const updateFoodTruckAction = async (formData: FormData) => {
       licence,
     };
 
-    // Handle file upload for carteGrise if provided
+    // Handle file uploads
     const carteGrise = formData.get("carteGrise") as File;
-    if (carteGrise && carteGrise.size > 0) {
+    const hasCarteGrise = carteGrise && carteGrise.size > 0;
+    const hasLicense = license && license.size > 0;
+
+    if (hasCarteGrise || hasLicense) {
       const form = new FormData();
       Object.keys(payload).forEach(key => {
         form.append(key, payload[key]);
       });
-      form.append("carteGrise", carteGrise);
+      
+      if (hasCarteGrise) {
+        form.append("carteGrise", carteGrise);
+      }
+      if (hasLicense) {
+        form.append("license", license);
+      }
       
       const response = await serverApi.patch(`/food-truck/${id}`, form);
       if (response.status !== 200) {
