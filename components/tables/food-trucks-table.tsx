@@ -29,16 +29,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Plus,
   Search,
@@ -51,15 +43,16 @@ import {
   Eye,
   FileCheck,
   FileX,
+  User,
 } from "lucide-react";
 import {
-  createFoodTruckAction,
   updateFoodTruckAction,
   deleteFoodTruckAction,
 } from "@/lib/actions/food-trucks";
 import { toast } from "sonner";
 import Image from "next/image";
 import { imageUrl } from "@/lib/utils";
+import Link from "next/link";
 
 interface FoodTruckUser {
   id: string;
@@ -98,34 +91,37 @@ export default function FoodTrucksTable({
   initialData,
   initialPage,
   initialSearch,
-  availableUsers,
 }: FoodTrucksTableProps) {
   const tCommon = useTranslations("common");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   // Data state
-  const [foodTrucksData, setFoodTrucksData] = useState<FoodTrucksData>(initialData);
+  const [foodTrucksData, setFoodTrucksData] =
+    useState<FoodTrucksData>(initialData);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   // Modal states
-  const [editingFoodTruck, setEditingFoodTruck] = useState<FoodTruck | null>(null);
-  const [deletingFoodTruck, setDeletingFoodTruck] = useState<FoodTruck | null>(null);
+  const [editingFoodTruck, setEditingFoodTruck] = useState<FoodTruck | null>(
+    null
+  );
+  const [deletingFoodTruck, setDeletingFoodTruck] = useState<FoodTruck | null>(
+    null
+  );
   const [viewingImage, setViewingImage] = useState<string | null>(null);
-  const [viewingFoodTruck, setViewingFoodTruck] = useState<FoodTruck | null>(null);
+  const [viewingFoodTruck, setViewingFoodTruck] = useState<FoodTruck | null>(
+    null
+  );
 
   // Loading states
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   // Update URL with new filters
-  const updateURL = (params: {
-    page?: number;
-    search?: string;
-  }) => {
+  const updateURL = (params: { page?: number; search?: string }) => {
     const newSearchParams = new URLSearchParams();
 
     if (params.page && params.page > 1)
@@ -164,9 +160,9 @@ export default function FoodTrucksTable({
     });
   };
 
-
-
-  const handleUpdateFoodTruck = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdateFoodTruck = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     setIsUpdating(true);
     event.preventDefault();
     try {
@@ -246,7 +242,8 @@ export default function FoodTrucksTable({
           <CardTitle>Food Trucks</CardTitle>
           <CardDescription>
             A list of all registered food trucks (Page {foodTrucksData.page} of{" "}
-            {foodTrucksData.totalPages}, {foodTrucksData.total} total food trucks)
+            {foodTrucksData.totalPages}, {foodTrucksData.total} total food
+            trucks)
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
@@ -278,17 +275,33 @@ export default function FoodTrucksTable({
                 {foodTrucksData.foodTrucks.length === 0 ? (
                   <TableEmptyState
                     colSpan={7}
-                    message={searchTerm ? "No food trucks found" : "No food trucks registered"}
-                    description={searchTerm ? "Try a different search term" : "Food trucks will appear here when they are registered"}
+                    message={
+                      searchTerm
+                        ? "No food trucks found"
+                        : "No food trucks registered"
+                    }
+                    description={
+                      searchTerm
+                        ? "Try a different search term"
+                        : "Food trucks will appear here when they are registered"
+                    }
                     showAddButton={!searchTerm}
                   />
                 ) : (
                   foodTrucksData.foodTrucks.map((foodTruck) => (
                     <TableRow key={foodTruck.id}>
                       <TableCell className="font-medium">
-                        <div>
-                          <p className="font-medium">{foodTruck.User?.name || "Unknown"}</p>
-                          <p className="text-sm text-muted-foreground">{foodTruck.User?.email}</p>
+                        <div className="flex items-center gap-2">
+                          <User className="inline-block mr-2 h-5 w-5 text-muted-foreground" />
+                          <Link
+                            href={`/dashboard/users?id=${foodTruck.User?.id}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            <p className="font-medium">
+                              {foodTruck.User?.name || "Unknown"}
+                            </p>
+                            <p className="text-sm ">{foodTruck.User?.email}</p>
+                          </Link>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -299,12 +312,18 @@ export default function FoodTrucksTable({
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {foodTruck.license ? (
-                            <Badge variant="secondary" className="flex items-center gap-1">
+                            <Badge
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                            >
                               <FileCheck className="h-3 w-3" />
                               Uploaded
                             </Badge>
                           ) : (
-                            <Badge variant="destructive" className="flex items-center gap-1">
+                            <Badge
+                              variant="destructive"
+                              className="flex items-center gap-1"
+                            >
                               <FileX className="h-3 w-3" />
                               Missing
                             </Badge>
@@ -314,12 +333,18 @@ export default function FoodTrucksTable({
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {foodTruck.carteGrise ? (
-                            <Badge variant="secondary" className="flex items-center gap-1">
+                            <Badge
+                              variant="secondary"
+                              className="flex items-center gap-1"
+                            >
                               <FileCheck className="h-3 w-3" />
                               Uploaded
                             </Badge>
                           ) : (
-                            <Badge variant="destructive" className="flex items-center gap-1">
+                            <Badge
+                              variant="destructive"
+                              className="flex items-center gap-1"
+                            >
                               <FileX className="h-3 w-3" />
                               Missing
                             </Badge>
@@ -373,8 +398,8 @@ export default function FoodTrucksTable({
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-muted-foreground">
             Showing {(currentPage - 1) * 10 + 1} to{" "}
-            {Math.min(currentPage * 10, foodTrucksData.total)} of {foodTrucksData.total}{" "}
-            food trucks
+            {Math.min(currentPage * 10, foodTrucksData.total)} of{" "}
+            {foodTrucksData.total} food trucks
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -416,7 +441,10 @@ export default function FoodTrucksTable({
       )}
 
       {/* Edit Food Truck Dialog */}
-      <Dialog open={!!editingFoodTruck} onOpenChange={() => setEditingFoodTruck(null)}>
+      <Dialog
+        open={!!editingFoodTruck}
+        onOpenChange={() => setEditingFoodTruck(null)}
+      >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Edit Food Truck</DialogTitle>
@@ -437,7 +465,9 @@ export default function FoodTrucksTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-license">Update License Document (Optional)</Label>
+                  <Label htmlFor="edit-license">
+                    Update License Document (Optional)
+                  </Label>
                   <Input
                     id="edit-license"
                     name="license"
@@ -450,7 +480,9 @@ export default function FoodTrucksTable({
                   </p>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-carteGrise">Update Carte Grise (Optional)</Label>
+                  <Label htmlFor="edit-carteGrise">
+                    Update Carte Grise (Optional)
+                  </Label>
                   <Input
                     id="edit-carteGrise"
                     name="carteGrise"
@@ -474,7 +506,10 @@ export default function FoodTrucksTable({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deletingFoodTruck} onOpenChange={() => setDeletingFoodTruck(null)}>
+      <Dialog
+        open={!!deletingFoodTruck}
+        onOpenChange={() => setDeletingFoodTruck(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -482,13 +517,16 @@ export default function FoodTrucksTable({
               Confirm Deletion
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this food truck? This action cannot be undone.
+              Are you sure you want to delete this food truck? This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           {deletingFoodTruck && (
             <div className="py-4">
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                <p className="font-medium">Owner: {deletingFoodTruck.User?.name}</p>
+                <p className="font-medium">
+                  Owner: {deletingFoodTruck.User?.name}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   License Plate: {deletingFoodTruck.plate}
                 </p>
@@ -505,10 +543,14 @@ export default function FoodTrucksTable({
             </Button>
             <Button
               variant="destructive"
-              onClick={() => deletingFoodTruck && handleDeleteFoodTruck(deletingFoodTruck.id)}
+              onClick={() =>
+                deletingFoodTruck && handleDeleteFoodTruck(deletingFoodTruck.id)
+              }
               disabled={isDeleting === deletingFoodTruck?.id}
             >
-              {isDeleting === deletingFoodTruck?.id ? "Deleting..." : "Delete Food Truck"}
+              {isDeleting === deletingFoodTruck?.id
+                ? "Deleting..."
+                : "Delete Food Truck"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -522,11 +564,15 @@ export default function FoodTrucksTable({
           </DialogHeader>
           {viewingImage && (
             <div className="py-4">
-              {viewingImage.toLowerCase().endsWith('.pdf') ? (
+              {viewingImage.toLowerCase().endsWith(".pdf") ? (
                 <div className="text-center">
                   <p className="mb-4">PDF Document</p>
                   <Button asChild>
-                    <a href={viewingImage} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={viewingImage}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       View PDF Document
                     </a>
                   </Button>
@@ -547,12 +593,16 @@ export default function FoodTrucksTable({
       </Dialog>
 
       {/* Food Truck Documents Viewing Dialog */}
-      <Dialog open={!!viewingFoodTruck} onOpenChange={() => setViewingFoodTruck(null)}>
+      <Dialog
+        open={!!viewingFoodTruck}
+        onOpenChange={() => setViewingFoodTruck(null)}
+      >
         <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Food Truck Documents</DialogTitle>
             <DialogDescription>
-              View license and registration documents for {viewingFoodTruck?.User?.name}
+              View license and registration documents for{" "}
+              {viewingFoodTruck?.User?.name}
             </DialogDescription>
           </DialogHeader>
           {viewingFoodTruck && (
@@ -562,13 +612,16 @@ export default function FoodTrucksTable({
                 <h3 className="font-semibold mb-2">Food Truck Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium">Owner:</span> {viewingFoodTruck.User?.name}
+                    <span className="font-medium">Owner:</span>{" "}
+                    {viewingFoodTruck.User?.name}
                   </div>
                   <div>
-                    <span className="font-medium">Email:</span> {viewingFoodTruck.User?.email}
+                    <span className="font-medium">Email:</span>{" "}
+                    {viewingFoodTruck.User?.email}
                   </div>
                   <div>
-                    <span className="font-medium">License Plate:</span> {viewingFoodTruck.plate}
+                    <span className="font-medium">License Plate:</span>{" "}
+                    {viewingFoodTruck.plate}
                   </div>
                 </div>
               </div>
@@ -578,11 +631,15 @@ export default function FoodTrucksTable({
                 <h3 className="text-lg font-semibold">License Document</h3>
                 {viewingFoodTruck.license ? (
                   <div className="border rounded-lg p-4">
-                    {viewingFoodTruck.license.toLowerCase().endsWith('.pdf') ? (
+                    {viewingFoodTruck.license.toLowerCase().endsWith(".pdf") ? (
                       <div className="text-center">
                         <p className="mb-4">PDF Document</p>
                         <Button asChild>
-                          <a href={viewingFoodTruck.license} target="_blank" rel="noopener noreferrer">
+                          <a
+                            href={viewingFoodTruck.license}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             View License Document (PDF)
                           </a>
                         </Button>
@@ -601,21 +658,31 @@ export default function FoodTrucksTable({
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <FileX className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">No license document uploaded</p>
+                    <p className="text-gray-500">
+                      No license document uploaded
+                    </p>
                   </div>
                 )}
               </div>
 
               {/* Carte Grise Document */}
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Registration Document (Carte Grise)</h3>
+                <h3 className="text-lg font-semibold">
+                  Registration Document (Carte Grise)
+                </h3>
                 {viewingFoodTruck.carteGrise ? (
                   <div className="border rounded-lg p-4">
-                    {viewingFoodTruck.carteGrise.toLowerCase().endsWith('.pdf') ? (
+                    {viewingFoodTruck.carteGrise
+                      .toLowerCase()
+                      .endsWith(".pdf") ? (
                       <div className="text-center">
                         <p className="mb-4">PDF Document</p>
                         <Button asChild>
-                          <a href={viewingFoodTruck.carteGrise} target="_blank" rel="noopener noreferrer">
+                          <a
+                            href={viewingFoodTruck.carteGrise}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             View Registration Document (PDF)
                           </a>
                         </Button>
@@ -634,7 +701,9 @@ export default function FoodTrucksTable({
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <FileX className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">No registration document uploaded</p>
+                    <p className="text-gray-500">
+                      No registration document uploaded
+                    </p>
                   </div>
                 )}
               </div>
