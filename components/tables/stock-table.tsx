@@ -122,6 +122,7 @@ export default function StockTable({
   limit: number;
 }) {
   const tStock = useTranslations("stock");
+  const tStockTable = useTranslations("stockTable");
   const tCommon = useTranslations("common");
   const tPagination = useTranslations("pagination");
   const router = useRouter();
@@ -259,14 +260,14 @@ export default function StockTable({
       const formData = new FormData(event.currentTarget);
       const result = await createStockAction(formData);
       if (result.success) {
-        setSuccess("Stock created successfully!");
+        setSuccess(tStockTable("toasts.stockCreatedSuccess"));
         setIsCreateOpen(false);
       } else {
-        setError(result.message || "Failed to create stock");
+        setError(result.message || tStockTable("toasts.stockCreatedError"));
       }
     } catch (error) {
       console.error("Error creating stock:", error);
-      setError("An unexpected error occurred while creating the stock");
+      setError(tStockTable("toasts.stockCreatedUnexpectedError"));
     } finally {
       setIsCreating(false);
     }
@@ -280,14 +281,14 @@ export default function StockTable({
     try {
       const result = await updateStockAction(formData);
       if (result.success) {
-        setSuccess("Stock updated successfully!");
+        setSuccess(tStockTable("toasts.stockUpdatedSuccess"));
         setEditingStock(null);
       } else {
-        setError(result.message || "Failed to update stock");
+        setError(result.message || tStockTable("toasts.stockUpdatedError"));
       }
     } catch (error) {
       console.error("Error updating stock:", error);
-      setError("An unexpected error occurred while updating the stock");
+      setError(tStockTable("toasts.stockUpdatedUnexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -301,13 +302,13 @@ export default function StockTable({
     try {
       const result = await deleteStockAction(stockId);
       if (result.success) {
-        setSuccess("Stock deleted successfully!");
+        setSuccess(tStockTable("toasts.stockDeletedSuccess"));
       } else {
-        setError(result.message || "Failed to delete stock");
+        setError(result.message || tStockTable("toasts.stockDeletedError"));
       }
     } catch (error) {
       console.error("Error deleting stock:", error);
-      setError("An unexpected error occurred while deleting the stock");
+      setError(tStockTable("toasts.stockDeletedUnexpectedError"));
     } finally {
       setIsDeleting(null);
     }
@@ -333,7 +334,7 @@ export default function StockTable({
             {tStock("title")}
           </h1>
           <p className="text-muted-foreground">
-            Monitor and manage inventory levels
+            {tStockTable("monitorInventory")}
           </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -346,19 +347,19 @@ export default function StockTable({
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>{tStock("createStock")}</DialogTitle>
-              <DialogDescription>Add inventory for a product</DialogDescription>
+              <DialogDescription>{tStockTable("addInventoryForProduct")}</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateStock}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="productId">Product</Label>
+                  <Label htmlFor="productId">{tStockTable("product")}</Label>
                   <Select
                     disabled={isCreating || isUpdating}
                     name="productId"
                     required
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select product" />
+                      <SelectValue placeholder={tStockTable("selectProduct")} />
                     </SelectTrigger>
                     <SelectContent>
                       {products.map((product) => (
@@ -371,7 +372,7 @@ export default function StockTable({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="quantity">Quantity</Label>
+                    <Label htmlFor="quantity">{tStockTable("quantity")}</Label>
                     <Input
                       disabled={isCreating || isUpdating}
                       id="quantity"
@@ -381,7 +382,7 @@ export default function StockTable({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="price">Price</Label>
+                    <Label htmlFor="price">{tStockTable("price")}</Label>
                     <Input
                       disabled={isCreating || isUpdating}
                       id="price"
@@ -394,7 +395,7 @@ export default function StockTable({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="minQuantity">Min Quantity</Label>
+                    <Label htmlFor="minQuantity">{tStockTable("minQuantity")}</Label>
                     <Input
                       disabled={isCreating || isUpdating}
                       id="minQuantity"
@@ -404,7 +405,7 @@ export default function StockTable({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="reductionPercent">Reduction %</Label>
+                    <Label htmlFor="reductionPercent">{tStockTable("reductionPercent")}</Label>
                     <Input
                       disabled={isCreating || isUpdating}
                       id="reductionPercent"
@@ -416,7 +417,7 @@ export default function StockTable({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="expirationDate">Expiration Date</Label>
+                  <Label htmlFor="expirationDate">{tStockTable("expirationDate")}</Label>
                   <Input
                     disabled={isCreating || isUpdating}
                     id="expirationDate"
@@ -433,7 +434,7 @@ export default function StockTable({
                     value="true"
                     defaultChecked
                   />
-                  <Label htmlFor="visible">Visible to customers</Label>
+                  <Label htmlFor="visible">{tStockTable("visibleToCustomers")}</Label>
                 </div>
               </div>
               <DialogFooter>
@@ -455,16 +456,16 @@ export default function StockTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>Stock Inventory</CardTitle>
+          <CardTitle>{tStockTable("stockInventory")}</CardTitle>
           <CardDescription>
-            Current stock levels and product information
+            {tStockTable("currentStockLevels")}
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 disabled={isUpdating || isSearching}
-                placeholder="Search stock..."
+                placeholder={tStockTable("searchStock")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
@@ -480,7 +481,7 @@ export default function StockTable({
                 onClick={handleSearch}
                 disabled={isSearching}
               >
-                {isSearching ? "Searching..." : "Search"}
+                {isSearching ? tStockTable("searching") : tStockTable("search")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -492,7 +493,7 @@ export default function StockTable({
                     className="flex items-center gap-1"
                   >
                     <Filter className="h-4 w-4" />
-                    <span>Filter</span>
+                    <span>{tStockTable("filter")}</span>
                     {(selectedProducts.length > 0 ||
                       selectedOwners.length > 0 ||
                       stockStatusFilter ||
@@ -506,7 +507,7 @@ export default function StockTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">Products</h4>
+                      <h4 className="font-medium">{tStockTable("products")}</h4>
                       <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
                         {products.map((product) => (
                           <div
@@ -528,7 +529,7 @@ export default function StockTable({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Owners</h4>
+                      <h4 className="font-medium">{tStockTable("owners")}</h4>
                       <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
                         {users.map((user) => (
                           <div
@@ -548,35 +549,35 @@ export default function StockTable({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Stock Status</h4>
+                      <h4 className="font-medium">{tStockTable("stockStatus")}</h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={stockStatusFilter}
                         onChange={(e) => setStockStatusFilter(e.target.value)}
                       >
-                        <option value="">All Stock</option>
-                        <option value="low">Low Stock</option>
-                        <option value="normal">Normal Stock</option>
+                        <option value="">{tStockTable("allStock")}</option>
+                        <option value="low">{tStockTable("lowStock")}</option>
+                        <option value="normal">{tStockTable("normalStock")}</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Visibility</h4>
+                      <h4 className="font-medium">{tStockTable("visibility")}</h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={visibilityFilter}
                         onChange={(e) => setVisibilityFilter(e.target.value)}
                       >
-                        <option value="">All Items</option>
-                        <option value="visible">Visible</option>
-                        <option value="hidden">Hidden</option>
+                        <option value="">{tStockTable("allItems")}</option>
+                        <option value="visible">{tStockTable("visible")}</option>
+                        <option value="hidden">{tStockTable("hidden")}</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Range</h4>
+                      <h4 className="font-medium">{tStockTable("dateRange")}</h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            From
+                            {tStockTable("from")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -587,7 +588,7 @@ export default function StockTable({
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            To
+                            {tStockTable("to")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -605,14 +606,14 @@ export default function StockTable({
                         onClick={handleResetFilters}
                         disabled={isSearching}
                       >
-                        Reset Filters
+                        {tStockTable("resetFilters")}
                       </Button>
                       <Button
                         size="sm"
                         onClick={handleSearch}
                         disabled={isSearching}
                       >
-                        {isSearching ? "Applying..." : "Apply Filters"}
+                        {isSearching ? tStockTable("applying") : tStockTable("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -645,10 +646,10 @@ export default function StockTable({
                   router.push(`${pathname}?${params.toString()}`);
                 }}
               >
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
+                <option value={5}>5 {tStockTable("perPage")}</option>
+                <option value={10}>10 {tStockTable("perPage")}</option>
+                <option value={20}>20 {tStockTable("perPage")}</option>
+                <option value={50}>50 {tStockTable("perPage")}</option>
               </select>
             </div>
           </div>
@@ -657,21 +658,21 @@ export default function StockTable({
           {isSearching ? (
             <div className="flex items-center justify-center py-8">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-b-transparent"></div>
-              <span className="ml-2">Loading stock...</span>
+              <span className="ml-2">{tStockTable("loadingStock")}</span>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Min Qty</TableHead>
-                  <TableHead>Reduction</TableHead>
-                  <TableHead>Expiration</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{tStockTable("product")}</TableHead>
+                  <TableHead>{tStockTable("quantity")}</TableHead>
+                  <TableHead>{tStockTable("price")}</TableHead>
+                  <TableHead>{tStockTable("minQty")}</TableHead>
+                  <TableHead>{tStockTable("reduction")}</TableHead>
+                  <TableHead>{tStockTable("expiration")}</TableHead>
+                  <TableHead>{tStockTable("owner")}</TableHead>
+                  <TableHead>{tStockTable("status")}</TableHead>
+                  <TableHead>{tStockTable("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -681,7 +682,7 @@ export default function StockTable({
                       colSpan={9}
                       className="text-center py-8 text-muted-foreground"
                     >
-                      No stock items found
+                      {tStockTable("noStockItemsFound")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -693,7 +694,7 @@ export default function StockTable({
                           className="text-blue-600 hover:underline flex items-center gap-1"
                         >
                           <Tag className="h-3 w-3" />
-                          {item.product?.name || "Unknown Product"}
+                          {item.product?.name || tStockTable("unknownProduct")}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -721,18 +722,18 @@ export default function StockTable({
                         >
                           {item.owner?.name +
                             " " +
-                            item.owner?.CompanyData?.raisonSocial || "Unknown"}
+                            item.owner?.CompanyData?.raisonSocial || tStockTable("unknownOwner")}
                         </Link>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           {isLowStock(item.quantity, item.minQuantity) && (
-                            <Badge variant="destructive">Low Stock</Badge>
+                            <Badge variant="destructive">{tStockTable("lowStock")}</Badge>
                           )}
                           <Badge
                             variant={item.visible ? "default" : "secondary"}
                           >
-                            {item.visible ? "Visible" : "Hidden"}
+                            {item.visible ? tStockTable("visible") : tStockTable("hidden")}
                           </Badge>
                         </div>
                       </TableCell>
@@ -772,8 +773,11 @@ export default function StockTable({
 
       <div className="flex items-center justify-between px-6 py-4 border-t">
         <div className="text-sm text-muted-foreground">
-          Showing {Math.min((currentPage - 1) * limit + 1, total)} to{" "}
-          {Math.min(currentPage * limit, total)} of {total} results
+          {tStockTable("showing", {
+            from: Math.min((currentPage - 1) * limit + 1, total),
+            to: Math.min(currentPage * limit, total),
+            total: total
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -783,7 +787,7 @@ export default function StockTable({
             disabled={currentPage <= 1 || isSearching}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {tStockTable("previous")}
           </Button>
           <div className="flex items-center space-x-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -818,7 +822,7 @@ export default function StockTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= totalPages || isSearching}
           >
-            Next
+            {tStockTable("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -827,24 +831,24 @@ export default function StockTable({
       <Dialog open={!!editingStock} onOpenChange={() => setEditingStock(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Stock</DialogTitle>
-            <DialogDescription>Update stock information</DialogDescription>
+            <DialogTitle>{tStockTable("editStock")}</DialogTitle>
+            <DialogDescription>{tStockTable("updateStockInfo")}</DialogDescription>
           </DialogHeader>
           {editingStock && (
             <form action={handleUpdateStock}>
               <input type="hidden" name="id" value={editingStock.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label>Product</Label>
+                  <Label>{tStockTable("product")}</Label>
                   <Input
-                    value={editingStock.product?.name || "Unknown Product"}
+                    value={editingStock.product?.name || tStockTable("unknownProduct")}
                     disabled
                     className="bg-muted"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="edit-quantity">Quantity</Label>
+                    <Label htmlFor="edit-quantity">{tStockTable("quantity")}</Label>
                     <Input
                       id="edit-quantity"
                       name="quantity"
@@ -854,7 +858,7 @@ export default function StockTable({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="edit-price">Price</Label>
+                    <Label htmlFor="edit-price">{tStockTable("price")}</Label>
                     <Input
                       id="edit-price"
                       name="price"
@@ -867,7 +871,7 @@ export default function StockTable({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="edit-minQuantity">Min Quantity</Label>
+                    <Label htmlFor="edit-minQuantity">{tStockTable("minQuantity")}</Label>
                     <Input
                       id="edit-minQuantity"
                       name="minQuantity"
@@ -876,7 +880,7 @@ export default function StockTable({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="edit-reductionPercent">Reduction %</Label>
+                    <Label htmlFor="edit-reductionPercent">{tStockTable("reductionPercent")}</Label>
                     <Input
                       id="edit-reductionPercent"
                       name="reductionPercent"
@@ -887,7 +891,7 @@ export default function StockTable({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-expirationDate">Expiration Date</Label>
+                  <Label htmlFor="edit-expirationDate">{tStockTable("expirationDate")}</Label>
                   <Input
                     id="edit-expirationDate"
                     name="expirationDate"
@@ -909,11 +913,11 @@ export default function StockTable({
                     value="true"
                     defaultChecked={editingStock.visible}
                   />
-                  <Label htmlFor="edit-visible">Visible to customers</Label>
+                  <Label htmlFor="edit-visible">{tStockTable("visibleToCustomers")}</Label>
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Update Stock</Button>
+                <Button type="submit">{tStockTable("updateStock")}</Button>
               </DialogFooter>
             </form>
           )}

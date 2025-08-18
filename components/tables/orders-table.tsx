@@ -142,6 +142,7 @@ export default function OrdersTable({
 }) {
   const tCommon = useTranslations("common");
   const tOrders = useTranslations("orders");
+  const tOrdersTable = useTranslations("ordersTable");
   const router = useRouter();
   const pathname = usePathname();
 
@@ -262,9 +263,9 @@ export default function OrdersTable({
     try {
       const result = await deleteOrderAction(orderId);
       if (result.success) {
-        setSuccess("Order deleted successfully!");
+        setSuccess(tOrdersTable("orderDeletedSuccess"));
       } else {
-        setError(result.message || "Failed to delete order");
+        setError(result.message || tOrdersTable("failedToDeleteOrder"));
       }
     } catch (error) {
       console.error("Error deleting order:", error);
@@ -297,14 +298,14 @@ export default function OrdersTable({
         const url = window.URL.createObjectURL(blob);
         window.open(url, "_blank");
         setTimeout(() => window.URL.revokeObjectURL(url), 100);
-        setSuccess("Document printed successfully!");
+        setSuccess(tOrdersTable("documentPrintedSuccess"));
       } else {
         const errorData = await response.json().catch(() => ({}));
-        setError(errorData.message || "Failed to fetch PDF document");
+        setError(errorData.message || tOrdersTable("failedToFetchPdf"));
       }
     } catch (error) {
       console.error("Error printing document:", error);
-      setError("An unexpected error occurred while printing the document");
+      setError(tOrdersTable("unexpectedPrintError"));
     } finally {
       setIsPrinting(null);
     }
@@ -321,10 +322,10 @@ export default function OrdersTable({
     try {
       const result = await acceptOrderAction(editingOrderId);
       if (result.success) {
-        setSuccess("Order accepted successfully!");
+        setSuccess(tOrdersTable("orderAcceptedSuccess"));
         setEditingOrder(null);
       } else {
-        setError(result.message || "Failed to accept order");
+        setError(result.message || tOrdersTable("failedToAcceptOrder"));
       }
     } catch (error) {
       console.error("Error accepting order:", error);
@@ -342,11 +343,11 @@ export default function OrdersTable({
     try {
       const result = await rejectOrderAction(editingOrderId, cancelReason);
       if (result.success) {
-        setSuccess("Order rejected successfully!");
+        setSuccess(tOrdersTable("orderRejectedSuccess"));
         setEditingOrder(null);
         setCancelReason("");
       } else {
-        setError(result.message || "Failed to reject order");
+        setError(result.message || tOrdersTable("failedToRejectOrder"));
       }
     } catch (error) {
       console.error("Error rejecting order:", error);
@@ -371,9 +372,9 @@ export default function OrdersTable({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tOrdersTable("ordersTitle")}</h1>
           <p className="text-muted-foreground">
-            Manage customer orders and their status
+            {tOrdersTable("manageCustomerOrders")}
           </p>
         </div>
       </div>
@@ -382,19 +383,14 @@ export default function OrdersTable({
         <CardHeader>
           <CardTitle>{tOrders("title")}</CardTitle>
           <CardDescription>
-            {tOrders("description") || "A list of all customer orders"}
+            {tOrdersTable("ordersDescription")}
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 disabled={isUpdating || isSearching}
-                placeholder={
-                  tCommon("search") +
-                  " " +
-                  tOrders("title").toLowerCase() +
-                  "..."
-                }
+                placeholder={tOrdersTable("searchOrders")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
@@ -410,7 +406,7 @@ export default function OrdersTable({
                 onClick={handleSearch}
                 disabled={isSearching}
               >
-                {isSearching ? "Searching..." : "Search"}
+                {isSearching ? tOrdersTable("searching") : tOrdersTable("search")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -422,7 +418,7 @@ export default function OrdersTable({
                     className="flex items-center gap-1"
                   >
                     <Filter className="h-4 w-4" />
-                    <span>Filter</span>
+                    <span>{tOrdersTable("filter")}</span>
                     {(statusFilter ||
                       userFilter ||
                       dateFromFilter ||
@@ -434,29 +430,29 @@ export default function OrdersTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">Status</h4>
+                      <h4 className="font-medium">{tOrdersTable("status")}</h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                       >
-                        <option value="">All Statuses</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="ACCEPTED">Accepted</option>
-                        <option value="REJECTED">Rejected</option>
-                        <option value="SHIPPING">Shipping</option>
-                        <option value="COMPLETED">Completed</option>
-                        <option value="CANCELED">Canceled</option>
+                        <option value="">{tOrdersTable("allStatuses")}</option>
+                        <option value="PENDING">{tOrdersTable("pending")}</option>
+                        <option value="ACCEPTED">{tOrdersTable("accepted")}</option>
+                        <option value="REJECTED">{tOrdersTable("rejected")}</option>
+                        <option value="SHIPPING">{tOrdersTable("shipping")}</option>
+                        <option value="COMPLETED">{tOrdersTable("completed")}</option>
+                        <option value="CANCELED">{tOrdersTable("canceled")}</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Customer</h4>
+                      <h4 className="font-medium">{tOrdersTable("customer")}</h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={userFilter}
                         onChange={(e) => setUserFilter(e.target.value)}
                       >
-                        <option value="">All Customers</option>
+                        <option value="">{tOrdersTable("allCustomers")}</option>
                         {users.map((user) => (
                           <option key={user.id} value={user.id}>
                             {user.email}
@@ -465,11 +461,11 @@ export default function OrdersTable({
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Range</h4>
+                      <h4 className="font-medium">{tOrdersTable("dateRange")}</h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            From
+                            {tOrdersTable("from")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -480,7 +476,7 @@ export default function OrdersTable({
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            To
+                            {tOrdersTable("to")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -498,7 +494,7 @@ export default function OrdersTable({
                         onClick={handleResetFilters}
                         disabled={isSearching}
                       >
-                        Reset Filters
+                        {tOrdersTable("resetFilters")}
                       </Button>
                       <Button
                         size="sm"
@@ -573,7 +569,7 @@ export default function OrdersTable({
                       message={
                         searchTerm
                           ? tCommon("emptyState.noItemsFound")
-                          : "No orders found"
+                          : tOrdersTable("noOrdersFound")
                       }
                       description={
                         searchTerm
@@ -594,7 +590,7 @@ export default function OrdersTable({
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {order.user?.CompanyData?.raisonSocial ||
-                                "Unknown Company"}
+                                tOrdersTable("unknownCompany")}
                             </span>
                           </div>
                         </TableCell>
@@ -606,7 +602,7 @@ export default function OrdersTable({
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {order.OrderItems?.at(0)?.stock.owner.CompanyData
-                                ?.raisonSocial || "Unknown Company"}
+                                ?.raisonSocial || tOrdersTable("unknownCompany")}
                             </span>
                           </div>
                         </TableCell>
@@ -669,8 +665,8 @@ export default function OrdersTable({
                                   }
                                 >
                                   {isPrinting === `${order.id}-bon-livraison`
-                                    ? "Printing..."
-                                    : "Bon de Livraison"}
+                                    ? tOrdersTable("printing")
+                                    : tOrdersTable("bonLivraison")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
@@ -684,8 +680,8 @@ export default function OrdersTable({
                                   }
                                 >
                                   {isPrinting === `${order.id}-bon-commande`
-                                    ? "Printing..."
-                                    : "Bon de Commande"}
+                                    ? tOrdersTable("printing")
+                                    : tOrdersTable("bonCommande")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
@@ -696,8 +692,8 @@ export default function OrdersTable({
                                   }
                                 >
                                   {isPrinting === `${order.id}-bon-retour`
-                                    ? "Printing..."
-                                    : "Bon de Retour"}
+                                    ? tOrdersTable("printing")
+                                    : tOrdersTable("bonRetour")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
@@ -708,8 +704,8 @@ export default function OrdersTable({
                                   }
                                 >
                                   {isPrinting === `${order.id}-facture`
-                                    ? "Printing..."
-                                    : "Facture"}
+                                    ? tOrdersTable("printing")
+                                    : tOrdersTable("facture")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
@@ -720,8 +716,8 @@ export default function OrdersTable({
                                   }
                                 >
                                   {isPrinting === `${order.id}-proforma`
-                                    ? "Printing..."
-                                    : "Facture Proforma"}
+                                    ? tOrdersTable("printing")
+                                    : tOrdersTable("proformaInvoice")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -732,7 +728,7 @@ export default function OrdersTable({
                               disabled={isDeleting === order.id}
                             >
                               {isDeleting === order.id ? (
-                                "Deleting..."
+                                tOrdersTable("deleting")
                               ) : (
                                 <Trash2 className="h-4 w-4" />
                               )}
@@ -807,7 +803,7 @@ export default function OrdersTable({
       <Dialog open={!!editingOrder} onOpenChange={() => setEditingOrder(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update Order Status</DialogTitle>
+            <DialogTitle>{tOrdersTable("updateOrderStatus")}</DialogTitle>
             <DialogDescription>
               Accept or deny this order with a message
             </DialogDescription>
@@ -867,9 +863,9 @@ export default function OrdersTable({
         <DialogContent className="sm:max-w-[60vw]">
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
-              <span>Order #{viewingOrder?.id}</span>
+              <span>{tOrdersTable("orderNumber", { id: viewingOrder?.id || "" })}</span>
             </DialogTitle>
-            <DialogDescription>Order details</DialogDescription>
+            <DialogDescription>{tOrdersTable("orderDetailsDescription")}</DialogDescription>
           </DialogHeader>
           {viewingOrder && (
             <div className="py-4">
@@ -913,7 +909,7 @@ export default function OrdersTable({
                           </p>
                           <p className="text-muted-foreground">
                             {viewingOrder.user?.CompanyData?.raisonSocial ||
-                              "Unknown Company"}
+                              tOrdersTable("unknownCompany")}
                           </p>
                           <p className="text-muted-foreground">
                             {viewingOrder.user?.email}
@@ -927,7 +923,7 @@ export default function OrdersTable({
                           </p>
                           <p className="text-muted-foreground">
                             {viewingOrder.OrderItems?.at(0)?.stock.owner
-                              .CompanyData?.raisonSocial || "Unknown Company"}
+                              .CompanyData?.raisonSocial || tOrdersTable("unknownCompany")}
                           </p>
                           <p className="text-muted-foreground">
                             {viewingOrder.OrderItems?.at(0)?.stock.owner.email}
@@ -963,17 +959,17 @@ export default function OrdersTable({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Item</TableHead>
-                        <TableHead>Quantity</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Total</TableHead>
+                        <TableHead>{tOrdersTable("item")}</TableHead>
+                        <TableHead>{tOrdersTable("quantity")}</TableHead>
+                        <TableHead>{tOrdersTable("price")}</TableHead>
+                        <TableHead>{tOrdersTable("total")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {(viewingOrder.OrderItems || []).map((item) => (
                         <TableRow key={item.id}>
                           <TableCell>
-                            {item.stock.product?.name || "Unknown Product"}
+                            {item.stock.product?.name || tOrdersTable("unknownProduct")}
                           </TableCell>
                           <TableCell>{item.quantity}</TableCell>
                           <TableCell>

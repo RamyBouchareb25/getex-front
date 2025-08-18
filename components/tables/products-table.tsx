@@ -141,6 +141,7 @@ export default function ProductsTable({
   const router = useRouter();
   const pathname = usePathname();
   const tProducts = useTranslations("products");
+  const tProductsTable = useTranslations("productsTable");
   const tCommon = useTranslations("common");
   const tPagination = useTranslations("pagination");
 
@@ -317,15 +318,15 @@ export default function ProductsTable({
 
       const result = await createProductAction(formData);
       if (result.success) {
-        setSuccess(tProducts("productCreated"));
+        setSuccess(tProductsTable("toasts.productCreatedSuccess"));
         setIsCreateOpen(false);
         setIncludeNutritionalInfo(false); // Reset state after successful creation
       } else {
-        setError(result.message || tProducts("productCreationFailed"));
+        setError(result.message || tProductsTable("toasts.productCreatedError"));
       }
     } catch (error) {
       console.error("Error creating product:", error);
-      setError("An unexpected error occurred while creating the product");
+      setError(tProductsTable("toasts.productCreatedUnexpectedError"));
     } finally {
       setIsCreating(false);
     }
@@ -339,14 +340,14 @@ export default function ProductsTable({
     try {
       const result = await updateProductAction(formData);
       if (result.success) {
-        setSuccess("Product updated successfully!");
+        setSuccess(tProductsTable("toasts.productUpdatedSuccess"));
         setEditingProduct(null);
       } else {
-        setError(result.message || "Failed to update product");
+        setError(result.message || tProductsTable("toasts.productUpdatedError"));
       }
     } catch (error) {
       console.error("Error updating product:", error);
-      setError("An unexpected error occurred while updating the product");
+      setError(tProductsTable("toasts.productUpdatedUnexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -360,13 +361,13 @@ export default function ProductsTable({
     try {
       const result = await deleteProductAction(productId);
       if (result.success) {
-        setSuccess("Product deleted successfully!");
+        setSuccess(tProductsTable("toasts.productDeletedSuccess"));
       } else {
-        setError(result.message || "Failed to delete product");
+        setError(result.message || tProductsTable("toasts.productDeletedError"));
       }
     } catch (error) {
       console.error("Error deleting product:", error);
-      setError("An unexpected error occurred while deleting the product");
+      setError(tProductsTable("toasts.productDeletedUnexpectedError"));
     } finally {
       setIsDeleting(null);
     }
@@ -391,7 +392,7 @@ export default function ProductsTable({
           <h1 className="text-3xl font-bold tracking-tight">
             {tProducts("title")}
           </h1>
-          <p className="text-muted-foreground">Manage your product catalog</p>
+          <p className="text-muted-foreground">{tProductsTable("manageProductCatalog")}</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -404,13 +405,13 @@ export default function ProductsTable({
             <DialogHeader>
               <DialogTitle>{tProducts("createProduct")}</DialogTitle>
               <DialogDescription>
-                Add a new product to your catalog
+                {tProductsTable("addNewProduct")}
               </DialogDescription>
             </DialogHeader>
             <form action={handleCreateProduct}>
               <Tabs defaultValue="basic" className="pt-2">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="basic">Basic Information</TabsTrigger>
+                  <TabsTrigger value="basic">{tProductsTable("basicInformation")}</TabsTrigger>
                   <TabsTrigger
                     value="nutritional"
                     onClick={() => setIncludeNutritionalInfo(true)}
@@ -420,7 +421,7 @@ export default function ProductsTable({
                       }
                     }}
                   >
-                    Nutritional Information (Optional)
+                    {tProductsTable("nutritionalInformationOptional")}
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="basic" className="mt-4">
@@ -447,7 +448,7 @@ export default function ProductsTable({
                       </Label>
                       <Select name="subCategoryId" required>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select sub category" />
+                          <SelectValue placeholder={tProductsTable("selectSubcategory")} />
                         </SelectTrigger>
                         <SelectContent>
                           {subCategories.map((subCat) => (
@@ -464,10 +465,7 @@ export default function ProductsTable({
                   <div className="grid gap-4 py-2">
                     <div className="flex items-center p-3 rounded-md bg-muted/50 border border-muted">
                       <p className="text-sm text-muted-foreground">
-                        {tProducts("nutritionalInfo")} is optional. You can
-                        leave all fields empty, but if you fill any field, we
-                        recommend filling all fields for complete nutritional
-                        data.
+                        {tProducts("nutritionalInfo")} {tProductsTable("nutritionalInfoNote")}
                       </p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -541,16 +539,16 @@ export default function ProductsTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>All Products</CardTitle>
+          <CardTitle>{tProductsTable("allProducts")}</CardTitle>
           <CardDescription>
-            A list of all products in your catalog
+            {tProductsTable("allProductsDescription")}
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 disabled={isUpdating || isSearching}
-                placeholder="Search products..."
+                placeholder={tProductsTable("searchProducts")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
@@ -566,7 +564,7 @@ export default function ProductsTable({
                 onClick={handleSearch}
                 disabled={isSearching}
               >
-                {isSearching ? "Searching..." : "Search"}
+                {isSearching ? tProductsTable("searching") : tProductsTable("search")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -578,7 +576,7 @@ export default function ProductsTable({
                     className="flex items-center gap-1"
                   >
                     <Filter className="h-4 w-4" />
-                    <span>Filter</span>
+                    <span>{tProductsTable("filter")}</span>
                     {(selectedSubCategories.length > 0 ||
                       selectedCategories.length > 0 ||
                       dateFromFilter ||
@@ -590,7 +588,7 @@ export default function ProductsTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">Categories</h4>
+                      <h4 className="font-medium">{tProductsTable("categories")}</h4>
                       <div className="grid grid-cols-1 gap-2">
                         {categories.map((category) => (
                           <div
@@ -612,7 +610,7 @@ export default function ProductsTable({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Sub Categories</h4>
+                      <h4 className="font-medium">{tProductsTable("subCategories")}</h4>
                       <div className="grid grid-cols-1 gap-2">
                         {subCategories.map((subCategory) => (
                           <div
@@ -636,11 +634,11 @@ export default function ProductsTable({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Range</h4>
+                      <h4 className="font-medium">{tProductsTable("dateRange")}</h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            From
+                            {tProductsTable("from")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -651,7 +649,7 @@ export default function ProductsTable({
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            To
+                            {tProductsTable("to")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -669,14 +667,14 @@ export default function ProductsTable({
                         onClick={handleResetFilters}
                         disabled={isSearching}
                       >
-                        Reset Filters
+                        {tProductsTable("resetFilters")}
                       </Button>
                       <Button
                         size="sm"
                         onClick={handleSearch}
                         disabled={isSearching}
                       >
-                        {isSearching ? "Applying..." : "Apply Filters"}
+                        {isSearching ? tProductsTable("applying") : tProductsTable("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -705,10 +703,10 @@ export default function ProductsTable({
                   router.push(`${pathname}?${params.toString()}`);
                 }}
               >
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
+                <option value={5}>5 {tProductsTable("perPage")}</option>
+                <option value={10}>10 {tProductsTable("perPage")}</option>
+                <option value={20}>20 {tProductsTable("perPage")}</option>
+                <option value={50}>50 {tProductsTable("perPage")}</option>
               </select>
             </div>
           </div>
@@ -717,19 +715,19 @@ export default function ProductsTable({
           {isSearching ? (
             <div className="flex items-center justify-center py-8">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-b-transparent"></div>
-              <span className="ml-2">Loading products...</span>
+              <span className="ml-2">{tProductsTable("loadingProducts")}</span>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Reference</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Sub Category</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{tProductsTable("image")}</TableHead>
+                  <TableHead>{tProductsTable("reference")}</TableHead>
+                  <TableHead>{tProductsTable("name")}</TableHead>
+                  <TableHead>{tProductsTable("description")}</TableHead>
+                  <TableHead>{tProductsTable("subCategory")}</TableHead>
+                  <TableHead>{tProductsTable("createdAt")}</TableHead>
+                  <TableHead>{tProductsTable("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -739,16 +737,16 @@ export default function ProductsTable({
                     message={
                       searchTerm
                         ? tCommon("emptyState.noItemsFound")
-                        : "No products found"
+                        : tProductsTable("noProductsFound")
                     }
                     description={
                       searchTerm
                         ? tCommon("emptyState.tryDifferentSearch")
-                        : "Products will appear here when they are created"
+                        : tProductsTable("productsWillAppear")
                     }
                     showAddButton={!searchTerm}
                     onAddClick={() => setIsCreateOpen(true)}
-                    addButtonText="Create Product"
+                    addButtonText={tProducts("createProduct")}
                   />
                 ) : (
                   filteredProducts.map((product) => (
@@ -777,7 +775,7 @@ export default function ProductsTable({
                           className="text-blue-600 hover:underline flex items-center gap-1"
                         >
                           <Tag className="h-3 w-3" />
-                          {product.SubCategory?.name || "Unknown"}
+                          {product.SubCategory?.name || tProductsTable("unknown")}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -833,8 +831,11 @@ export default function ProductsTable({
       {/* Pagination Controls */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * limit + 1} to{" "}
-          {Math.min(currentPage * limit, total)} of {total} products
+          {tProductsTable("showing", {
+            from: (currentPage - 1) * limit + 1,
+            to: Math.min(currentPage * limit, total),
+            total: total
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -844,7 +845,7 @@ export default function ProductsTable({
             disabled={currentPage <= 1}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {tProductsTable("previous")}
           </Button>
 
           <div className="flex items-center space-x-1">
@@ -880,7 +881,7 @@ export default function ProductsTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
           >
-            Next
+            {tProductsTable("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -893,15 +894,15 @@ export default function ProductsTable({
       >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit Product</DialogTitle>
-            <DialogDescription>Update product information</DialogDescription>
+            <DialogTitle>{tProductsTable("editProduct")}</DialogTitle>
+            <DialogDescription>{tProductsTable("updateProductInfo")}</DialogDescription>
           </DialogHeader>
           {editingProduct && (
             <form action={handleUpdateProduct}>
               <input type="hidden" name="id" value={editingProduct.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-name">Product Name</Label>
+                  <Label htmlFor="edit-name">{tProducts("productName")}</Label>
                   <Input
                     id="edit-name"
                     name="name"
@@ -910,7 +911,7 @@ export default function ProductsTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-description">Description</Label>
+                  <Label htmlFor="edit-description">{tProducts("productDescription")}</Label>
                   <Textarea
                     id="edit-description"
                     name="description"
@@ -918,7 +919,7 @@ export default function ProductsTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-image">Product Image</Label>
+                  <Label htmlFor="edit-image">{tProductsTable("productImage")}</Label>
                   <div className="flex items-center gap-2">
                     <div className="flex-shrink-0">
                       <Image
@@ -940,7 +941,7 @@ export default function ProductsTable({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-subCategoryId">Sub Category</Label>
+                  <Label htmlFor="edit-subCategoryId">{tCommon("subcategory")}</Label>
                   <Select
                     name="subCategoryId"
                     defaultValue={editingProduct.subCategoryId}
@@ -961,7 +962,7 @@ export default function ProductsTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? "Updating..." : "Update Product"}
+                  {isUpdating ? tProductsTable("updating") : tProductsTable("editProduct")}
                 </Button>
               </DialogFooter>
             </form>

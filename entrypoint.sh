@@ -13,6 +13,10 @@ if [ -f "/run/secrets/NEXT_PUBLIC_BACKEND_URL" ]; then
     export NEXT_PUBLIC_BACKEND_URL=$(cat /run/secrets/NEXT_PUBLIC_BACKEND_URL)
 fi
 
+if [ -f "/run/secrets/BACKEND_URL" ]; then
+    export BACKEND_URL=$(cat /run/secrets/BACKEND_URL)
+fi
+
 if [ -f "/run/secrets/BACKEND_HOST" ]; then
     export BACKEND_HOST=$(cat /run/secrets/BACKEND_HOST)
 fi

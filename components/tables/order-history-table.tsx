@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -130,6 +131,12 @@ export default function OrderHistoryTable({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+  // Translation hooks
+  const tCommon = useTranslations("common");
+  const tOrders = useTranslations("orders");
+  const tOrderHistory = useTranslations("orderHistory");
+  const tOrderHistoryTable = useTranslations("orderHistoryTable");
 
   // Data state
   const [ordersData, setOrdersData] = useState(initialData);

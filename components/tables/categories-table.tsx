@@ -81,6 +81,7 @@ export default function CategoriesTable({
   const router = useRouter();
   const pathname = usePathname();
   const tCategories = useTranslations("categories");
+  const tCategoriesTable = useTranslations("categoriesTable");
   const tCommon = useTranslations("common");
   const tPagination = useTranslations("pagination");
 
@@ -169,15 +170,15 @@ export default function CategoriesTable({
       const formData = new FormData(event.currentTarget);
       const result = await createCategoryAction(formData);
       if (result.success) {
-        toast.success(result.message || "Category created successfully!");
+        toast.success(result.message || tCategoriesTable("toasts.categoryCreatedSuccess"));
         setIsCreateOpen(false);
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to create category");
+        toast.error(result.message || tCategoriesTable("toasts.categoryCreatedError"));
       }
     } catch (error) {
       console.error("Error creating category:", error);
-      toast.error("An unexpected error occurred while creating the category");
+      toast.error(tCategoriesTable("toasts.categoryCreatedUnexpectedError"));
     } finally {
       setIsCreating(false);
     }
@@ -193,15 +194,15 @@ export default function CategoriesTable({
       const formData = new FormData(event.currentTarget);
       const result = await updateCategoryAction(formData);
       if (result.success) {
-        toast.success(result.message || "Category updated successfully!");
+        toast.success(result.message || tCategoriesTable("toasts.categoryUpdatedSuccess"));
         setEditingCategory(null);
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to update category");
+        toast.error(result.message || tCategoriesTable("toasts.categoryUpdatedError"));
       }
     } catch (error) {
       console.error("Error updating category:", error);
-      toast.error("An unexpected error occurred while updating the category");
+      toast.error(tCategoriesTable("toasts.categoryUpdatedUnexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -213,15 +214,15 @@ export default function CategoriesTable({
     try {
       const result = await deleteCategoryAction(categoryId);
       if (result.success) {
-        toast.success(result.message || "Category deleted successfully!");
+        toast.success(result.message || tCategoriesTable("toasts.categoryDeletedSuccess"));
         setDeletingCategory(null);
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to delete category");
+        toast.error(result.message || tCategoriesTable("toasts.categoryDeletedError"));
       }
     } catch (error) {
       console.error("Error deleting category:", error);
-      toast.error("An unexpected error occurred while deleting the category");
+      toast.error(tCategoriesTable("toasts.categoryDeletedUnexpectedError"));
     } finally {
       setIsDeleting(null);
     }
@@ -234,7 +235,7 @@ export default function CategoriesTable({
           <h1 className="text-3xl font-bold tracking-tight">
             {tCategories("title")}
           </h1>
-          <p className="text-muted-foreground">Manage product categories</p>
+          <p className="text-muted-foreground">{tCategoriesTable("manageProductCategories")}</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -246,17 +247,17 @@ export default function CategoriesTable({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{tCategories("createCategory")}</DialogTitle>
-              <DialogDescription>Add a new product category</DialogDescription>
+              <DialogDescription>{tCategoriesTable("addNewProductCategory")}</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateCategory}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{tCategories("categoryName")}</Label>
+                  <Label htmlFor="name">{tCategoriesTable("categoryName")}</Label>
                   <Input disabled={isCreating} id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="description">
-                    {tCategories("categoryDescription")}
+                    {tCategoriesTable("categoryDescription")}
                   </Label>
                   <Textarea
                     disabled={isCreating}
@@ -265,7 +266,7 @@ export default function CategoriesTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="image">Category Image</Label>
+                  <Label htmlFor="image">{tCategoriesTable("categoryImage")}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="image"
@@ -282,13 +283,13 @@ export default function CategoriesTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
-                  {isUpdating ? (
+                  {isCreating ? (
                     <>
                       <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
-                      Creating...
+                      {tCategoriesTable("creating")}
                     </>
                   ) : (
-                    "Create Category"
+                    tCategoriesTable("createCategory")
                   )}
                 </Button>
               </DialogFooter>
@@ -299,14 +300,14 @@ export default function CategoriesTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>All Categories</CardTitle>
-          <CardDescription>A list of all product categories</CardDescription>
+          <CardTitle>{tCategoriesTable("allCategories")}</CardTitle>
+          <CardDescription>{tCategoriesTable("allCategoriesDescription")}</CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 disabled={isUpdating || isSearching}
-                placeholder="Search categories..."
+                placeholder={tCategoriesTable("searchCategories")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
@@ -322,7 +323,7 @@ export default function CategoriesTable({
                 onClick={handleSearch}
                 disabled={isSearching}
               >
-                {isSearching ? "Searching..." : "Search"}
+                {isSearching ? tCategoriesTable("searching") : tCommon("search")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -334,7 +335,7 @@ export default function CategoriesTable({
                     className="flex items-center gap-1"
                   >
                     <Filter className="h-4 w-4" />
-                    <span>Filter</span>
+                    <span>{tCommon("filter")}</span>
                     {(dateFromFilter ||
                       dateToFilter ||
                       subCategoryCountFilter) && (
@@ -345,11 +346,11 @@ export default function CategoriesTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Range</h4>
+                      <h4 className="font-medium">{tCategoriesTable("dateRange")}</h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            From
+                            {tCategoriesTable("from")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -360,7 +361,7 @@ export default function CategoriesTable({
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            To
+                            {tCategoriesTable("to")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -372,7 +373,7 @@ export default function CategoriesTable({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Sub Categories Count</h4>
+                      <h4 className="font-medium">{tCategoriesTable("subCategoriesCount")}</h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={subCategoryCountFilter}
@@ -380,10 +381,10 @@ export default function CategoriesTable({
                           setSubCategoryCountFilter(e.target.value)
                         }
                       >
-                        <option value="">Any</option>
-                        <option value="less5">Less than 5</option>
-                        <option value="5to10">5 to 10</option>
-                        <option value="more10">More than 10</option>
+                        <option value="">{tCategoriesTable("any")}</option>
+                        <option value="less5">{tCategoriesTable("lessThan5")}</option>
+                        <option value="5to10">{tCategoriesTable("5to10")}</option>
+                        <option value="more10">{tCategoriesTable("moreThan10")}</option>
                       </select>
                     </div>
                     <div className="flex justify-between">
@@ -393,14 +394,14 @@ export default function CategoriesTable({
                         onClick={handleResetFilters}
                         disabled={isSearching}
                       >
-                        Reset Filters
+                        {tCategoriesTable("resetFilters")}
                       </Button>
                       <Button
                         size="sm"
                         onClick={handleSearch}
                         disabled={isSearching}
                       >
-                        {isSearching ? "Applying..." : "Apply Filters"}
+                        {isSearching ? tCategoriesTable("applying") : tCategoriesTable("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -418,10 +419,10 @@ export default function CategoriesTable({
                   router.push(`${pathname}?${searchParams.toString()}`);
                 }}
               >
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
+                <option value={5}>5 {tCategoriesTable("perPage")}</option>
+                <option value={10}>10 {tCategoriesTable("perPage")}</option>
+                <option value={20}>20 {tCategoriesTable("perPage")}</option>
+                <option value={50}>50 {tCategoriesTable("perPage")}</option>
               </select>
             </div>
           </div>
@@ -430,11 +431,11 @@ export default function CategoriesTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Image</TableHead>
+                <TableHead>{tCommon("image")}</TableHead>
                 <TableHead>{tCommon("name")}</TableHead>
                 <TableHead>{tCommon("description")}</TableHead>
-                <TableHead>Sub Categories</TableHead>
-                <TableHead>Created At</TableHead>
+                <TableHead>{tCategoriesTable("subCategories")}</TableHead>
+                <TableHead>{tCommon("createdAt")}</TableHead>
                 <TableHead>{tCommon("actions")}</TableHead>
               </TableRow>
             </TableHeader>
@@ -445,7 +446,7 @@ export default function CategoriesTable({
                     colSpan={6}
                     className="text-center py-8 text-muted-foreground"
                   >
-                    No categories found
+                    {tCategoriesTable("noCategoriesFound")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -464,20 +465,20 @@ export default function CategoriesTable({
                       {category.name}
                     </TableCell>
                     <TableCell className="max-w-xs truncate">
-                      {category.description ?? "N/A"}
+                      {category.description ?? tCategoriesTable("na")}
                     </TableCell>
                     <TableCell>
                       <Link
                         href={`/dashboard/subcategories?categoryId=${category.id}`}
                         className="text-blue-600 hover:underline"
                       >
-                        {category._count.SubCategories} subcategories
+                        {category._count.SubCategories} {tCategoriesTable("subcategories")}
                       </Link>
                     </TableCell>
                     <TableCell>
                       {category.createdAt
                         ? category.createdAt.toString().split("T")[0]
-                        : "N/A"}
+                        : tCategoriesTable("na")}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -514,8 +515,11 @@ export default function CategoriesTable({
       {/* Pagination Controls */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * limit + 1} to{" "}
-          {Math.min(currentPage * limit, total)} of {total} categories
+          {tCategoriesTable("showing", {
+            from: (currentPage - 1) * limit + 1,
+            to: Math.min(currentPage * limit, total),
+            total,
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -525,7 +529,7 @@ export default function CategoriesTable({
             disabled={currentPage <= 1}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {tCategoriesTable("previous")}
           </Button>
 
           <div className="flex items-center space-x-1">
@@ -561,7 +565,7 @@ export default function CategoriesTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
           >
-            Next
+            {tCategoriesTable("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -574,15 +578,15 @@ export default function CategoriesTable({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
-            <DialogDescription>Update category information</DialogDescription>
+            <DialogTitle>{tCategoriesTable("editCategory")}</DialogTitle>
+            <DialogDescription>{tCategoriesTable("updateCategoryInfo")}</DialogDescription>
           </DialogHeader>
           {editingCategory && (
             <form onSubmit={handleUpdateCategory}>
               <input type="hidden" name="id" value={editingCategory.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-name">Category Name</Label>
+                  <Label htmlFor="edit-name">{tCategoriesTable("categoryName")}</Label>
                   <Input
                     disabled={isUpdating}
                     id="edit-name"
@@ -592,7 +596,7 @@ export default function CategoriesTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-description">Description</Label>
+                  <Label htmlFor="edit-description">{tCategoriesTable("categoryDescription")}</Label>
                   <Textarea
                     disabled={isUpdating}
                     id="edit-description"
@@ -601,7 +605,7 @@ export default function CategoriesTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-image">Category Image</Label>
+                  <Label htmlFor="edit-image">{tCategoriesTable("categoryImage")}</Label>
                   <div className="flex items-center gap-2">
                     <div className="flex-shrink-0">
                       <Image
@@ -629,10 +633,10 @@ export default function CategoriesTable({
                   {isUpdating ? (
                     <>
                       <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
-                      Updating...
+                      {tCategoriesTable("updating")}
                     </>
                   ) : (
-                    "Update Category"
+                    tCategoriesTable("updateCategory")
                   )}
                 </Button>
               </DialogFooter>
@@ -647,11 +651,10 @@ export default function CategoriesTable({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              Confirm Deletion
+              {tCategoriesTable("confirmDeletion")}
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this category? This action cannot be
-              undone and will also delete all associated subcategories.
+              {tCategoriesTable("deleteCategoryConfirm")}
             </DialogDescription>
           </DialogHeader>
           {deletingCategory && (
@@ -659,10 +662,10 @@ export default function CategoriesTable({
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                 <p className="font-medium">{deletingCategory.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {deletingCategory.description || "No description"}
+                  {deletingCategory.description || tCategoriesTable("categoryDescription")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Subcategories: {deletingCategory._count.SubCategories}
+                  {tCategoriesTable("subCategories")}: {deletingCategory._count.SubCategories}
                 </p>
               </div>
             </div>
@@ -673,14 +676,14 @@ export default function CategoriesTable({
               onClick={() => setDeletingCategory(null)}
               disabled={isDeleting === deletingCategory?.id}
             >
-              Cancel
+              {tCategoriesTable("cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => deletingCategory && handleDeleteCategory(deletingCategory.id)}
               disabled={isDeleting === deletingCategory?.id}
             >
-              {isDeleting === deletingCategory?.id ? "Deleting..." : "Delete Category"}
+              {isDeleting === deletingCategory?.id ? tCategoriesTable("deleting") : tCategoriesTable("deleteCategory")}
             </Button>
           </DialogFooter>
         </DialogContent>

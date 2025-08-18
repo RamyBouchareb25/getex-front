@@ -24,38 +24,6 @@ const getAuthHeaders = (session: any) => {
   }
   return {};
 };
-
-// Client-side axios instance
-const clientAxios = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
-});
-
-// Setup client-side interceptor
-if (typeof window !== "undefined") {
-  clientAxios.interceptors.request.use(
-    async (config: InternalAxiosRequestConfig) => {
-      const session = await getSession();
-      const authHeaders = getAuthHeaders(session);
-
-      // Apply auth headers
-      Object.assign(config.headers, authHeaders);
-
-      return config;
-    },
-    (error: any) => Promise.reject(error)
-  );
-
-  clientAxios.interceptors.response.use(
-    (response: AxiosResponse) => response,
-    async (error: AxiosError) => {
-      //   if (error.response?.status === 401) {
-      //     console.log("401 Unauthorized - Signing out user");
-      //     await signOut({ callbackUrl: "/login" });
-      //   }
-      return Promise.reject(error);
-    }
-  );
-}
 // Custom error class for HTTP errors
 class HttpError extends Error {
   status: number;
@@ -80,7 +48,7 @@ class HttpError extends Error {
 }
 // Server-side axios instance with response interceptor
 const serverAxios = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "/api",
+  baseURL: process.env.BACKEND_URL || "/api",
 });
 // Setup server-side response interceptor
 serverAxios.interceptors.response.use(
@@ -164,4 +132,4 @@ const serverApi = {
   },
 };
 
-export { clientAxios, serverApi };
+export { serverApi };

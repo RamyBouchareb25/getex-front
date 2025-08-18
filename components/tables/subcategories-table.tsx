@@ -101,6 +101,7 @@ export default function SubCategoriesTable({
   const router = useRouter();
   const pathname = usePathname();
   const tSubcategories = useTranslations("subcategories");
+  const tSubcategoriesTable = useTranslations("subcategoriesTable");
   const tCommon = useTranslations("common");
   const tPagination = useTranslations("pagination");
 
@@ -226,14 +227,14 @@ export default function SubCategoriesTable({
     try {
       const result = await createSubCategoryAction(formData);
       if (result.success) {
-        setSuccess("Subcategory created successfully!");
+        setSuccess(tSubcategoriesTable("toasts.subcategoryCreatedSuccess"));
         setIsCreateOpen(false);
       } else {
-        setError(result.message || "Failed to create subcategory");
+        setError(result.message || tSubcategoriesTable("toasts.subcategoryCreatedError"));
       }
     } catch (error) {
       console.error("Error creating subcategory:", error);
-      setError("An unexpected error occurred while creating the subcategory");
+      setError(tSubcategoriesTable("toasts.subcategoryCreatedUnexpectedError"));
     } finally {
       setIsCreating(false);
     }
@@ -247,14 +248,14 @@ export default function SubCategoriesTable({
     try {
       const result = await updateSubCategoryAction(formData);
       if (result.success) {
-        setSuccess("Subcategory updated successfully!");
+        setSuccess(tSubcategoriesTable("toasts.subcategoryUpdatedSuccess"));
         setEditingSubCategory(null);
       } else {
-        setError(result.message || "Failed to update subcategory");
+        setError(result.message || tSubcategoriesTable("toasts.subcategoryUpdatedError"));
       }
     } catch (error) {
       console.error("Error updating subcategory:", error);
-      setError("An unexpected error occurred while updating the subcategory");
+      setError(tSubcategoriesTable("toasts.subcategoryUpdatedUnexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -268,13 +269,13 @@ export default function SubCategoriesTable({
     try {
       const result = await deleteSubCategoryAction(subCategoryId);
       if (result.success) {
-        setSuccess("Subcategory deleted successfully!");
+        setSuccess(tSubcategoriesTable("toasts.subcategoryDeletedSuccess"));
       } else {
-        setError(result.message || "Failed to delete subcategory");
+        setError(result.message || tSubcategoriesTable("toasts.subcategoryDeletedError"));
       }
     } catch (error) {
       console.error("Error deleting subcategory:", error);
-      setError("An unexpected error occurred while deleting the subcategory");
+      setError(tSubcategoriesTable("toasts.subcategoryDeletedUnexpectedError"));
     } finally {
       setIsDeleting(null);
     }
@@ -288,7 +289,7 @@ export default function SubCategoriesTable({
           <h1 className="text-3xl font-bold tracking-tight">
             {tSubcategories("title")}
           </h1>
-          <p className="text-muted-foreground">Manage product sub categories</p>
+          <p className="text-muted-foreground">{tSubcategoriesTable("manageProductSubCategories")}</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -301,7 +302,7 @@ export default function SubCategoriesTable({
             <DialogHeader>
               <DialogTitle>{tSubcategories("createSubcategory")}</DialogTitle>
               <DialogDescription>
-                Add a new product sub category
+                {tSubcategoriesTable("addNewProductSubCategory")}
               </DialogDescription>
             </DialogHeader>
             <form action={handleCreateSubCategory}>
@@ -313,11 +314,11 @@ export default function SubCategoriesTable({
                   <Input id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">{tCommon("description")}</Label>
                   <Textarea id="description" name="description" />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="image">Sub Category Image</Label>
+                  <Label htmlFor="image">{tSubcategoriesTable("subCategoryImage")}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="image"
@@ -331,14 +332,14 @@ export default function SubCategoriesTable({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="categoryId">Category</Label>
+                  <Label htmlFor="categoryId">{tCommon("category")}</Label>
                   <select
                     id="categoryId"
                     name="categoryId"
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                     required
                   >
-                    <option value="">Select a category</option>
+                    <option value="">{tSubcategoriesTable("selectCategory")}</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
@@ -349,7 +350,7 @@ export default function SubCategoriesTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
-                  {isCreating ? "Creating..." : "Create Sub Category"}
+                  {isCreating ? tSubcategoriesTable("creating") : tSubcategoriesTable("createSubCategory")}
                 </Button>
               </DialogFooter>
             </form>
@@ -359,16 +360,16 @@ export default function SubCategoriesTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>All Sub Categories</CardTitle>
+          <CardTitle>{tSubcategoriesTable("allSubCategories")}</CardTitle>
           <CardDescription>
-            A list of all product sub categories
+            {tSubcategoriesTable("allSubCategoriesDescription")}
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 disabled={isUpdating || isSearching}
-                placeholder="Search sub categories..."
+                placeholder={tSubcategoriesTable("searchSubCategories")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
@@ -384,7 +385,7 @@ export default function SubCategoriesTable({
                 onClick={handleSearch}
                 disabled={isSearching}
               >
-                {isSearching ? "Searching..." : "Search"}
+                {isSearching ? tSubcategoriesTable("searching") : tCommon("search")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -396,7 +397,7 @@ export default function SubCategoriesTable({
                     className="flex items-center gap-1"
                   >
                     <Filter className="h-4 w-4" />
-                    <span>Filter</span>
+                    <span>{tCommon("filter")}</span>
                     {(selectedCategories.length > 0 ||
                       dateFromFilter ||
                       dateToFilter ||
@@ -408,7 +409,7 @@ export default function SubCategoriesTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">Categories</h4>
+                      <h4 className="font-medium">{tSubcategoriesTable("categories")}</h4>
                       <div className="grid grid-cols-1 gap-2">
                         {categories.map((category) => (
                           <div
@@ -430,24 +431,24 @@ export default function SubCategoriesTable({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Products Count</h4>
+                      <h4 className="font-medium">{tSubcategoriesTable("productsCount")}</h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={productCountFilter}
                         onChange={(e) => setProductCountFilter(e.target.value)}
                       >
-                        <option value="">Any</option>
-                        <option value="less10">Less than 10</option>
-                        <option value="10to25">10 to 25</option>
-                        <option value="more25">More than 25</option>
+                        <option value="">{tSubcategoriesTable("any")}</option>
+                        <option value="less10">{tSubcategoriesTable("lessThan10")}</option>
+                        <option value="10to25">{tSubcategoriesTable("10to25")}</option>
+                        <option value="more25">{tSubcategoriesTable("moreThan25")}</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Range</h4>
+                      <h4 className="font-medium">{tSubcategoriesTable("dateRange")}</h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            From
+                            {tSubcategoriesTable("from")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -458,7 +459,7 @@ export default function SubCategoriesTable({
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            To
+                            {tSubcategoriesTable("to")}
                           </label>
                           <Input
                             disabled={isUpdating || isSearching}
@@ -476,14 +477,14 @@ export default function SubCategoriesTable({
                         onClick={handleResetFilters}
                         disabled={isSearching}
                       >
-                        Reset Filters
+                        {tSubcategoriesTable("resetFilters")}
                       </Button>
                       <Button
                         size="sm"
                         onClick={handleSearch}
                         disabled={isSearching}
                       >
-                        {isSearching ? "Applying..." : "Apply Filters"}
+                        {isSearching ? tSubcategoriesTable("applying") : tSubcategoriesTable("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -512,10 +513,10 @@ export default function SubCategoriesTable({
                   router.push(`${pathname}?${params.toString()}`);
                 }}
               >
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
+                <option value={5}>5 {tSubcategoriesTable("perPage")}</option>
+                <option value={10}>10 {tSubcategoriesTable("perPage")}</option>
+                <option value={20}>20 {tSubcategoriesTable("perPage")}</option>
+                <option value={50}>50 {tSubcategoriesTable("perPage")}</option>
               </select>
             </div>
           </div>
@@ -524,19 +525,19 @@ export default function SubCategoriesTable({
           {isSearching ? (
             <div className="flex items-center justify-center py-8">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-b-transparent"></div>
-              <span className="ml-2">Loading subcategories...</span>
+              <span className="ml-2">{tSubcategoriesTable("loadingSubcategories")}</span>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Products</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{tSubcategoriesTable("image")}</TableHead>
+                  <TableHead>{tSubcategoriesTable("name")}</TableHead>
+                  <TableHead>{tSubcategoriesTable("description")}</TableHead>
+                  <TableHead>{tSubcategoriesTable("category")}</TableHead>
+                  <TableHead>{tSubcategoriesTable("products")}</TableHead>
+                  <TableHead>{tSubcategoriesTable("createdAt")}</TableHead>
+                  <TableHead>{tSubcategoriesTable("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -546,7 +547,7 @@ export default function SubCategoriesTable({
                       colSpan={7}
                       className="text-center py-8 text-muted-foreground"
                     >
-                      No subcategories found
+                      {tSubcategoriesTable("noSubcategoriesFound")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -567,7 +568,7 @@ export default function SubCategoriesTable({
                         {subCategory.name}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
-                        {subCategory.description ?? "No description available"}
+                        {subCategory.description ?? tSubcategoriesTable("noDescriptionAvailable")}
                       </TableCell>
                       <TableCell>
                         <Link
@@ -575,7 +576,7 @@ export default function SubCategoriesTable({
                           className="text-blue-600 hover:underline flex items-center gap-1"
                         >
                           <Tag className="h-3 w-3" />
-                          {subCategory.category?.name || "Unknown"}
+                          {subCategory.category?.name || tSubcategoriesTable("unknown")}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -583,7 +584,7 @@ export default function SubCategoriesTable({
                           href={`/dashboard/products?subCategoryId=${subCategory.id}`}
                           className="text-blue-600 hover:underline"
                         >
-                          {subCategory._count.products || 0} products
+                          {subCategory._count.products || 0} {tSubcategoriesTable("products")}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -633,8 +634,11 @@ export default function SubCategoriesTable({
       {/* Pagination Controls */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * limit + 1} to{" "}
-          {Math.min(currentPage * limit, total)} of {total} subcategories
+          {tSubcategoriesTable("showing", {
+            from: (currentPage - 1) * limit + 1,
+            to: Math.min(currentPage * limit, total),
+            total,
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -644,7 +648,7 @@ export default function SubCategoriesTable({
             disabled={currentPage <= 1}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {tSubcategoriesTable("previous")}
           </Button>
 
           <div className="flex items-center space-x-1">
@@ -680,7 +684,7 @@ export default function SubCategoriesTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
           >
-            Next
+            {tSubcategoriesTable("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -693,9 +697,9 @@ export default function SubCategoriesTable({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Sub Category</DialogTitle>
+            <DialogTitle>{tSubcategoriesTable("editSubCategory")}</DialogTitle>
             <DialogDescription>
-              Update sub category information
+              {tSubcategoriesTable("updateSubCategoryInfo")}
             </DialogDescription>
           </DialogHeader>
           {editingSubCategory && (
@@ -703,7 +707,7 @@ export default function SubCategoriesTable({
               <input type="hidden" name="id" value={editingSubCategory.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-name">Sub Category Name</Label>
+                  <Label htmlFor="edit-name">{tSubcategoriesTable("subCategoryName")}</Label>
                   <Input
                     id="edit-name"
                     name="name"
@@ -712,7 +716,7 @@ export default function SubCategoriesTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-description">Description</Label>
+                  <Label htmlFor="edit-description">{tCommon("description")}</Label>
                   <Textarea
                     id="edit-description"
                     name="description"
@@ -720,7 +724,7 @@ export default function SubCategoriesTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-image">Sub Category Image</Label>
+                  <Label htmlFor="edit-image">{tSubcategoriesTable("subCategoryImage")}</Label>
                   <div className="flex items-center gap-2">
                     <div className="flex-shrink-0">
                       <Image
@@ -743,7 +747,7 @@ export default function SubCategoriesTable({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-categoryId">Category</Label>
+                  <Label htmlFor="edit-categoryId">{tCommon("category")}</Label>
                   <select
                     id="edit-categoryId"
                     name="categoryId"
@@ -761,7 +765,7 @@ export default function SubCategoriesTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? "Updating..." : "Update Sub Category"}
+                  {isUpdating ? tSubcategoriesTable("updating") : tSubcategoriesTable("updateSubCategory")}
                 </Button>
               </DialogFooter>
             </form>
