@@ -187,14 +187,14 @@ export default function CompaniesTable({
       const formData = new FormData(event.currentTarget);
       const result = await updateCompanyAction(formData);
       if (result.success) {
-        setSuccess("Company updated successfully!");
+        setSuccess(t("toasts.companyUpdatedSuccess"));
         setEditingCompany(null);
       } else {
-        setError(result.message || "Failed to update company");
+        setError(result.message || t("toasts.companyUpdatedError"));
       }
     } catch (error) {
       console.error("Error updating company:", error);
-      setError("An unexpected error occurred while updating the company");
+      setError(t("toasts.companyUpdatedUnexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -226,7 +226,7 @@ export default function CompaniesTable({
           <h1 className="text-3xl font-bold tracking-tight">
             {tCompanies("title")}
           </h1>
-          <p className="text-muted-foreground">Manage company information</p>
+          <p className="text-muted-foreground">{tCompanies("manageCompanyInfo")}</p>
         </div>
       </div>
 
@@ -234,14 +234,14 @@ export default function CompaniesTable({
         <CardHeader>
           <CardTitle>{tCompanies("title")}</CardTitle>
           <CardDescription>
-            A list of all companies in the system
+            {tCompanies("listOfAllCompanies")}
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 disabled={isUpdating || isSearching}
-                placeholder={tCommon("search") + " companies..."}
+                placeholder={tCommon("search") + " " + tCompanies("title").toLowerCase() + "..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -344,10 +344,10 @@ export default function CompaniesTable({
                   router.push(`${pathname}?${searchParams.toString()}`);
                 }}
               >
-                <option value={2}>2 {tCompanies("perPage")}</option>
-                <option value={5}>5 {tCompanies("perPage")}</option>
-                <option value={10}>10 {tCompanies("perPage")}</option>
-                <option value={20}>20 {tCompanies("perPage")}</option>
+                <option value={2}>2 {t("perPage")}</option>
+                <option value={5}>5 {t("perPage")}</option>
+                <option value={10}>10 {t("perPage")}</option>
+                <option value={20}>20 {t("perPage")}</option>
                 <option value={50}>50 {t("perPage")}</option>
               </select>
             </div>

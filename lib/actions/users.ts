@@ -58,7 +58,6 @@ export const updateUserAction = async (formData: FormData) => {
     const email = formData.get("email") as string;
     const name = formData.get("name") as string;
     const role = formData.get("role") as string;
-    const art = formData.get("art") as string;
 
     if (!id) {
       throw new Error("User ID is required for update");
@@ -68,8 +67,9 @@ export const updateUserAction = async (formData: FormData) => {
       email,
       name,
       role,
-      art,
     };
+
+    console.log("Updating user with ID:", id, "and payload:", payload);
 
     // Handle FOOD_TRUCK specific fields
     if (role === "FOOD_TRUCK") {

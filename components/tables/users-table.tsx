@@ -246,15 +246,15 @@ export default function UsersTable({
       }
       const result = await createUserAction(formData);
       if (result.success) {
-        toast.success("User created successfully!");
+        toast.success(tUsers("toasts.userCreatedSuccess"));
         setIsCreateOpen(false);
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to create user");
+        toast.error(result.message || tUsers("toasts.userCreatedError"));
       }
     } catch (error) {
       console.error("Error creating user:", error);
-      toast.error("An unexpected error occurred while creating the user");
+      toast.error(tUsers("toasts.userCreatedUnexpectedError"));
     } finally {
       setIsCreating(false);
     }
@@ -279,14 +279,14 @@ export default function UsersTable({
       }
       const result = await updateUserAction(formData);
       if (result.success) {
-        toast.success("User updated successfully!");
+        toast.success(tUsers("toasts.userUpdatedSuccess"));
         setEditingUser(null);
       } else {
-        toast.error(result.message || "Failed to update user");
+        toast.error(result.message || tUsers("toasts.userUpdatedError"));
       }
     } catch (error) {
       console.error("Error updating user:", error);
-      toast.error("An unexpected error occurred while updating the user");
+      toast.error(tUsers("toasts.userUpdatedUnexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -298,15 +298,15 @@ export default function UsersTable({
     try {
       const result = await deleteUserAction(userId);
       if (result.success) {
-        toast.success("User deleted successfully!");
+        toast.success(tUsers("toasts.userDeletedSuccess"));
         setDeletingUser(null);
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to delete user");
+        toast.error(result.message || tUsers("toasts.userDeletedError"));
       }
     } catch (error) {
       console.error("Error deleting user:", error);
-      toast.error("An unexpected error occurred while deleting the user");
+      toast.error(tUsers("toasts.userDeletedUnexpectedError"));
     } finally {
       setIsDeleting(null);
     }
@@ -327,7 +327,7 @@ export default function UsersTable({
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error("Failed to reset password");
+      toast.error(tUsers("toasts.passwordResetError"));
     } finally {
       setIsResettingPassword(false);
     }
@@ -352,7 +352,12 @@ export default function UsersTable({
 
     return pages;
   };
-
+  // When opening the dialog, set editRole to editingUser.role
+  useEffect(() => {
+    if (!!editingUser) {
+      setEditRole(editingUser.role);
+    }
+  }, [!!editingUser, editingUser?.role]);
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -361,7 +366,7 @@ export default function UsersTable({
             {tUsers("title")}
           </h1>
           <p className="text-muted-foreground">
-            Manage user accounts and permissions
+            {tUsers("manageUsersPermissions")}
           </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -375,7 +380,7 @@ export default function UsersTable({
             <DialogHeader>
               <DialogTitle>{tUsers("createUser")}</DialogTitle>
               <DialogDescription>
-                Add a new user to the system
+                {tUsers("addNewUserToSystem")}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateUser}>
@@ -385,7 +390,7 @@ export default function UsersTable({
                   <Input disabled={isCreating} id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="art">Art</Label>
+                  <Label htmlFor="art">{tCommon("art")}</Label>
                   <Input disabled={isCreating} id="art" name="art" required />
                 </div>
                 <div className="grid gap-2">
@@ -409,7 +414,9 @@ export default function UsersTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">
+                    {tUsers("confirmPassword")}
+                  </Label>
                   <Input
                     disabled={isCreating}
                     id="confirmPassword"
@@ -428,28 +435,32 @@ export default function UsersTable({
                     onValueChange={setCreateRole}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue placeholder={tUsers("selectRole")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ADMIN">{tUsers("admin")}</SelectItem>
-                      <SelectItem value="GROSSISTE">Grossiste</SelectItem>
+                      <SelectItem value="GROSSISTE">
+                        {tUsers("grossiste")}
+                      </SelectItem>
                       <SelectItem value="POINT_DE_VENTE">
-                        Point de Vente
+                        {tUsers("pointDeVente")}
                       </SelectItem>
                       <SelectItem value="GRANDE_SURFACE">
-                        Grande Surface
+                        {tUsers("grandeSurface")}
                       </SelectItem>
-                      <SelectItem value="FOOD_TRUCK">Food Truck</SelectItem>
+                      <SelectItem value="FOOD_TRUCK">
+                        {tUsers("foodTruck")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 {/* FOOD_TRUCK extra fields */}
                 {createRole === "FOOD_TRUCK" && (
                   <div className="grid gap-2">
-                    <Label>Food Truck Details</Label>
+                    <Label>{tUsers("foodTruckDetails")}</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <Label htmlFor="plate">Plate</Label>
+                        <Label htmlFor="plate">{tUsers("plate")}</Label>
                         <Input
                           disabled={isCreating}
                           id="plate"
@@ -458,7 +469,7 @@ export default function UsersTable({
                         />
                       </div>
                       <div>
-                        <Label htmlFor="licence">Licence</Label>
+                        <Label htmlFor="licence">{tUsers("licence")}</Label>
                         <Input
                           disabled={isCreating}
                           id="licence"
@@ -467,7 +478,9 @@ export default function UsersTable({
                         />
                       </div>
                       <div className="col-span-2">
-                        <Label htmlFor="carteGrise">Carte Grise (Image)</Label>
+                        <Label htmlFor="carteGrise">
+                          {tUsers("carteGrise")}
+                        </Label>
                         <Input
                           disabled={isCreating}
                           id="carteGrise"
@@ -482,10 +495,12 @@ export default function UsersTable({
                 )}
                 {/* Company Information */}
                 <div className="grid gap-2">
-                  <Label>Company Information (Optional)</Label>
+                  <Label>{tUsers("companyOptional")}</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label htmlFor="raisonSocial">Company Name</Label>
+                      <Label htmlFor="raisonSocial">
+                        {tUsers("companyName")}
+                      </Label>
                       <Input
                         disabled={isCreating}
                         id="raisonSocial"
@@ -493,33 +508,33 @@ export default function UsersTable({
                       />
                     </div>
                     <div>
-                      <Label htmlFor="nif">NIF</Label>
+                      <Label htmlFor="nif">{tCommon("nif")}</Label>
                       <Input disabled={isCreating} id="nif" name="nif" />
                     </div>
                     <div>
-                      <Label htmlFor="nis">NIS</Label>
+                      <Label htmlFor="nis">{tCommon("nis")}</Label>
                       <Input disabled={isCreating} id="nis" name="nis" />
                     </div>
                     <div>
-                      <Label htmlFor="phone">Phone</Label>
+                      <Label htmlFor="phone">{tCommon("phone")}</Label>
                       <Input disabled={isCreating} id="phone" name="phone" />
                     </div>
                     <div>
-                      <Label htmlFor="rc">Registre de commerce</Label>
+                      <Label htmlFor="rc">{tUsers("registreCommerce")}</Label>
                       <Input disabled={isCreating} id="rc" name="rc" />
                     </div>
                   </div>
                 </div>
                 {/* Address Information */}
                 <div className="grid gap-2">
-                  <Label>Address Information (Optional)</Label>
+                  <Label>{tUsers("addressOptional")}</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label htmlFor="wilaya">Wilaya</Label>
+                      <Label htmlFor="wilaya">{tUsers("wilaya")}</Label>
                       <Input disabled={isCreating} id="wilaya" name="wilaya" />
                     </div>
                     <div>
-                      <Label htmlFor="commune">Commune</Label>
+                      <Label htmlFor="commune">{tUsers("commune")}</Label>
                       <Input
                         disabled={isCreating}
                         id="commune"
@@ -531,7 +546,7 @@ export default function UsersTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
-                  {isCreating ? "Creating..." : "Create User"}
+                  {isCreating ? tUsers("creating") : tUsers("createUserBtn")}
                 </Button>
               </DialogFooter>
             </form>
@@ -543,14 +558,22 @@ export default function UsersTable({
         <CardHeader>
           <CardTitle>{tUsers("title")}</CardTitle>
           <CardDescription>
-            A list of all users in the system (Page {usersData.page} of{" "}
-            {usersData.totalPages}, {usersData.total} total users)
+            {tUsers("listAllUsers")} (
+            {tUsers("pageOf", {
+              page: usersData.page,
+              totalPages: usersData.totalPages,
+              total: usersData.total,
+            })
+              .replace("{page}", usersData.page.toString())
+              .replace("{totalPages}", usersData.totalPages.toString())
+              .replace("{total}", usersData.total.toString())}
+            )
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={tCommon("search") + " users..."}
+                placeholder={tUsers("searchUsers")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -576,7 +599,7 @@ export default function UsersTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">Roles</h4>
+                      <h4 className="font-medium">{tUsers("roles")}</h4>
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           "ADMIN",
@@ -600,7 +623,7 @@ export default function UsersTable({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">Date Created</h4>
+                      <h4 className="font-medium">{tUsers("dateCreated")}</h4>
                       <Input
                         type="date"
                         value={dateFilter}
@@ -614,14 +637,14 @@ export default function UsersTable({
                         onClick={resetFilters}
                         disabled={isPending}
                       >
-                        Reset Filters
+                        {tUsers("resetFilters")}
                       </Button>
                       <Button
                         size="sm"
                         onClick={applyFilters}
                         disabled={isPending}
                       >
-                        Apply Filters
+                        {tUsers("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -650,12 +673,12 @@ export default function UsersTable({
                     message={
                       searchTerm
                         ? tCommon("emptyState.noItemsFound")
-                        : "No users found"
+                        : tUsers("noUsersFound")
                     }
                     description={
                       searchTerm
                         ? tCommon("emptyState.tryDifferentSearch")
-                        : "Users will appear here when they are created"
+                        : tUsers("usersWillAppear")
                     }
                     showAddButton={!searchTerm}
                     onAddClick={() => setIsCreateOpen(true)}
@@ -665,7 +688,7 @@ export default function UsersTable({
                   usersData.users.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">
-                        {user.name || "Unknown"}
+                        {user.name || tUsers("unknown")}
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
@@ -687,7 +710,7 @@ export default function UsersTable({
                           </Link>
                         ) : (
                           <span className="text-muted-foreground">
-                            No company
+                            {tUsers("noCompany")}
                           </span>
                         )}
                       </TableCell>
@@ -738,9 +761,17 @@ export default function UsersTable({
 
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * 10 + 1} to{" "}
-          {Math.min(currentPage * 10, usersData.total)} of {usersData.total}{" "}
-          users
+          {tUsers("showingUsers", {
+            start: ((currentPage - 1) * 10 + 1).toString(),
+            end: Math.min(currentPage * 10, usersData.total).toString(),
+            total: usersData.total.toString(),
+          })
+            .replace("{start}", ((currentPage - 1) * 10 + 1).toString())
+            .replace(
+              "{end}",
+              Math.min(currentPage * 10, usersData.total).toString()
+            )
+            .replace("{total}", usersData.total.toString())}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -750,7 +781,7 @@ export default function UsersTable({
             disabled={currentPage <= 1 || isPending}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {tUsers("previous")}
           </Button>
 
           <div className="flex items-center space-x-1">
@@ -774,7 +805,7 @@ export default function UsersTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= usersData.totalPages || isPending}
           >
-            Next
+            {tUsers("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -784,29 +815,19 @@ export default function UsersTable({
       <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user information</DialogDescription>
+            <DialogTitle>{tUsers("editUser")}</DialogTitle>
+            <DialogDescription>{tUsers("updateUserInfo")}</DialogDescription>
           </DialogHeader>
           {editingUser && (
             <form onSubmit={handleUpdateUser}>
               <input type="hidden" name="id" value={editingUser.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-name">Full Name</Label>
+                  <Label htmlFor="edit-name">{tUsers("fullName")}</Label>
                   <Input
                     id="edit-name"
                     name="name"
                     defaultValue={editingUser.name}
-                    required
-                    disabled={isUpdating}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-art">Art</Label>
-                  <Input
-                    id="edit-art"
-                    name="art"
-                    defaultValue={editingUser.CompanyData?.art || ""}
                     required
                     disabled={isUpdating}
                   />
@@ -828,6 +849,7 @@ export default function UsersTable({
                     disabled={isUpdating}
                     name="role"
                     value={editRole || editingUser.role}
+                    defaultValue={editingUser.role}
                     onValueChange={setEditRole}
                     required
                   >
@@ -835,25 +857,29 @@ export default function UsersTable({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="GROSSISTE">Grossiste</SelectItem>
+                      <SelectItem value="ADMIN">{tUsers("admin")}</SelectItem>
+                      <SelectItem value="GROSSISTE">
+                        {tUsers("grossiste")}
+                      </SelectItem>
                       <SelectItem value="POINT_DE_VENTE">
-                        Point de Vente
+                        {tUsers("pointDeVente")}
                       </SelectItem>
                       <SelectItem value="GRANDE_SURFACE">
-                        Grande Surface
+                        {tUsers("grandeSurface")}
                       </SelectItem>
-                      <SelectItem value="FOOD_TRUCK">Food Truck</SelectItem>
+                      <SelectItem value="FOOD_TRUCK">
+                        {tUsers("foodTruck")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 {/* FOOD_TRUCK extra fields for edit */}
                 {(editRole || editingUser.role) === "FOOD_TRUCK" && (
                   <div className="grid gap-2">
-                    <Label>Food Truck Details</Label>
+                    <Label>{tUsers("foodTruckDetails")}</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <Label htmlFor="edit-plate">Plate</Label>
+                        <Label htmlFor="edit-plate">{tUsers("plate")}</Label>
                         <Input
                           id="edit-plate"
                           name="plate"
@@ -865,11 +891,15 @@ export default function UsersTable({
                         />
                       </div>
                       <div>
-                        <Label htmlFor="edit-licence">Licence</Label>
+                        <Label htmlFor="edit-licence">
+                          {tUsers("licence")}
+                        </Label>
                         <Input
                           id="edit-licence"
                           name="licence"
-                          defaultValue={editingUser.FoodTruckData?.licence || ""}
+                          defaultValue={
+                            editingUser.FoodTruckData?.licence || ""
+                          }
                           required={
                             (editRole || editingUser.role) === "FOOD_TRUCK"
                           }
@@ -878,7 +908,7 @@ export default function UsersTable({
                       </div>
                       <div className="col-span-2">
                         <Label htmlFor="edit-carteGrise">
-                          Carte Grise (Image)
+                          {tUsers("carteGrise")}
                         </Label>
                         <Input
                           id="edit-carteGrise"
@@ -894,7 +924,7 @@ export default function UsersTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? "Updating..." : "Update User"}
+                  {isUpdating ? tUsers("updating") : tUsers("updateUser")}
                 </Button>
               </DialogFooter>
             </form>
@@ -908,12 +938,9 @@ export default function UsersTable({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              Confirm Deletion
+              {tUsers("confirmDeletion")}
             </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this user? This action cannot be
-              undone.
-            </DialogDescription>
+            <DialogDescription>{tUsers("deleteConfirmText")}</DialogDescription>
           </DialogHeader>
           {deletingUser && (
             <div className="py-4">
@@ -923,7 +950,7 @@ export default function UsersTable({
                   {deletingUser.email}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Role: {deletingUser.role}
+                  {tUsers("roleLabel")} {deletingUser.role}
                 </p>
               </div>
             </div>
@@ -934,14 +961,16 @@ export default function UsersTable({
               onClick={() => setDeletingUser(null)}
               disabled={isDeleting === deletingUser?.id}
             >
-              Cancel
+              {tUsers("cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => deletingUser && handleDeleteUser(deletingUser.id)}
               disabled={isDeleting === deletingUser?.id}
             >
-              {isDeleting === deletingUser?.id ? "Deleting..." : "Delete User"}
+              {isDeleting === deletingUser?.id
+                ? tUsers("deleting")
+                : tUsers("deleteUserBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -954,9 +983,11 @@ export default function UsersTable({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
+            <DialogTitle>{tUsers("resetPassword")}</DialogTitle>
             <DialogDescription>
-              Reset password for {changingPasswordFor?.email}
+              {tUsers("resetPasswordFor", {
+                email: changingPasswordFor?.email || "",
+              })}
             </DialogDescription>
           </DialogHeader>
           {changingPasswordFor && (
@@ -970,7 +1001,7 @@ export default function UsersTable({
                 />
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="oldPassword">Old Password</Label>
+                    <Label htmlFor="oldPassword">{tUsers("oldPassword")}</Label>
                     <Input
                       disabled={isResettingPassword}
                       id="oldPassword"
@@ -980,7 +1011,7 @@ export default function UsersTable({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="newPassword">New Password</Label>
+                    <Label htmlFor="newPassword">{tUsers("newPassword")}</Label>
                     <Input
                       disabled={isResettingPassword}
                       id="newPassword"
@@ -990,7 +1021,9 @@ export default function UsersTable({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword">
+                      {tUsers("confirmPassword")}
+                    </Label>
                     <Input
                       disabled={isResettingPassword}
                       id="confirmPassword"
@@ -1002,7 +1035,9 @@ export default function UsersTable({
                 </div>
                 <DialogFooter>
                   <Button type="submit" disabled={isResettingPassword}>
-                    {isResettingPassword ? "Resetting..." : "Reset Password"}
+                    {isResettingPassword
+                      ? tUsers("resetting")
+                      : tUsers("resetPasswordBtn")}
                   </Button>
                 </DialogFooter>
               </form>

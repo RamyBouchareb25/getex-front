@@ -142,14 +142,14 @@ export default function DashboardCharts({
             ) : (
               <>
                 <div className="text-lg md:text-2xl font-bold">{dashboardStats.totalRevenue.toLocaleString('en-US')} DZD</div>
-                <p className="text-xs text-muted-foreground">+{dashboardStats.revenueGrowth}% from last month</p>
+                <p className="text-xs text-muted-foreground">+{dashboardStats.revenueGrowth}% {t('fromLastMonth')}</p>
               </>
             )}
           </CardContent>
         </Card>
         <Card className="min-h-[120px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs md:text-sm font-medium truncate">Total Orders</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium truncate">{t('totalOrders')}</CardTitle>
             <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
           </CardHeader>
           <CardContent>
@@ -161,14 +161,14 @@ export default function DashboardCharts({
             ) : (
               <>
                 <div className="text-lg md:text-2xl font-bold">{dashboardStats.totalOrders.toLocaleString('en-US')}</div>
-                <p className="text-xs text-muted-foreground">+{dashboardStats.ordersGrowth}% from last month</p>
+                <p className="text-xs text-muted-foreground">+{dashboardStats.ordersGrowth}% {t('fromLastMonth')}</p>
               </>
             )}
           </CardContent>
         </Card>
         <Card className="min-h-[120px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs md:text-sm font-medium truncate">Active Users</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium truncate">{t('activeUsers')}</CardTitle>
             <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
           </CardHeader>
           <CardContent>
@@ -180,14 +180,14 @@ export default function DashboardCharts({
             ) : (
               <>
                 <div className="text-lg md:text-2xl font-bold">{dashboardStats.activeUsers.toLocaleString('en-US')}</div>
-                <p className="text-xs text-muted-foreground">+{dashboardStats.usersGrowth}% from last month</p>
+                <p className="text-xs text-muted-foreground">+{dashboardStats.usersGrowth}% {t('fromLastMonth')}</p>
               </>
             )}
           </CardContent>
         </Card>
         <Card className="min-h-[120px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs md:text-sm font-medium truncate">Products in Stock</CardTitle>
+            <CardTitle className="text-xs md:text-sm font-medium truncate">{t('productsInStock')}</CardTitle>
             <Package className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
           </CardHeader>
           <CardContent>
@@ -199,7 +199,7 @@ export default function DashboardCharts({
             ) : (
               <>
                 <div className="text-lg md:text-2xl font-bold">{dashboardStats.productsInStock.toLocaleString('en-US')}</div>
-                <p className="text-xs text-muted-foreground">+{dashboardStats.stockGrowth}% from last month</p>
+                <p className="text-xs text-muted-foreground">+{dashboardStats.stockGrowth}% {t('fromLastMonth')}</p>
               </>
             )}
           </CardContent>
@@ -212,8 +212,8 @@ export default function DashboardCharts({
           {/* Revenue Trend */}
           <Card className="col-span-1 lg:col-span-2">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base md:text-lg">Revenue Trend</CardTitle>
-              <CardDescription className="text-sm">Monthly revenue and order trends</CardDescription>
+              <CardTitle className="text-base md:text-lg">{t('revenueTrend')}</CardTitle>
+              <CardDescription className="text-sm">{t('revenueTrendDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
             {isLoading ? (
@@ -309,8 +309,8 @@ export default function DashboardCharts({
         {/* Order Status Distribution */}
         <Card className="col-span-1">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Order Status</CardTitle>
-            <CardDescription className="text-sm">Distribution of order statuses</CardDescription>
+            <CardTitle className="text-base md:text-lg">{t('orderStatus')}</CardTitle>
+            <CardDescription className="text-sm">{t('orderStatusDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -377,8 +377,8 @@ export default function DashboardCharts({
         {/* Top Products */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Top Selling Products</CardTitle>
-            <CardDescription className="text-sm">Best performing products by sales volume</CardDescription>
+            <CardTitle className="text-base md:text-lg">{t('topProductsTitle')}</CardTitle>
+            <CardDescription className="text-sm">{t('topProductsDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -449,8 +449,8 @@ export default function DashboardCharts({
         {/* Regional Sales */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Regional Sales</CardTitle>
-            <CardDescription className="text-sm">Sales performance by region</CardDescription>
+            <CardTitle className="text-base md:text-lg">{t('regionalSales')}</CardTitle>
+            <CardDescription className="text-sm">{t('regionalSalesDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -527,8 +527,8 @@ export default function DashboardCharts({
         {/* Stock Levels */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Stock Levels Overview</CardTitle>
-            <CardDescription className="text-sm">Inventory levels over time</CardDescription>
+            <CardTitle className="text-base md:text-lg">{t('stockLevelsTitle')}</CardTitle>
+            <CardDescription className="text-sm">{t('stockLevelsDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -631,8 +631,8 @@ export default function DashboardCharts({
         {/* User Growth */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">User Growth</CardTitle>
-            <CardDescription className="text-sm">Monthly user registration trends</CardDescription>
+            <CardTitle className="text-base md:text-lg">{t('userGrowth')}</CardTitle>
+            <CardDescription className="text-sm">{t('userGrowthDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -704,8 +704,8 @@ export default function DashboardCharts({
       <div className="grid gap-3 md:gap-4 grid-cols-1 lg:grid-cols-7">
         <Card className="col-span-1 lg:col-span-4">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Recent Orders</CardTitle>
-            <CardDescription className="text-sm">Latest orders from your customers</CardDescription>
+            <CardTitle className="text-base md:text-lg">{t('recentOrders')}</CardTitle>
+            <CardDescription className="text-sm">{t('recentOrdersDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -763,8 +763,8 @@ export default function DashboardCharts({
         </Card>
         <Card className="col-span-1 lg:col-span-3">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Quick Stats</CardTitle>
-            <CardDescription className="text-sm">Key metrics at a glance</CardDescription>
+            <CardTitle className="text-base md:text-lg">{t('quickStats')}</CardTitle>
+            <CardDescription className="text-sm">{t('quickStatsDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 md:space-y-4">
             {isLoading ? (
@@ -780,27 +780,27 @@ export default function DashboardCharts({
               <>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-3 w-3 md:h-4 md:w-4 text-green-600 flex-shrink-0" />
-                  <span className="text-xs md:text-sm">Revenue up {quickStats.revenueGrowth}% this month</span>
+                  <span className="text-xs md:text-sm">{t('revenueUp')} {quickStats.revenueGrowth}% {t('thisMonth')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 text-yellow-600 flex-shrink-0" />
-                  <span className="text-xs md:text-sm">{quickStats.lowStockProducts} products low in stock</span>
+                  <span className="text-xs md:text-sm">{quickStats.lowStockProducts} {t('productsLowStock')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3 w-3 md:h-4 md:w-4 text-green-600 flex-shrink-0" />
-                  <span className="text-xs md:text-sm">{quickStats.fulfillmentRate}% order fulfillment rate</span>
+                  <span className="text-xs md:text-sm">{quickStats.fulfillmentRate}% {t('orderFulfillmentRate')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Building2 className="h-3 w-3 md:h-4 md:w-4 text-blue-600 flex-shrink-0" />
-                  <span className="text-xs md:text-sm">{quickStats.activeCompanies} active companies</span>
+                  <span className="text-xs md:text-sm">{quickStats.activeCompanies} {t('activeCompanies')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Activity className="h-3 w-3 md:h-4 md:w-4 text-purple-600 flex-shrink-0" />
-                  <span className="text-xs md:text-sm">Average order value: {quickStats.averageOrderValue} DA</span>
+                  <span className="text-xs md:text-sm">{t('averageOrderValue')}: {quickStats.averageOrderValue} DA</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Warehouse className="h-3 w-3 md:h-4 md:w-4 text-orange-600 flex-shrink-0" />
-                  <span className="text-xs md:text-sm">Inventory turnover: {quickStats.inventoryTurnover}x</span>
+                  <span className="text-xs md:text-sm">{t('inventoryTurnover')}: {quickStats.inventoryTurnover}x</span>
                 </div>
               </>
             )}
@@ -811,8 +811,8 @@ export default function DashboardCharts({
       {/* Category Performance Table */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base md:text-lg">Category Performance</CardTitle>
-          <CardDescription className="text-sm">Sales performance and growth by product category</CardDescription>
+          <CardTitle className="text-base md:text-lg">{t('categoryPerformance')}</CardTitle>
+          <CardDescription className="text-sm">{t('categoryPerformanceDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
