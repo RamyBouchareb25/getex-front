@@ -35,7 +35,8 @@ enum OrderStatus {
 }
 
 export default function InvoicesPage() {
-  const t = useTranslations("dashboard");
+  const t = useTranslations("invoices");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -49,13 +50,13 @@ export default function InvoicesPage() {
 
   // Define all invoice document types
   const documentTypes = [
-    { id: "bon-livraison", label: t("bonLivraison", {defaultValue: "Bon de Livraison"}) },
-    { id: "bon-commande", label: t("bonCommande", {defaultValue: "Bon de Commande"}) },
-    { id: "bon-retour", label: t("bonRetour", {defaultValue: "Bon de Retour"}) },
-    { id: "bon-reception", label: t("bonReception", {defaultValue: "Bon de Reception"}) },
-    { id: "facture", label: t("facture", {defaultValue: "Facture"}) },
-    { id: "facture-proforma", label: t("factureProforma", {defaultValue: "Facture Proforma"}) },
-    { id: "facture-avoir", label: t("factureAvoir", {defaultValue: "Facture Avoir"}) },
+    { id: "bon-livraison", label: t("bonLivraison") },
+    { id: "bon-commande", label: t("bonCommande") },
+    { id: "bon-retour", label: t("bonRetour") },
+    { id: "bon-reception", label: t("bonReception") },
+    { id: "facture", label: t("facture") },
+    { id: "facture-proforma", label: t("factureProforma") },
+    { id: "facture-avoir", label: t("factureAvoir") },
   ];
   
   // Initialize state from URL params
@@ -110,15 +111,15 @@ export default function InvoicesPage() {
   }, [searchTerm, globalSearch, selectedStatus, startDate, endDate, selectedTab, isGlobalSearchMode]);
 
   const statusOptions = [
-    { value: "", label: "All Statuses" },
-    { value: OrderStatus.PENDING, label: "Pending" },
-    { value: OrderStatus.ACCEPTED, label: "Accepted" },
-    { value: OrderStatus.REJECTED, label: "Rejected" },
-    { value: OrderStatus.CANCELED, label: "Canceled" },
-    { value: OrderStatus.PREPARING, label: "Preparing" },
-    { value: OrderStatus.SHIPPING, label: "Shipping" },
-    { value: OrderStatus.COMPLETED, label: "Completed" },
-    { value: OrderStatus.RETURNED, label: "Returned" },
+    { value: "", label: tCommon("allStatuses") },
+    { value: OrderStatus.PENDING, label: tCommon("pending") },
+    { value: OrderStatus.ACCEPTED, label: tCommon("accepted") },
+    { value: OrderStatus.REJECTED, label: tCommon("rejected") },
+    { value: OrderStatus.CANCELED, label: tCommon("canceled") },
+    { value: OrderStatus.PREPARING, label: tCommon("preparing") },
+    { value: OrderStatus.SHIPPING, label: tCommon("shipping") },
+    { value: OrderStatus.COMPLETED, label: tCommon("completed") },
+    { value: OrderStatus.RETURNED, label: tCommon("returned") },
   ];
 
   const handleTabChange = (value: string) => {
@@ -149,7 +150,7 @@ export default function InvoicesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">{t("invoices")}</h1>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
         
         {/* Search Controls */}
         <div className="flex items-center space-x-4">
@@ -161,14 +162,14 @@ export default function InvoicesPage() {
             className="flex items-center space-x-2"
           >
             <Search className="h-4 w-4" />
-            <span>{isGlobalSearchMode ? "Global Search" : "Category Search"}</span>
+            <span>{isGlobalSearchMode ? t("globalSearch") : t("categorySearch")}</span>
           </Button>
 
           {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder={isGlobalSearchMode ? "Search all invoices..." : `Search in ${documentTypes.find(d => d.id === selectedTab)?.label}...`}
+              placeholder={isGlobalSearchMode ? t("searchAllInvoices") : t("searchInCategory", { category: documentTypes.find(d => d.id === selectedTab)?.label || "" })}
               value={isGlobalSearchMode ? globalSearch : searchTerm}
               onChange={(e) => isGlobalSearchMode ? setGlobalSearch(e.target.value) : setSearchTerm(e.target.value)}
               className="pl-10 w-80"
@@ -184,7 +185,7 @@ export default function InvoicesPage() {
                 className="flex items-center space-x-2"
               >
                 <Filter className="h-4 w-4" />
-                <span>Filters</span>
+                <span>{tCommon("filters")}</span>
                 {hasActiveFilters && (
                   <span className="ml-1 rounded-full bg-primary w-2 h-2" />
                 )}
@@ -193,10 +194,10 @@ export default function InvoicesPage() {
             <PopoverContent className="w-80">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Status</Label>
+                  <Label>{tCommon("status")}</Label>
                   <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder={tCommon("selectStatus")} />
                     </SelectTrigger>
                     <SelectContent>
                       {statusOptions.map((status) => (
@@ -209,10 +210,10 @@ export default function InvoicesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Date Range</Label>
+                  <Label>{tCommon("dateRange")}</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label htmlFor="startDate" className="text-xs">From</Label>
+                      <Label htmlFor="startDate" className="text-xs">{tCommon("from")}</Label>
                       <Input
                         id="startDate"
                         type="date"
@@ -221,7 +222,7 @@ export default function InvoicesPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="endDate" className="text-xs">To</Label>
+                      <Label htmlFor="endDate" className="text-xs">{tCommon("to")}</Label>
                       <Input
                         id="endDate"
                         type="date"
@@ -239,7 +240,7 @@ export default function InvoicesPage() {
                     onClick={clearFilters}
                     disabled={!hasActiveFilters}
                   >
-                    Clear Filters
+                    {tCommon("clearFilters")}
                   </Button>
                 </div>
               </div>
@@ -251,12 +252,12 @@ export default function InvoicesPage() {
       {/* Active Filters Display */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 mb-4 p-4 bg-muted rounded-lg">
-          <span className="text-sm font-medium">Active filters:</span>
+          <span className="text-sm font-medium">{t("activeFilters")}:</span>
           
           {(searchTerm || globalSearch) && (
             <div className="flex items-center gap-1 bg-background px-2 py-1 rounded-md text-sm">
               <Search className="h-3 w-3" />
-              <span>{isGlobalSearchMode ? `Global: "${globalSearch}"` : `Category: "${searchTerm}"`}</span>
+              <span>{isGlobalSearchMode ? t("globalSearchFilter", { term: globalSearch }) : t("categorySearchFilter", { term: searchTerm })}</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -270,7 +271,7 @@ export default function InvoicesPage() {
           
           {selectedStatus && (
             <div className="flex items-center gap-1 bg-background px-2 py-1 rounded-md text-sm">
-              <span>Status: {statusOptions.find(s => s.value === selectedStatus)?.label}</span>
+              <span>{t("statusFilter", { status: statusOptions.find(s => s.value === selectedStatus)?.label || "" })}</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -286,9 +287,9 @@ export default function InvoicesPage() {
             <div className="flex items-center gap-1 bg-background px-2 py-1 rounded-md text-sm">
               <Calendar className="h-3 w-3" />
               <span>
-                {startDate && endDate ? `${startDate} to ${endDate}` : 
-                 startDate ? `From ${startDate}` : 
-                 `Until ${endDate}`}
+                {startDate && endDate ? t("dateRangeFilter", { start: startDate, end: endDate }) : 
+                 startDate ? t("fromDateFilter", { date: startDate }) : 
+                 t("toDateFilter", { date: endDate })}
               </span>
               <Button
                 variant="ghost"
@@ -310,7 +311,7 @@ export default function InvoicesPage() {
             onClick={clearFilters}
             className="ml-auto"
           >
-            Clear All
+            {tCommon("clearAll")}
           </Button>
         </div>
       )}

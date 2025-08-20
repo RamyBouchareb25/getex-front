@@ -111,6 +111,7 @@ export default function CamionsTable({
   const t = useTranslations();
   const tCommon = useTranslations("common");
   const tCamions = useTranslations("camions");
+  const tCamionsTable = useTranslations("camionsTable");
   const tChauffeur = useTranslations("chauffeurs");
   const router = useRouter();
   const pathname = usePathname();
@@ -285,10 +286,10 @@ export default function CamionsTable({
     try {
       const result = await deleteCamionAction(id);
       if (result.success) {
-        setSuccess(tCamions("truckDeletedSuccess"));
+        setSuccess(tCamionsTable("truckDeletedSuccess"));
         router.refresh();
       } else {
-        setError(result.message || tCamions("truckDeleteError"));
+        setError(result.message || tCamionsTable("truckDeleteError"));
       }
     } catch (error) {
       console.error("Error deleting truck:", error);
@@ -321,21 +322,21 @@ export default function CamionsTable({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Camions</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tCamionsTable("trucksTitle")}</h1>
           <p className="text-muted-foreground">
-            Manage user accounts and permissions
+            {tCamionsTable("manageTrucks")}
           </p>
         </div>{" "}
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tCamions("addTruck")}
+              {tCamionsTable("addTruck")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{tCamions("addTruck")}</DialogTitle>
+              <DialogTitle>{tCamionsTable("addTruck")}</DialogTitle>
               <DialogDescription>
                 {tCommon("emptyState.getStarted")}
               </DialogDescription>
@@ -347,7 +348,7 @@ export default function CamionsTable({
                   <Input id="name" name="name" required disabled={isCreating} />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="plate">{tCamions("plateNumber")}</Label>
+                  <Label htmlFor="plate">{tCamionsTable("plateNumber")}</Label>
                   <Input
                     id="plate"
                     name="plate"
@@ -359,7 +360,7 @@ export default function CamionsTable({
                   <Label htmlFor="companyId">{tCommon("company")}</Label>
                   <Select name="companyId" required>
                     <SelectTrigger disabled={isCreating}>
-                      <SelectValue placeholder={tCamions("selectCompany")} />
+                                            <SelectValue placeholder={tCamionsTable("selectCompany")} />
                     </SelectTrigger>
                     <SelectContent>
                       {companies.map((company) => (
@@ -373,7 +374,7 @@ export default function CamionsTable({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
-                  {isCreating ? tCommon("loading") : tCamions("addTruck")}
+                  {isCreating ? tCommon("loading") : tCamionsTable("addTruck")}
                 </Button>
               </DialogFooter>
             </form>
@@ -383,18 +384,19 @@ export default function CamionsTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>{tCamions("title")}</CardTitle>
+          <CardTitle>{tCamionsTable("trucksTitle")}</CardTitle>
           <CardDescription>
-            A list of all trucks in the system (Page {camionsData.page} of{" "}
-            {camionsData.totalPages}, {camionsData.total} total trucks)
+            {tCamionsTable("trucksDescription", { 
+              page: camionsData.page,
+              totalPages: camionsData.totalPages,
+              total: camionsData.total
+            })}
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={`${tCommon("search")} ${tCamions(
-                  "title"
-                ).toLowerCase()}...`}
+                placeholder={tCamionsTable("searchTrucks")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -426,7 +428,7 @@ export default function CamionsTable({
                         value={companyFilter}
                         onChange={(e) => setCompanyFilter(e.target.value)}
                       >
-                        <option value="">{"Any " + tCommon("company")}</option>
+                        <option value="">{tCamionsTable("anyCompany")}</option>
                         {companies.map((company) => (
                           <option key={company.id} value={company.id}>
                             {company.raisonSocial}
@@ -436,12 +438,12 @@ export default function CamionsTable({
                     </div>
                     <div className="space-y-2">
                       <h4 className="font-medium">
-                        {tCamions("dateRange") || "Date Range"}
+                        {tCamionsTable("dateRange")}
                       </h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            {tCamions("from") || "From"}
+                            {tCamionsTable("from")}
                           </label>
                           <Input
                             type="date"
@@ -452,7 +454,7 @@ export default function CamionsTable({
                         </div>
                         <div>
                           <label className="text-xs text-muted-foreground">
-                            {tCamions("to") || "To"}
+                            {tCamionsTable("to")}
                           </label>
                           <Input
                             type="date"
@@ -470,14 +472,14 @@ export default function CamionsTable({
                         onClick={resetFilters}
                         disabled={isPending}
                       >
-                        {tCamions("resetFilters") || "Reset Filters"}
+                        {tCamionsTable("resetFilters")}
                       </Button>
                       <Button
                         size="sm"
                         onClick={applyFilters}
                         disabled={isPending}
                       >
-                        {tCamions("applyFilters") || "Apply Filters"}
+                        {tCamionsTable("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -492,10 +494,10 @@ export default function CamionsTable({
               <TableHeader>
                 <TableRow>
                   <TableHead>{tCommon("name")}</TableHead>
-                  <TableHead>{tCamions("plate") || "licence Plate"}</TableHead>
+                  <TableHead>{tCamionsTable("plateNumber")}</TableHead>
                   <TableHead>{tCommon("company")}</TableHead>
-                  <TableHead>{tChauffeur("assignedOrder")}</TableHead>
-                  <TableHead>{tCamions("createdAt") || "Created At"}</TableHead>
+                  <TableHead>{tCamionsTable("assignedOrder")}</TableHead>
+                  <TableHead>{tCamionsTable("createdAt")}</TableHead>
                   <TableHead>{tCommon("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -506,17 +508,16 @@ export default function CamionsTable({
                     message={
                       searchTerm
                         ? tCommon("emptyState.noItemsFound")
-                        : tCamions("noCamionsFound") || "No trucks found"
+                        : tCamionsTable("noTrucksFound")
                     }
                     description={
                       searchTerm
                         ? tCommon("emptyState.tryDifferentSearch")
-                        : tCamions("noCamionsDescription") ||
-                          "Trucks will appear here when they're added to the system"
+                        : tCamionsTable("noTrucksDescription")
                     }
                     showAddButton={!searchTerm}
                     onAddClick={() => setIsCreateOpen(true)}
-                    addButtonText={tCamions("addTruck")}
+                    addButtonText={tCamionsTable("addTruck")}
                   />
                 ) : (
                   camionsData.camions.map((camion) => (
@@ -542,7 +543,7 @@ export default function CamionsTable({
                             #{camion.assignedOrder.id || tChauffeur("unknown")}
                           </Link>
                         ) : (
-                          tChauffeur("notAssigned") || "Not Assigned"
+                          tCamionsTable("notAssigned")
                         )}
                       </TableCell>
                       <TableCell>
@@ -584,9 +585,11 @@ export default function CamionsTable({
       {/* Pagination */}
       <div className="flex items-center justify-between mt-4">
         <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * camionsData.limit + 1} to{" "}
-          {Math.min(currentPage * camionsData.limit, camionsData.total)} of{" "}
-          {camionsData.total} trucks
+          {tCamionsTable("showingResults", {
+            start: (currentPage - 1) * camionsData.limit + 1,
+            end: Math.min(currentPage * camionsData.limit, camionsData.total),
+            total: camionsData.total
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -596,7 +599,7 @@ export default function CamionsTable({
             disabled={currentPage <= 1 || isPending}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {t("pagination.previous")}
           </Button>
 
           <div className="flex items-center space-x-1">
@@ -620,7 +623,7 @@ export default function CamionsTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= camionsData.totalPages || isPending}
           >
-            Next
+            {t("pagination.next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -633,7 +636,7 @@ export default function CamionsTable({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{tCamions("editCamion") || "Edit Truck"}</DialogTitle>
+            <DialogTitle>{tCamionsTable("editTruck")}</DialogTitle>
           </DialogHeader>
           {editingCamion && (
             <form onSubmit={handleUpdateCamion}>
@@ -651,7 +654,7 @@ export default function CamionsTable({
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-plate">
-                    {tCamions("plate") || "licence Plate"}
+                    {tCamionsTable("plateNumber")}
                   </Label>
                   <Input
                     id="edit-plate"

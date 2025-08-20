@@ -269,7 +269,7 @@ export default function OrdersTable({
       }
     } catch (error) {
       console.error("Error deleting order:", error);
-      setError("An unexpected error occurred while deleting the order");
+      setError(tOrdersTable("toasts.orderDeletedUnexpectedError"));
     } finally {
       setIsDeleting(null);
     }
@@ -329,7 +329,7 @@ export default function OrdersTable({
       }
     } catch (error) {
       console.error("Error accepting order:", error);
-      setError("An unexpected error occurred while accepting the order");
+      setError(tOrdersTable("toasts.orderAcceptedUnexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -351,7 +351,7 @@ export default function OrdersTable({
       }
     } catch (error) {
       console.error("Error rejecting order:", error);
-      setError("An unexpected error occurred while rejecting the order");
+      setError(tOrdersTable("toasts.orderRejectedUnexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -501,7 +501,7 @@ export default function OrdersTable({
                         onClick={handleSearch}
                         disabled={isSearching}
                       >
-                        {isSearching ? "Applying..." : "Apply Filters"}
+                        {isSearching ? tOrdersTable("applying") : tOrdersTable("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -528,10 +528,10 @@ export default function OrdersTable({
                   router.push(`${pathname}?${params.toString()}`);
                 }}
               >
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
+                <option value={5}>5 {tOrdersTable("perPage")}</option>
+                <option value={10}>10 {tOrdersTable("perPage")}</option>
+                <option value={20}>20 {tOrdersTable("perPage")}</option>
+                <option value={50}>50 {tOrdersTable("perPage")}</option>
               </select>
             </div>
           </div>
@@ -540,7 +540,7 @@ export default function OrdersTable({
           {isSearching ? (
             <div className="flex items-center justify-center py-8">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-b-transparent"></div>
-              <span className="ml-2">Loading orders...</span>
+              <span className="ml-2">{tOrdersTable("loadingOrders")}</span>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -574,7 +574,7 @@ export default function OrdersTable({
                       description={
                         searchTerm
                           ? tCommon("emptyState.tryDifferentSearch")
-                          : "Orders will appear here when customers place them"
+                          : tOrdersTable("ordersWillAppear")
                       }
                     />
                   ) : (
@@ -748,8 +748,11 @@ export default function OrdersTable({
       {/* Pagination Controls */}
       <div className="flex items-center justify-between px-6 py-4 border-t">
         <div className="text-sm text-muted-foreground">
-          Showing {Math.min((currentPage - 1) * limit + 1, total)} to{" "}
-          {Math.min(currentPage * limit, total)} of {total} results
+          {tOrdersTable("showing", { 
+            from: Math.min((currentPage - 1) * limit + 1, total),
+            to: Math.min(currentPage * limit, total),
+            total: total
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -759,7 +762,7 @@ export default function OrdersTable({
             disabled={currentPage <= 1 || isSearching}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {tOrdersTable("previous")}
           </Button>
           <div className="flex items-center space-x-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -794,7 +797,7 @@ export default function OrdersTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= totalPages || isSearching}
           >
-            Next
+            {tOrdersTable("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -805,13 +808,13 @@ export default function OrdersTable({
           <DialogHeader>
             <DialogTitle>{tOrdersTable("updateOrderStatus")}</DialogTitle>
             <DialogDescription>
-              Accept or deny this order with a message
+              {tOrdersTable("acceptOrDenyOrder")}
             </DialogDescription>
           </DialogHeader>
           {editingOrder && (
             <div className="space-y-4 py-4">
               <div className="grid gap-2">
-                <Label>Current Status</Label>
+                <Label>{tOrdersTable("currentStatus")}</Label>
                 <Badge variant={getStatusColor(editingOrder.status)}>
                   {editingOrder.status}
                 </Badge>
@@ -819,13 +822,13 @@ export default function OrdersTable({
 
               <div className="grid gap-2">
                 <Label htmlFor="cancel-reason">
-                  Cancel Reason (required to deny)
+                  {tOrdersTable("cancelReason")}
                 </Label>
                 <Input
                   id="cancel-reason"
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="Enter reason for cancellation"
+                  placeholder={tOrdersTable("enterCancelReason")}
                   disabled={isUpdating}
                   required
                 />
@@ -840,7 +843,7 @@ export default function OrdersTable({
                   }}
                   disabled={isUpdating}
                 >
-                  {isUpdating ? "Processing..." : "Accept Order"}
+                  {isUpdating ? tOrdersTable("processing") : tOrdersTable("acceptOrder")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -851,7 +854,7 @@ export default function OrdersTable({
                   }}
                   disabled={isUpdating || !cancelReason.trim()}
                 >
-                  {isUpdating ? "Processing..." : "Deny Order"}
+                  {isUpdating ? tOrdersTable("processing") : tOrdersTable("denyOrder")}
                 </Button>
               </div>
             </div>
@@ -871,22 +874,22 @@ export default function OrdersTable({
             <div className="py-4">
               <Tabs defaultValue="details">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="details">Details</TabsTrigger>
+                  <TabsTrigger value="details">{tOrdersTable("details")}</TabsTrigger>
                   <TabsTrigger value="driver-and-truck">
-                    Driver and Truck
+                    {tOrdersTable("driverAndTruck")}
                   </TabsTrigger>
-                  <TabsTrigger value="items">Items</TabsTrigger>
+                  <TabsTrigger value="items">{tOrdersTable("items")}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="details" className="space-y-4 mt-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h3 className="font-medium">Order Information</h3>
+                      <h3 className="font-medium">{tOrdersTable("orderInformation")}</h3>
                       <div className="grid grid-cols-2 gap-1 text-sm">
-                        <span className="text-muted-foreground">Status:</span>
+                        <span className="text-muted-foreground">{tCommon("status")}:</span>
                         <Badge variant={getStatusColor(viewingOrder.status)}>
                           {viewingOrder.status}
                         </Badge>
-                        <span className="text-muted-foreground">Date:</span>
+                        <span className="text-muted-foreground">{tOrdersTable("date")}:</span>
                         <span>
                           {viewingOrder.createdAt instanceof Date
                             ? viewingOrder.createdAt.toISOString().split("T")[0]
@@ -894,14 +897,14 @@ export default function OrdersTable({
                                 .toISOString()
                                 .split("T")[0]}
                         </span>
-                        <span className="text-muted-foreground">Total:</span>
+                        <span className="text-muted-foreground">{tOrdersTable("total")}:</span>
                         <span>{viewingOrder.total.toFixed(2)} DA</span>
-                        <span className="text-muted-foreground">Items:</span>
+                        <span className="text-muted-foreground">{tOrdersTable("items")}:</span>
                         <span>{viewingOrder.OrderItems?.length || 0}</span>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h3 className="font-medium">Parties</h3>
+                      <h3 className="font-medium">{tOrdersTable("parties")}</h3>
                       <div className="flex items-center gap-2 text-sm">
                         <div className="flex-1">
                           <p className="font-medium">
@@ -936,21 +939,21 @@ export default function OrdersTable({
                 <TabsContent value="driver-and-truck" className="mt-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h3 className="font-medium">Driver Information</h3>
+                      <h3 className="font-medium">{tOrdersTable("driverInformation")}</h3>
                       <p className="text-sm">
-                        {viewingOrder.chauffeur?.name || "No driver assigned"}
+                        {viewingOrder.chauffeur?.name || tOrdersTable("noDriverAssigned")}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {viewingOrder.chauffeur?.phone || "No phone number"}
+                        {viewingOrder.chauffeur?.phone || tOrdersTable("noPhoneNumber")}
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <h3 className="font-medium">Truck Information</h3>
+                      <h3 className="font-medium">{tOrdersTable("truckInformation")}</h3>
                       <p className="text-sm">
-                        {viewingOrder.camion?.plate || "No truck assigned"}
+                        {viewingOrder.camion?.plate || tOrdersTable("noTruckAssigned")}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {viewingOrder.camion?.name || "No model specified"}
+                        {viewingOrder.camion?.name || tOrdersTable("noModelSpecified")}
                       </p>
                     </div>
                   </div>
@@ -984,14 +987,14 @@ export default function OrdersTable({
                   </Table>
                   <div className="flex justify-between mt-4">
                     <div>
-                      <div className="text-sm text-muted-foreground">Note</div>
+                      <div className="text-sm text-muted-foreground">{tOrdersTable("note")}</div>
                       <div className="text-xl font-bold">
-                        {viewingOrder.note || "No note provided"}
+                        {viewingOrder.note || tOrdersTable("noNoteProvided")}
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">
-                        Total H.T
+                        {tOrdersTable("totalHT")}
                       </div>
                       <div className="text-xl font-bold">
                         {viewingOrder.total.toFixed(2)} DA
@@ -1011,16 +1014,16 @@ export default function OrdersTable({
                       viewingOrder.status === "CANCELLED") && (
                       <div>
                         <div className="text-sm text-muted-foreground">
-                          Cancel reason
+                          {tOrdersTable("cancelReasonLabel")}
                         </div>
                         <div className="text-xl font-bold">
-                          {viewingOrder.cancelReason || "No reason provided"}
+                          {viewingOrder.cancelReason || tOrdersTable("noReasonProvided")}
                         </div>
                       </div>
                     )}
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">
-                        Total T.T.C
+                        {tOrdersTable("totalTTC")}
                       </div>
                       <div className="text-xl font-bold">
                         {((viewingOrder.total * 119) / 100).toFixed(2)} DA

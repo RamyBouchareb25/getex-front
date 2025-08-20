@@ -73,6 +73,8 @@ export default function InvoicesList({
   endDate = "",
 }: InvoicesListProps) {
   const t = useTranslations("dashboard");
+  const tInvoices = useTranslations("invoices");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [data, setData] = useState<PaginatedResponse>({
     orders: [],
@@ -198,21 +200,21 @@ export default function InvoicesList({
   const getStatusLabel = (status: OrderStatus) => {
     switch (status) {
       case OrderStatus.PENDING:
-        return "Pending";
+        return tCommon("status.pending");
       case OrderStatus.ACCEPTED:
-        return "Accepted";
+        return tCommon("status.accepted");
       case OrderStatus.REJECTED:
-        return "Rejected";
+        return tCommon("status.rejected");
       case OrderStatus.CANCELED:
-        return "Canceled";
+        return tCommon("status.canceled");
       case OrderStatus.PREPARING:
-        return "Preparing";
+        return tCommon("status.preparing");
       case OrderStatus.SHIPPING:
-        return "Shipping";
+        return tCommon("status.shipping");
       case OrderStatus.COMPLETED:
-        return "Completed";
+        return tCommon("status.completed");
       case OrderStatus.RETURNED:
-        return "Returned";
+        return tCommon("status.returned");
       default:
         return status;
     }
@@ -294,7 +296,7 @@ export default function InvoicesList({
     return (
       <div className="flex justify-center items-center p-8 gap-2">
         <SalamiLoadingAnimation showLoading={false} size="sm" />
-        <span className="ml-2">Loading invoices...</span>
+        <span className="ml-2">{tInvoices("loadingInvoices")}</span>
       </div>
     );
   }
@@ -306,18 +308,16 @@ export default function InvoicesList({
         <TableEmptyState
           colSpan={6}
           message={
-            hasFilters ? "No matching invoices found" : "No invoices found"
+            hasFilters ? tInvoices("noMatchingInvoices") : tInvoices("noInvoicesFound")
           }
           description={
             hasFilters
-              ? `No invoices found${
-                  searchTerm ? ` matching "${searchTerm}"` : ""
-                }${
-                  status
-                    ? ` with status "${getStatusLabel(status as OrderStatus)}"`
-                    : ""
-                }${startDate || endDate ? ` in the selected date range` : ""}`
-              : "No invoices have been created yet for this document type"
+              ? tInvoices("noMatchingInvoicesDescription", {
+                  searchTerm: searchTerm || "",
+                  status: status ? getStatusLabel(status as OrderStatus) : "",
+                  dateRange: (startDate || endDate) ? "true" : "false"
+                })
+              : tInvoices("noInvoicesFoundDescription")
           }
           showAddButton={false}
           onAddClick={() => {}}
@@ -335,30 +335,32 @@ export default function InvoicesList({
       {/* Results summary */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {startIndex} to {endIndex} of {data.total} invoices
+          {tInvoices("showingResults", {
+            start: startIndex,
+            end: endIndex,
+            total: data.total
+          })}
           {searchTerm && (
-            <span className="ml-2">• Searching for "{searchTerm}"</span>
+            <span className="ml-2">• {tInvoices("searchingFor", { term: searchTerm })}</span>
           )}
           {status && (
             <span className="ml-2">
-              • Status: {getStatusLabel(status as OrderStatus)}
+              • {tInvoices("statusFilter", { status: getStatusLabel(status as OrderStatus) })}
             </span>
           )}
           {(startDate || endDate) && (
             <span className="ml-2">
-              • Date:{" "}
-              {startDate && endDate
-                ? `${startDate} to ${endDate}`
-                : startDate
-                ? `From ${startDate}`
-                : `Until ${endDate}`}
+              • {tInvoices("dateFilter", {
+                startDate: startDate || "",
+                endDate: endDate || ""
+              })}
             </span>
           )}
         </div>
 
         {documentType === "all" && (
           <div className="text-sm text-muted-foreground">
-            Global search across all document types
+            {tInvoices("globalSearch")}
           </div>
         )}
       </div>
@@ -374,7 +376,7 @@ export default function InvoicesList({
           <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md">
             <div className="flex items-center">
               <div className="ml-2 text-left">
-                <p className="font-medium">Order #{order.id}</p>
+                <p className="font-medium">{tInvoices("orderNumber", { id: order.id })}</p>
                 <p className="text-sm text-muted-foreground">
                   {new Date(order.createdAt).toLocaleDateString()} -{" "}
                   {order.user.firstName} {order.user.lastName}
@@ -401,17 +403,17 @@ export default function InvoicesList({
           <CollapsibleContent className="p-4 border-t">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium">Total:</p>
+                <p className="text-sm font-medium">{tCommon("total")}:</p>
                 <p>{order.total.toFixed(2)} DZD</p>
               </div>
               <div>
-                <p className="text-sm font-medium">Status:</p>
+                <p className="text-sm font-medium">{tCommon("status")}:</p>
                 <Badge variant={getStatusVariant(order.status)}>
                   {getStatusLabel(order.status)}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm font-medium">Customer:</p>
+                <p className="text-sm font-medium">{tInvoices("customer")}:</p>
                 <p className="text-sm">
                   {order.user.firstName} {order.user.lastName}
                 </p>
@@ -422,7 +424,7 @@ export default function InvoicesList({
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium">Order Date:</p>
+                <p className="text-sm font-medium">{tInvoices("orderDate")}:</p>
                 <p className="text-sm">
                   {new Date(order.createdAt).toLocaleDateString()}
                 </p>
@@ -431,7 +433,7 @@ export default function InvoicesList({
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium">Last Updated:</p>
+                <p className="text-sm font-medium">{tInvoices("lastUpdated")}:</p>
                 <p className="text-sm">
                   {new Date(order.updatedAt).toLocaleDateString()}
                 </p>
@@ -440,22 +442,22 @@ export default function InvoicesList({
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium">Document Type:</p>
+                <p className="text-sm font-medium">{tInvoices("documentType")}:</p>
                 <p className="text-sm capitalize">
                   {documentType === "all"
-                    ? "Multiple"
+                    ? tInvoices("multipleTypes")
                     : documentType.replace("-", " ")}
                 </p>
               </div>
               {order.note && (
                 <div className="col-span-2">
-                  <p className="text-sm font-medium">Note:</p>
+                  <p className="text-sm font-medium">{tCommon("note")}:</p>
                   <p className="text-sm bg-muted p-2 rounded">{order.note}</p>
                 </div>
               )}
               {order.cancelReason && (
                 <div className="col-span-2">
-                  <p className="text-sm font-medium">Cancel Reason:</p>
+                  <p className="text-sm font-medium">{tInvoices("cancelReason")}:</p>
                   <p className="text-sm bg-destructive/10 p-2 rounded text-destructive">
                     {order.cancelReason}
                   </p>
@@ -470,7 +472,7 @@ export default function InvoicesList({
                 className="flex items-center"
               >
                 <Eye className="mr-2 h-4 w-4" />
-                Preview
+                {tCommon("preview")}
               </Button>
               <Button
                 onClick={() => handlePrint(order.id)}
@@ -478,7 +480,7 @@ export default function InvoicesList({
                 className="flex items-center"
               >
                 <Printer className="mr-2 h-4 w-4" />
-                Print
+                {tCommon("print")}
               </Button>
             </div>
           </CollapsibleContent>
@@ -489,7 +491,7 @@ export default function InvoicesList({
       {data.totalPages > 1 && (
         <div className="flex items-center justify-between mt-6">
           <div className="text-sm text-muted-foreground">
-            Page {currentPage} of {data.totalPages}
+            {tInvoices("pageInfo", { current: currentPage, total: data.totalPages })}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -499,7 +501,7 @@ export default function InvoicesList({
               disabled={currentPage <= 1}
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {tCommon("pagination.previous")}
             </Button>
 
             <div className="flex items-center space-x-1">
@@ -522,7 +524,7 @@ export default function InvoicesList({
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= data.totalPages}
             >
-              Next
+              {tCommon("pagination.next")}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

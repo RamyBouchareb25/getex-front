@@ -108,6 +108,7 @@ export default function ChauffeursTable({
   const t = useTranslations();
   const tCommon = useTranslations("common");
   const tChauffeurs = useTranslations("chauffeurs");
+  const tChauffeursTable = useTranslations("chauffeursTable");
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -264,25 +265,18 @@ export default function ChauffeursTable({
       const formData = new FormData(event.currentTarget);
       const result = await createChauffeurAction(formData);
       if (result.success) {
-        toast.success(
-          tChauffeurs("chauffeurCreated") || "Driver created successfully!"
-        );
+        toast.success(tChauffeursTable("driverCreatedSuccess"));
         setIsCreateOpen(false);
         // Refresh the current page to show the new driver
         router.refresh();
       } else {
         toast.error(
-          result.message ||
-            tChauffeurs("failedToCreateChauffeur") ||
-            "Failed to create driver"
+          result.message || tChauffeursTable("driverCreateError")
         );
       }
     } catch (error) {
       console.error("Error creating driver:", error);
-      toast.error(
-        tChauffeurs("unexpectedError") ||
-          "An unexpected error occurred while creating the driver"
-      );
+      toast.error(tChauffeursTable("unexpectedError"));
     } finally {
       setIsCreating(false);
     }
@@ -298,17 +292,13 @@ export default function ChauffeursTable({
       const formData = new FormData(event.currentTarget);
       const result = await updateChauffeurAction(formData);
       if (result.success) {
-        toast.success(
-          tChauffeurs("chauffeurUpdated") || "Driver updated successfully!"
-        );
+        toast.success(tChauffeursTable("driverUpdatedSuccess"));
         setEditingChauffeur(null);
         // Refresh the current page to show the updated driver
         router.refresh();
       } else {
         toast.error(
-          result.message ||
-            tChauffeurs("failedToUpdateChauffeur") ||
-            "Failed to update driver"
+          result.message || tChauffeursTable("driverUpdateError")
         );
       }
     } catch (error) {
@@ -330,17 +320,13 @@ export default function ChauffeursTable({
     try {
       const result = await deleteChauffeurAction(deletingChauffeur.id);
       if (result.success) {
-        toast.success(
-          tChauffeurs("chauffeurDeleted") || "Driver deleted successfully!"
-        );
+        toast.success(tChauffeursTable("driverDeletedSuccess"));
         setDeletingChauffeur(null);
         // Refresh the current page to show the updated list
         router.refresh();
       } else {
         toast.error(
-          result.message ||
-            tChauffeurs("failedToDeleteChauffeur") ||
-            "Failed to delete driver"
+          result.message || tChauffeursTable("driverDeleteError")
         );
       }
     } catch (error) {
@@ -359,28 +345,26 @@ export default function ChauffeursTable({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {tChauffeurs("title") || "Drivers"}
+            {tChauffeursTable("driversTitle")}
           </h1>
           <p className="text-muted-foreground">
-            {tChauffeurs("description") ||
-              "Manage drivers and their assignments"}
+            {tChauffeursTable("manageDrivers")}
           </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              {tChauffeurs("createChauffeur") || "Create Driver"}
+              {tChauffeursTable("addDriver")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {tChauffeurs("createChauffeur") || "Create Driver"}
+                {tChauffeursTable("addDriver")}
               </DialogTitle>
               <DialogDescription>
-                {tChauffeurs("createChauffeurDescription") ||
-                  "Add a new driver to the system"}
+                {tChauffeursTable("addDriverDescription")}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateChauffeur}>
@@ -404,9 +388,7 @@ export default function ChauffeursTable({
                   <Select name="companyId" required>
                     <SelectTrigger disabled={isCreating}>
                       <SelectValue
-                        placeholder={
-                          tChauffeurs("selectCompany") || "Select company"
-                        }
+                        placeholder={tChauffeursTable("selectCompany")}
                       />
                     </SelectTrigger>
                     <SelectContent>
@@ -422,8 +404,8 @@ export default function ChauffeursTable({
               <DialogFooter>
                 <Button type="submit" disabled={isCreating}>
                   {isCreating
-                    ? tCommon("creating") || "Creating..."
-                    : tChauffeurs("createChauffeur") || "Create Driver"}
+                    ? tCommon("creating")
+                    : tChauffeursTable("addDriver")}
                 </Button>
               </DialogFooter>
             </form>
@@ -433,21 +415,19 @@ export default function ChauffeursTable({
 
       <Card>
         <CardHeader>
-          <CardTitle>{tChauffeurs("title") || "Drivers"}</CardTitle>
+          <CardTitle>{tChauffeursTable("driversTitle")}</CardTitle>
           <CardDescription>
-            A list of all drivers in the system (Page {chauffeursData.page} of{" "}
-            {chauffeursData.totalPages}, {chauffeursData.total} total drivers)
+            {tChauffeursTable("driversDescription", {
+              page: chauffeursData.page,
+              totalPages: chauffeursData.totalPages,
+              total: chauffeursData.total
+            })}
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={
-                  tCommon("search") +
-                  " " +
-                  (tChauffeurs("title") || "drivers").toLowerCase() +
-                  "..."
-                }
+                placeholder={tChauffeursTable("searchDrivers")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -480,9 +460,7 @@ export default function ChauffeursTable({
                       >
                         <SelectTrigger>
                           <SelectValue
-                            placeholder={
-                              tChauffeurs("selectCompany") || "Select company"
-                            }
+                            placeholder={tChauffeursTable("selectCompany")}
                           />
                         </SelectTrigger>
                         <SelectContent>
@@ -497,7 +475,7 @@ export default function ChauffeursTable({
                     </div>
                     <div className="space-y-2">
                       <h4 className="font-medium">
-                        {tChauffeurs("dateFrom") || "Date From"}
+                        {tChauffeursTable("dateFrom")}
                       </h4>
                       <Input
                         type="date"
@@ -507,7 +485,7 @@ export default function ChauffeursTable({
                     </div>
                     <div className="space-y-2">
                       <h4 className="font-medium">
-                        {tChauffeurs("dateTo") || "Date To"}
+                        {tChauffeursTable("dateTo")}
                       </h4>
                       <Input
                         type="date"
@@ -522,14 +500,14 @@ export default function ChauffeursTable({
                         onClick={resetFilters}
                         disabled={isPending}
                       >
-                        {tCommon("resetFilters") || "Reset Filters"}
+                        {tChauffeursTable("resetFilters")}
                       </Button>
                       <Button
                         size="sm"
                         onClick={applyFilters}
                         disabled={isPending}
                       >
-                        {tCommon("applyFilters") || "Apply Filters"}
+                        {tChauffeursTable("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -547,10 +525,10 @@ export default function ChauffeursTable({
                   <TableHead>{tCommon("phone")}</TableHead>
                   <TableHead>{tCommon("company")}</TableHead>
                   <TableHead>
-                    {tChauffeurs("assignedOrder") || "Assigned Order"}
+                    {tChauffeursTable("assignedOrder")}
                   </TableHead>
                   <TableHead>
-                    {tChauffeurs("createdAt") || "Created At"}
+                    {tChauffeursTable("createdAt")}
                   </TableHead>
                   <TableHead>{tCommon("actions")}</TableHead>
                 </TableRow>
@@ -561,15 +539,13 @@ export default function ChauffeursTable({
                     colSpan={6}
                     message={
                       searchTerm
-                        ? tCommon("emptyState.noItemsFound") || "No items found"
-                        : tChauffeurs("noChauffeursFound") || "No drivers found"
+                        ? tCommon("emptyState.noItemsFound")
+                        : tChauffeursTable("noDriversFound")
                     }
                     description={
                       searchTerm
-                        ? tCommon("emptyState.tryDifferentSearch") ||
-                          "Try a different search"
-                        : tChauffeurs("noChauffeursDescription") ||
-                          "Drivers will appear here when they're added to the system"
+                        ? tCommon("emptyState.tryDifferentSearch")
+                        : tChauffeursTable("noDriversDescription")
                     }
                   />
                 ) : (
@@ -599,8 +575,7 @@ export default function ChauffeursTable({
                           </Link>
                         ) : (
                           <span className="text-muted-foreground">
-                            {tChauffeurs("noAssignedOrder") ||
-                              "No assigned order"}
+                            {tChauffeursTable("noAssignedOrder")}
                           </span>
                         )}
                       </TableCell>
@@ -641,9 +616,11 @@ export default function ChauffeursTable({
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * 10 + 1} to{" "}
-          {Math.min(currentPage * 10, chauffeursData.total)} of{" "}
-          {chauffeursData.total} drivers
+          {tChauffeursTable("showingResults", {
+            start: (currentPage - 1) * 10 + 1,
+            end: Math.min(currentPage * 10, chauffeursData.total),
+            total: chauffeursData.total
+          })}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -653,7 +630,7 @@ export default function ChauffeursTable({
             disabled={currentPage <= 1 || isPending}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {t("pagination.previous")}
           </Button>
 
           <div className="flex items-center space-x-1">
@@ -677,7 +654,7 @@ export default function ChauffeursTable({
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= chauffeursData.totalPages || isPending}
           >
-            Next
+            {t("pagination.next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -691,11 +668,10 @@ export default function ChauffeursTable({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {tChauffeurs("editChauffeur") || "Edit Driver"}
+              {tChauffeursTable("editDriver")}
             </DialogTitle>
             <DialogDescription>
-              {tChauffeurs("editChauffeurDescription") ||
-                "Update driver information"}
+              {tChauffeursTable("editDriverDescription")}
             </DialogDescription>
           </DialogHeader>
           {editingChauffeur && (
@@ -745,8 +721,8 @@ export default function ChauffeursTable({
               <DialogFooter>
                 <Button type="submit" disabled={isUpdating}>
                   {isUpdating
-                    ? tCommon("updating") || "Updating..."
-                    : tCommon("update") || "Update"}
+                    ? tCommon("updating")
+                    : tCommon("update")}
                 </Button>
               </DialogFooter>
             </form>
@@ -762,11 +738,10 @@ export default function ChauffeursTable({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {tChauffeurs("deleteChauffeur") || "Delete Driver"}
+              {tChauffeursTable("deleteDriver")}
             </DialogTitle>
             <DialogDescription>
-              {tChauffeurs("deleteChauffeurConfirmation") ||
-                "Are you sure you want to delete this driver? This action cannot be undone."}
+              {tChauffeursTable("deleteDriverConfirmation")}
             </DialogDescription>
           </DialogHeader>
           {deletingChauffeur && (
@@ -790,7 +765,7 @@ export default function ChauffeursTable({
               onClick={() => setDeletingChauffeur(null)}
               disabled={isDeleting === deletingChauffeur?.id}
             >
-              {tCommon("cancel") || "Cancel"}
+              {tCommon("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -798,8 +773,8 @@ export default function ChauffeursTable({
               disabled={isDeleting === deletingChauffeur?.id}
             >
               {isDeleting === deletingChauffeur?.id
-                ? tCommon("deleting") || "Deleting..."
-                : tCommon("delete") || "Delete"}
+                ? tCommon("deleting")
+                : tCommon("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -242,18 +242,18 @@ export default function OrderHistoryTable({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Order History</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tOrderHistoryTable("orderHistory")}</h1>
           <p className="text-muted-foreground">
-            View historical orders by driver, truck, or both
+            {tOrderHistoryTable("viewHistoricalOrders")}
           </p>
         </div>
         <div className="flex justify-end mt-4 gap-2">
           <Button variant="outline" onClick={resetFilters}>
             <RotateCcw className="mr-2 h-4 w-4" />
-            Reset Filters
+            {tOrderHistoryTable("resetFilters")}
           </Button>
           <Button variant="default" onClick={() => applyFilters(1)}>
-            Apply
+            {tOrderHistoryTable("apply")}
           </Button>
         </div>
       </div>
@@ -261,21 +261,21 @@ export default function OrderHistoryTable({
       {/* Filter Controls */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
+          <CardTitle>{tOrderHistoryTable("filters")}</CardTitle>
           <CardDescription>
-            Filter order history by driver, truck, status, or date
+            {tOrderHistoryTable("filterDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <div className="space-y-2">
-              <Label htmlFor="driver-select">Driver</Label>
+              <Label htmlFor="driver-select">{tOrderHistoryTable("driver")}</Label>
               <Select value={selectedDriver} onValueChange={setSelectedDriver}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select driver" />
+                  <SelectValue placeholder={tOrderHistoryTable("selectDriver")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Drivers</SelectItem>
+                  <SelectItem value="all">{tOrderHistoryTable("allDrivers")}</SelectItem>
                   {chauffeurs.map((driver) => (
                     <SelectItem key={driver.id} value={driver.id}>
                       {driver.name}
@@ -286,13 +286,13 @@ export default function OrderHistoryTable({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="truck-select">Truck</Label>
+              <Label htmlFor="truck-select">{tOrderHistoryTable("truck")}</Label>
               <Select value={selectedTruck} onValueChange={setSelectedTruck}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select truck" />
+                  <SelectValue placeholder={tOrderHistoryTable("selectTruck")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Trucks</SelectItem>
+                  <SelectItem value="all">{tOrderHistoryTable("allTrucks")}</SelectItem>
                   {camions.map((truck) => (
                     <SelectItem key={truck.id} value={truck.id}>
                       {truck.name} ({truck.plate})
@@ -303,23 +303,23 @@ export default function OrderHistoryTable({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status-select">Status</Label>
+              <Label htmlFor="status-select">{tCommon("status")}</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
+                  <SelectValue placeholder={tOrderHistoryTable("allStatuses")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="RETURNED">Returned</SelectItem>
-                  <SelectItem value="CANCELED">Canceled</SelectItem>
-                  <SelectItem value="SHIPPING">Shipping</SelectItem>
+                  <SelectItem value="all">{tOrderHistoryTable("allStatuses")}</SelectItem>
+                  <SelectItem value="COMPLETED">{tOrderHistoryTable("completed")}</SelectItem>
+                  <SelectItem value="RETURNED">{tOrderHistoryTable("returned")}</SelectItem>
+                  <SelectItem value="CANCELED">{tOrderHistoryTable("canceled")}</SelectItem>
+                  <SelectItem value="SHIPPING">{tOrderHistoryTable("shipping")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date-filter">Date</Label>
+              <Label htmlFor="date-filter">{tCommon("date")}</Label>
               <Input
                 id="date-filter"
                 type="date"
@@ -329,12 +329,12 @@ export default function OrderHistoryTable({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="search">Search</Label>
+              <Label htmlFor="search">{tCommon("search")}</Label>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Search orders..."
+                  placeholder={tOrderHistoryTable("searchOrders")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -423,9 +423,9 @@ export default function OrderHistoryTable({
       {/* Order History Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Order History ({ordersData.total} orders)</CardTitle>
+          <CardTitle>{tOrderHistoryTable("orderHistoryTitle", { count: ordersData.total })}</CardTitle>
           <CardDescription>
-            Historical order data with driver and truck assignments
+            {tOrderHistoryTable("historicalOrderData")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -433,15 +433,15 @@ export default function OrderHistoryTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Truck</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{tOrders("orderID")}</TableHead>
+                  <TableHead>{tOrderHistoryTable("customer")}</TableHead>
+                  <TableHead>{tOrderHistoryTable("driver")}</TableHead>
+                  <TableHead>{tOrderHistoryTable("truck")}</TableHead>
+                  <TableHead>{tCommon("total")}</TableHead>
+                  <TableHead>{tCommon("status")}</TableHead>
+                  <TableHead>{tOrderHistoryTable("items")}</TableHead>
+                  <TableHead>{tCommon("date")}</TableHead>
+                  <TableHead>{tCommon("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -461,7 +461,7 @@ export default function OrderHistoryTable({
                         <User2 className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <div className="font-medium">
-                            {order.user?.name ?? "User Not Found"}
+                            {order.user?.name ?? tOrderHistoryTable("userNotFound")}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {order.user?.email ?? "N/A"}
@@ -474,7 +474,7 @@ export default function OrderHistoryTable({
                         <User className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <div className="font-medium">
-                            {order.chauffeur?.name ?? "No Driver Assigned"}
+                            {order.chauffeur?.name ?? tOrderHistoryTable("noDriverAssigned")}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {order.chauffeur?.phone ?? "N/A"}
@@ -487,7 +487,7 @@ export default function OrderHistoryTable({
                         <Truck className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <div className="font-medium">
-                            {order.camion?.name ?? "No Truck Assigned"}
+                            {order.camion?.name ?? tOrderHistoryTable("noTruckAssigned")}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {order.camion?.plate ?? "N/A"}
@@ -501,13 +501,13 @@ export default function OrderHistoryTable({
                         {order.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>{order.OrderItems?.length || 0} items</TableCell>
+                    <TableCell>{order.OrderItems?.length || 0} {tOrderHistoryTable("items")}</TableCell>
                     <TableCell>
                       <div>
                         <div className="font-medium">{new Date(order.createdAt).toLocaleDateString("fr-FR")}</div>
                         {order.deliveryDate && (
                           <div className="text-xs text-muted-foreground">
-                            Delivered: {new Date(order.deliveryDate).toLocaleDateString("fr-FR")}
+                            {tOrderHistoryTable("delivered")}: {new Date(order.deliveryDate).toLocaleDateString("fr-FR")}
                           </div>
                         )}
                       </div>
@@ -529,7 +529,7 @@ export default function OrderHistoryTable({
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-muted-foreground">
-              Page {ordersData.page} of {ordersData.totalPages}
+              {tOrderHistoryTable("pageOf", { page: ordersData.page, total: ordersData.totalPages })}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -566,59 +566,59 @@ export default function OrderHistoryTable({
       <Dialog open={!!viewingOrder} onOpenChange={() => setViewingOrder(null)}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Order Details - {viewingOrder?.id}</DialogTitle>
+            <DialogTitle>{tOrderHistoryTable("orderDetailsTitle", { id: viewingOrder?.id || "" })}</DialogTitle>
             <DialogDescription>
-              Complete order information and delivery details
+              {tOrderHistoryTable("completeOrderInformation")}
             </DialogDescription>
           </DialogHeader>
           {viewingOrder && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <h4 className="font-medium">Order Information</h4>
+                  <h4 className="font-medium">{tOrderHistoryTable("orderInformation")}</h4>
                   <div className="text-sm space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Customer:</span>
+                      <span className="text-muted-foreground">{tOrderHistoryTable("customer")}:</span>
                       <span>{viewingOrder!.user.email}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total:</span>
+                      <span className="text-muted-foreground">{tCommon("total")}:</span>
                       <span>{viewingOrder!.total.toFixed(2)} DZD</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Status:</span>
+                      <span className="text-muted-foreground">{tCommon("status")}:</span>
                       <Badge variant={getStatusColor(viewingOrder!.status)}>
                         {viewingOrder!.status}
                       </Badge>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Items:</span>
+                      <span className="text-muted-foreground">{tOrderHistoryTable("items")}:</span>
                       <span>{viewingOrder!.itemsCount}</span>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <h4 className="font-medium">Delivery Information</h4>
+                  <h4 className="font-medium">{tOrderHistoryTable("deliveryInformation")}</h4>
                   <div className="text-sm space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Driver:</span>
+                      <span className="text-muted-foreground">{tOrderHistoryTable("driver")}:</span>
                       <span>
-                        {viewingOrder!.chauffeur?.name ?? "No Driver Assigned"}
+                        {viewingOrder!.chauffeur?.name ?? tOrderHistoryTable("noDriverAssigned")}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Truck:</span>
+                      <span className="text-muted-foreground">{tOrderHistoryTable("truck")}:</span>
                       <span>
-                        {viewingOrder!.camion?.name ?? "No Truck Assigned"}
+                        {viewingOrder!.camion?.name ?? tOrderHistoryTable("noTruckAssigned")}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Plate:</span>
+                      <span className="text-muted-foreground">{tOrderHistoryTable("plate")}:</span>
                       <span>{viewingOrder!.camion?.plate ?? "N/A"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
-                        Delivery Date:
+                        {tOrderHistoryTable("deliveryDate")}:
                       </span>
                       <span>{viewingOrder!.deliveryDate || "N/A"}</span>
                     </div>
@@ -626,23 +626,23 @@ export default function OrderHistoryTable({
                 </div>
               </div>
               <div className="space-y-2">
-                <h4 className="font-medium">Timeline</h4>
+                <h4 className="font-medium">{tOrderHistoryTable("timeline")}</h4>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      Order Created:
+                      {tOrderHistoryTable("orderCreated")}:
                     </span>
                     <span>{viewingOrder!.createdAt}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Last Updated:</span>
+                    <span className="text-muted-foreground">{tOrderHistoryTable("lastUpdated")}:</span>
                     <span>{viewingOrder!.updatedAt}</span>
                   </div>
                 </div>
               </div>
               {viewingOrder!.note && (
                 <div className="space-y-2">
-                  <h4 className="font-medium">Notes</h4>
+                  <h4 className="font-medium">{tOrderHistoryTable("notes")}</h4>
                   <p className="text-sm text-muted-foreground">
                     {viewingOrder!.note}
                   </p>
@@ -650,7 +650,7 @@ export default function OrderHistoryTable({
               )}
               {viewingOrder!.cancelReason && (
                 <div className="space-y-2">
-                  <h4 className="font-medium">Cancel Reason</h4>
+                  <h4 className="font-medium">{tOrderHistoryTable("cancelReason")}</h4>
                   <p className="text-sm text-red-600">
                     {viewingOrder!.cancelReason}
                   </p>

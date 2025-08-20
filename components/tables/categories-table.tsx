@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -143,8 +143,12 @@ export default function CategoriesTable({
     if (searchTerm) params.set("search", searchTerm);
     if (dateFromFilter) params.set("dateFrom", dateFromFilter);
     if (dateToFilter) params.set("dateTo", dateToFilter);
-
-    router.push(`${pathname}?${params.toString()}`);
+    if (subCategoryCountFilter) params.set("subCategoryCount", subCategoryCountFilter);
+    const newUrl = `${pathname}?${params.toString()}`;
+    startTransition(() => {
+      router.push(newUrl);
+      setIsSearching(false);
+    });
   };
 
   const handleResetFilters = () => {
@@ -170,11 +174,15 @@ export default function CategoriesTable({
       const formData = new FormData(event.currentTarget);
       const result = await createCategoryAction(formData);
       if (result.success) {
-        toast.success(result.message || tCategoriesTable("toasts.categoryCreatedSuccess"));
+        toast.success(
+          result.message || tCategoriesTable("toasts.categoryCreatedSuccess")
+        );
         setIsCreateOpen(false);
         router.refresh();
       } else {
-        toast.error(result.message || tCategoriesTable("toasts.categoryCreatedError"));
+        toast.error(
+          result.message || tCategoriesTable("toasts.categoryCreatedError")
+        );
       }
     } catch (error) {
       console.error("Error creating category:", error);
@@ -194,11 +202,15 @@ export default function CategoriesTable({
       const formData = new FormData(event.currentTarget);
       const result = await updateCategoryAction(formData);
       if (result.success) {
-        toast.success(result.message || tCategoriesTable("toasts.categoryUpdatedSuccess"));
+        toast.success(
+          result.message || tCategoriesTable("toasts.categoryUpdatedSuccess")
+        );
         setEditingCategory(null);
         router.refresh();
       } else {
-        toast.error(result.message || tCategoriesTable("toasts.categoryUpdatedError"));
+        toast.error(
+          result.message || tCategoriesTable("toasts.categoryUpdatedError")
+        );
       }
     } catch (error) {
       console.error("Error updating category:", error);
@@ -214,11 +226,15 @@ export default function CategoriesTable({
     try {
       const result = await deleteCategoryAction(categoryId);
       if (result.success) {
-        toast.success(result.message || tCategoriesTable("toasts.categoryDeletedSuccess"));
+        toast.success(
+          result.message || tCategoriesTable("toasts.categoryDeletedSuccess")
+        );
         setDeletingCategory(null);
         router.refresh();
       } else {
-        toast.error(result.message || tCategoriesTable("toasts.categoryDeletedError"));
+        toast.error(
+          result.message || tCategoriesTable("toasts.categoryDeletedError")
+        );
       }
     } catch (error) {
       console.error("Error deleting category:", error);
@@ -235,7 +251,9 @@ export default function CategoriesTable({
           <h1 className="text-3xl font-bold tracking-tight">
             {tCategories("title")}
           </h1>
-          <p className="text-muted-foreground">{tCategoriesTable("manageProductCategories")}</p>
+          <p className="text-muted-foreground">
+            {tCategoriesTable("manageProductCategories")}
+          </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -247,12 +265,16 @@ export default function CategoriesTable({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{tCategories("createCategory")}</DialogTitle>
-              <DialogDescription>{tCategoriesTable("addNewProductCategory")}</DialogDescription>
+              <DialogDescription>
+                {tCategoriesTable("addNewProductCategory")}
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateCategory}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{tCategoriesTable("categoryName")}</Label>
+                  <Label htmlFor="name">
+                    {tCategoriesTable("categoryName")}
+                  </Label>
                   <Input disabled={isCreating} id="name" name="name" required />
                 </div>
                 <div className="grid gap-2">
@@ -266,7 +288,9 @@ export default function CategoriesTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="image">{tCategoriesTable("categoryImage")}</Label>
+                  <Label htmlFor="image">
+                    {tCategoriesTable("categoryImage")}
+                  </Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="image"
@@ -301,7 +325,9 @@ export default function CategoriesTable({
       <Card>
         <CardHeader>
           <CardTitle>{tCategoriesTable("allCategories")}</CardTitle>
-          <CardDescription>{tCategoriesTable("allCategoriesDescription")}</CardDescription>
+          <CardDescription>
+            {tCategoriesTable("allCategoriesDescription")}
+          </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
@@ -323,7 +349,9 @@ export default function CategoriesTable({
                 onClick={handleSearch}
                 disabled={isSearching}
               >
-                {isSearching ? tCategoriesTable("searching") : tCommon("search")}
+                {isSearching
+                  ? tCategoriesTable("searching")
+                  : tCommon("search")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -346,7 +374,9 @@ export default function CategoriesTable({
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium">{tCategoriesTable("dateRange")}</h4>
+                      <h4 className="font-medium">
+                        {tCategoriesTable("dateRange")}
+                      </h4>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-xs text-muted-foreground">
@@ -373,7 +403,9 @@ export default function CategoriesTable({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium">{tCategoriesTable("subCategoriesCount")}</h4>
+                      <h4 className="font-medium">
+                        {tCategoriesTable("subCategoriesCount")}
+                      </h4>
                       <select
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                         value={subCategoryCountFilter}
@@ -382,9 +414,15 @@ export default function CategoriesTable({
                         }
                       >
                         <option value="">{tCategoriesTable("any")}</option>
-                        <option value="less5">{tCategoriesTable("lessThan5")}</option>
-                        <option value="5to10">{tCategoriesTable("5to10")}</option>
-                        <option value="more10">{tCategoriesTable("moreThan10")}</option>
+                        <option value="less5">
+                          {tCategoriesTable("lessThan5")}
+                        </option>
+                        <option value="5to10">
+                          {tCategoriesTable("5to10")}
+                        </option>
+                        <option value="more10">
+                          {tCategoriesTable("moreThan10")}
+                        </option>
                       </select>
                     </div>
                     <div className="flex justify-between">
@@ -401,7 +439,9 @@ export default function CategoriesTable({
                         onClick={handleSearch}
                         disabled={isSearching}
                       >
-                        {isSearching ? tCategoriesTable("applying") : tCategoriesTable("applyFilters")}
+                        {isSearching
+                          ? tCategoriesTable("applying")
+                          : tCategoriesTable("applyFilters")}
                       </Button>
                     </div>
                   </div>
@@ -472,7 +512,8 @@ export default function CategoriesTable({
                         href={`/dashboard/subcategories?categoryId=${category.id}`}
                         className="text-blue-600 hover:underline"
                       >
-                        {category._count.SubCategories} {tCategoriesTable("subcategories")}
+                        {category._count.SubCategories}{" "}
+                        {tCategoriesTable("subcategories")}
                       </Link>
                     </TableCell>
                     <TableCell>
@@ -579,14 +620,18 @@ export default function CategoriesTable({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{tCategoriesTable("editCategory")}</DialogTitle>
-            <DialogDescription>{tCategoriesTable("updateCategoryInfo")}</DialogDescription>
+            <DialogDescription>
+              {tCategoriesTable("updateCategoryInfo")}
+            </DialogDescription>
           </DialogHeader>
           {editingCategory && (
             <form onSubmit={handleUpdateCategory}>
               <input type="hidden" name="id" value={editingCategory.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-name">{tCategoriesTable("categoryName")}</Label>
+                  <Label htmlFor="edit-name">
+                    {tCategoriesTable("categoryName")}
+                  </Label>
                   <Input
                     disabled={isUpdating}
                     id="edit-name"
@@ -596,7 +641,9 @@ export default function CategoriesTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-description">{tCategoriesTable("categoryDescription")}</Label>
+                  <Label htmlFor="edit-description">
+                    {tCategoriesTable("categoryDescription")}
+                  </Label>
                   <Textarea
                     disabled={isUpdating}
                     id="edit-description"
@@ -605,7 +652,9 @@ export default function CategoriesTable({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-image">{tCategoriesTable("categoryImage")}</Label>
+                  <Label htmlFor="edit-image">
+                    {tCategoriesTable("categoryImage")}
+                  </Label>
                   <div className="flex items-center gap-2">
                     <div className="flex-shrink-0">
                       <Image
@@ -646,7 +695,10 @@ export default function CategoriesTable({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deletingCategory} onOpenChange={() => setDeletingCategory(null)}>
+      <Dialog
+        open={!!deletingCategory}
+        onOpenChange={() => setDeletingCategory(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -662,10 +714,12 @@ export default function CategoriesTable({
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                 <p className="font-medium">{deletingCategory.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {deletingCategory.description || tCategoriesTable("categoryDescription")}
+                  {deletingCategory.description ||
+                    tCategoriesTable("categoryDescription")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {tCategoriesTable("subCategories")}: {deletingCategory._count.SubCategories}
+                  {tCategoriesTable("subCategories")}:{" "}
+                  {deletingCategory._count.SubCategories}
                 </p>
               </div>
             </div>
@@ -680,10 +734,14 @@ export default function CategoriesTable({
             </Button>
             <Button
               variant="destructive"
-              onClick={() => deletingCategory && handleDeleteCategory(deletingCategory.id)}
+              onClick={() =>
+                deletingCategory && handleDeleteCategory(deletingCategory.id)
+              }
               disabled={isDeleting === deletingCategory?.id}
             >
-              {isDeleting === deletingCategory?.id ? tCategoriesTable("deleting") : tCategoriesTable("deleteCategory")}
+              {isDeleting === deletingCategory?.id
+                ? tCategoriesTable("deleting")
+                : tCategoriesTable("deleteCategory")}
             </Button>
           </DialogFooter>
         </DialogContent>

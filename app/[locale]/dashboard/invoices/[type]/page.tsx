@@ -9,6 +9,8 @@ export default function InvoiceTypePage() {
   const router = useRouter();
   const params = useParams();
   const t = useTranslations("Dashboard");
+  const tInvoices = useTranslations("invoices");
+  const tCommon = useTranslations("common");
   const documentType = params.type as string;
   const locale = params.locale as string;
 
@@ -21,21 +23,21 @@ export default function InvoiceTypePage() {
   const getDocumentTitle = (type: string) => {
     switch (type) {
       case "bon-livraison":
-        return t("bonLivraison", {defaultValue: "Bon de Livraison"});
+        return tInvoices("bonLivraison");
       case "bon-commande":
-        return t("bonCommande", {defaultValue: "Bon de Commande"});
+        return tInvoices("bonCommande");
       case "bon-retour":
-        return t("bonRetour", {defaultValue: "Bon de Retour"});
+        return tInvoices("bonRetour");
       case "bon-reception":
-        return t("bonReception", {defaultValue: "Bon de Reception"});
+        return tInvoices("bonReception");
       case "facture":
-        return t("facture", {defaultValue: "Facture"});
+        return tInvoices("facture");
       case "facture-proforma":
-        return t("factureProforma", {defaultValue: "Facture Proforma"});
+        return tInvoices("factureProforma");
       case "facture-avoir":
-        return t("factureAvoir", {defaultValue: "Facture Avoir"});
+        return tInvoices("factureAvoir");
       default:
-        return t("document", {defaultValue: "Document"});
+        return tInvoices("document");
     }
   };
 
@@ -46,7 +48,7 @@ export default function InvoiceTypePage() {
           <CardTitle>{getDocumentTitle(documentType)}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-center py-10">{t("loading")}</p>
+          <p className="text-center py-10">{tCommon("loading")}</p>
         </CardContent>
       </Card>
     </div>

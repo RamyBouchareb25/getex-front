@@ -102,17 +102,17 @@ export default function NotificationsManager({
 
   const handleSendNotification = async () => {
     if (!formData.title || !formData.body) {
-      toast.error("Please fill in required fields");
+      toast.error(t("fillRequiredFields"));
       return;
     }
 
     if (formData.type === "users" && selectedUsers.length === 0) {
-      toast.error("Please select at least one user");
+      toast.error(t("selectAtLeastOneUser"));
       return;
     }
 
     if (formData.type === "topic" && !formData.topic) {
-      toast.error("Please select a topic");
+      toast.error(t("selectTopic"));
       return;
     }
 
@@ -167,7 +167,7 @@ export default function NotificationsManager({
 
   const handleConfirmBroadcast = async () => {
     setShowBroadcastConfirm(false);
-    toast.error("⚠️ This action is NOT reversible and will send to ALL users!", {
+    toast.error(t("broadcastWarning"), {
       duration: 3000,
     });
     await sendNotification();
@@ -188,7 +188,7 @@ export default function NotificationsManager({
           toast.error(result.message);
         }
       } catch (error) {
-        toast.error("Failed to create topic");
+        toast.error(t("failedToCreateTopic"));
       }
     });
   };
@@ -196,7 +196,7 @@ export default function NotificationsManager({
   const handleSubscribeUsers = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (selectedUsers.length === 0) {
-      toast.error("Please select at least one user");
+      toast.error(t("selectAtLeastOneUser"));
       return;
     }
 
@@ -216,7 +216,7 @@ export default function NotificationsManager({
           toast.error(result.message);
         }
       } catch (error) {
-        toast.error("Failed to subscribe users");
+        toast.error(t("failedToSubscribeUsers"));
       }
     });
   };
@@ -241,7 +241,7 @@ export default function NotificationsManager({
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">
-            Send notifications to users, topics, or broadcast to everyone
+            {t("sendNotificationDescription")}
           </p>
         </div>
       </div>
@@ -270,7 +270,7 @@ export default function NotificationsManager({
                 {t("sendNotification")}
               </CardTitle>
               <CardDescription>
-                Send push notifications to your users through various platforms
+                {t("sendPushNotifications")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -282,7 +282,7 @@ export default function NotificationsManager({
                     className={`cursor-pointer transition-colors ${formData.type === "broadcast" ? "border-primary bg-primary/5" : ""}`}
                     onClick={() => setFormData({ ...formData, type: "broadcast" })}
                   >
-                    <CardContent className="flex flex-col items-center justify-center p-6">
+                                        <CardContent className="flex flex-col items-center justify-center p-6">
                       <Radio className="h-8 w-8 mb-2" />
                       <span className="font-medium">{t("broadcast")}</span>
                     </CardContent>
@@ -410,7 +410,7 @@ export default function NotificationsManager({
                   <Label htmlFor="title">{t("notificationTitle")} *</Label>
                   <Input
                     id="title"
-                    placeholder="Enter notification title"
+                    placeholder={t("enterNotificationTitle")}
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   />
@@ -436,7 +436,7 @@ export default function NotificationsManager({
                 <Label htmlFor="body">{t("notificationBody")} *</Label>
                 <Textarea
                   id="body"
-                  placeholder="Enter notification message"
+                  placeholder={t("enterNotificationMessage")}
                   value={formData.body}
                   onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                   rows={3}
@@ -447,7 +447,7 @@ export default function NotificationsManager({
                 <Label htmlFor="image">{t("notificationImage")}</Label>
                 <Input
                   id="image"
-                  placeholder="https://example.com/image.jpg"
+                  placeholder={t("imageUrlPlaceholder")}
                   value={formData.image || ""}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                 />
@@ -458,7 +458,7 @@ export default function NotificationsManager({
                 <CollapsibleTrigger asChild>
                   <Button variant="ghost" className="flex items-center gap-2 p-0">
                     <Settings className="h-4 w-4" />
-                    Advanced Platform Settings
+                    {t("advancedPlatformSettings")}
                     {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
                 </CollapsibleTrigger>
@@ -489,7 +489,7 @@ export default function NotificationsManager({
                           })
                         }
                       />
-                      <Label htmlFor="ios-enabled">{t("ios")}</Label>
+                                            <Label htmlFor="ios-enabled">{t("ios")}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -502,7 +502,7 @@ export default function NotificationsManager({
                           })
                         }
                       />
-                      <Label htmlFor="web-enabled">{t("web")}</Label>
+                                            <Label htmlFor="web-enabled">{t("web")}</Label>
                     </div>
                   </div>
 
@@ -741,7 +741,7 @@ export default function NotificationsManager({
             <div>
               <h2 className="text-2xl font-bold tracking-tight">{t("topics")}</h2>
               <p className="text-muted-foreground">
-                Manage notification topics and subscribers
+                {t("manageTopicsDescription")}
               </p>
             </div>
             <div className="flex gap-2">
@@ -756,7 +756,7 @@ export default function NotificationsManager({
                   <DialogHeader>
                     <DialogTitle>{t("createTopic")}</DialogTitle>
                     <DialogDescription>
-                      Create a new topic for organizing notifications
+                      {t("createTopicDescription")}
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleCreateTopic} className="space-y-4">
@@ -765,7 +765,7 @@ export default function NotificationsManager({
                       <Input
                         id="name"
                         name="name"
-                        placeholder="Enter topic name"
+                        placeholder={t("enterTopicName")}
                         required
                       />
                     </div>
@@ -774,7 +774,7 @@ export default function NotificationsManager({
                       <Textarea
                         id="description"
                         name="description"
-                        placeholder="Enter topic description"
+                        placeholder={t("enterTopicDescription")}
                         rows={3}
                       />
                     </div>
@@ -805,7 +805,7 @@ export default function NotificationsManager({
                   <DialogHeader>
                     <DialogTitle>{t("subscribeUsers")}</DialogTitle>
                     <DialogDescription>
-                      Subscribe users to a topic for targeted notifications
+                      {t("subscribeUsersDescription")}
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleSubscribeUsers} className="space-y-4">
@@ -905,7 +905,7 @@ export default function NotificationsManager({
                       <TableCell colSpan={4} className="text-center py-8">
                         <div className="flex flex-col items-center gap-2">
                           <Target className="h-8 w-8 text-muted-foreground" />
-                          <p className="text-muted-foreground">No topics created yet</p>
+                          <p className="text-muted-foreground">{t("noTopicsCreatedYet")}</p>
                           <Button
                             variant="outline"
                             size="sm"
@@ -953,7 +953,7 @@ export default function NotificationsManager({
             <div>
               <h2 className="text-2xl font-bold tracking-tight">{t("history")}</h2>
               <p className="text-muted-foreground">
-                View sent notification history and statistics
+                {t("viewHistoryDescription")}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -962,7 +962,7 @@ export default function NotificationsManager({
                 onValueChange={(value) => updateSearchParams({ type: value === "all" ? "" : value, page: "1" })}
               >
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Filter by type" />
+                  <SelectValue placeholder={t("filterByType")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{tCommon("all")}</SelectItem>
@@ -996,7 +996,7 @@ export default function NotificationsManager({
                     <TableHead>{t("sentAt")}</TableHead>
                     <TableHead>{t("successCount")}</TableHead>
                     <TableHead>{t("failureCount")}</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{tCommon("status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1005,7 +1005,7 @@ export default function NotificationsManager({
                       <TableCell colSpan={6} className="text-center py-8">
                         <div className="flex flex-col items-center gap-2">
                           <History className="h-8 w-8 text-muted-foreground" />
-                          <p className="text-muted-foreground">No notifications sent yet</p>
+                          <p className="text-muted-foreground">{t("noNotificationsSentYet")}</p>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -1055,10 +1055,10 @@ export default function NotificationsManager({
                 disabled={initialPage <= 1}
                 onClick={() => updateSearchParams({ page: (initialPage - 1).toString() })}
               >
-                Previous
+                {tCommon("previous")}
               </Button>
               <span className="text-sm text-muted-foreground">
-                Page {initialPage} of {initialHistory.totalPages}
+                {t("pageInfo", { current: initialPage, total: initialHistory.totalPages })}
               </span>
               <Button
                 variant="outline"
@@ -1066,7 +1066,7 @@ export default function NotificationsManager({
                 disabled={initialPage >= initialHistory.totalPages}
                 onClick={() => updateSearchParams({ page: (initialPage + 1).toString() })}
               >
-                Next
+                {tCommon("next")}
               </Button>
             </div>
           )}
@@ -1081,25 +1081,24 @@ export default function NotificationsManager({
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
-              Confirm Broadcast Notification
+              {t("confirmBroadcastNotification")}
             </DialogTitle>
             <DialogDescription className="space-y-3">
               <p className="font-medium text-destructive">
-                ⚠️ This action is NOT reversible!
+                ⚠️ {t("actionNotReversible")}
               </p>
               <p>
-                You are about to send a notification to <strong>ALL users</strong> in the system. 
-                This cannot be undone once sent.
+                {t("aboutToSendToAllUsers")}
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
                 <p className="text-sm">
-                  <strong>Notification Preview:</strong><br />
-                  <span className="font-medium">Title:</span> {formData.title}<br />
-                  <span className="font-medium">Message:</span> {formData.body}
+                  <strong>{t("notificationPreview")}:</strong><br />
+                  <span className="font-medium">{t("title")}:</span> {formData.title}<br />
+                  <span className="font-medium">{t("message")}:</span> {formData.body}
                 </p>
               </div>
               <p className="text-sm text-muted-foreground">
-                Are you sure you want to proceed?
+                {t("areYouSureProceed")}
               </p>
             </DialogDescription>
           </DialogHeader>
@@ -1108,7 +1107,7 @@ export default function NotificationsManager({
               variant="outline"
               onClick={() => setShowBroadcastConfirm(false)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -1118,10 +1117,10 @@ export default function NotificationsManager({
               {isPending ? (
                 <>
                   <Clock className="h-4 w-4 mr-2 animate-spin" />
-                  Sending...
+                  {t("sending")}
                 </>
               ) : (
-                "Yes, Send to All Users"
+                t("yesSendToAllUsers")
               )}
             </Button>
           </div>

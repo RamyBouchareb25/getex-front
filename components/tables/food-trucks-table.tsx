@@ -93,6 +93,7 @@ export default function FoodTrucksTable({
   initialSearch,
 }: FoodTrucksTableProps) {
   const tCommon = useTranslations("common");
+  const tFoodTrucks = useTranslations("foodTrucksTable");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -169,15 +170,15 @@ export default function FoodTrucksTable({
       const formData = new FormData(event.currentTarget);
       const result = await updateFoodTruckAction(formData);
       if (result.success) {
-        toast.success("Food truck updated successfully!");
+        toast.success(tFoodTrucks("updateSuccess"));
         setEditingFoodTruck(null);
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to update food truck");
+        toast.error(result.message || tFoodTrucks("updateError"));
       }
     } catch (error) {
       console.error("Error updating food truck:", error);
-      toast.error("An unexpected error occurred while updating the food truck");
+      toast.error(tFoodTrucks("unexpectedError"));
     } finally {
       setIsUpdating(false);
     }
@@ -189,15 +190,15 @@ export default function FoodTrucksTable({
     try {
       const result = await deleteFoodTruckAction(foodTruckId);
       if (result.success) {
-        toast.success("Food truck deleted successfully!");
+        toast.success(tFoodTrucks("deleteSuccess"));
         setDeletingFoodTruck(null);
         router.refresh();
       } else {
-        toast.error(result.message || "Failed to delete food truck");
+        toast.error(result.message || tFoodTrucks("deleteError"));
       }
     } catch (error) {
       console.error("Error deleting food truck:", error);
-      toast.error("An unexpected error occurred while deleting the food truck");
+      toast.error(tFoodTrucks("unexpectedError"));
     } finally {
       setIsDeleting(null);
     }
@@ -229,27 +230,29 @@ export default function FoodTrucksTable({
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <Truck className="h-8 w-8" />
-            Food Trucks
+            {tFoodTrucks("title")}
           </h1>
           <p className="text-muted-foreground">
-            Manage food truck registrations and licenses
+            {tFoodTrucks("description")}
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Food Trucks</CardTitle>
+          <CardTitle>{tFoodTrucks("foodTrucks")}</CardTitle>
           <CardDescription>
-            A list of all registered food trucks (Page {foodTrucksData.page} of{" "}
-            {foodTrucksData.totalPages}, {foodTrucksData.total} total food
-            trucks)
+            {tFoodTrucks("listDescription", { 
+              page: foodTrucksData.page, 
+              totalPages: foodTrucksData.totalPages, 
+              total: foodTrucksData.total 
+            })}
           </CardDescription>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search food trucks..."
+                placeholder={tFoodTrucks("searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
@@ -263,11 +266,11 @@ export default function FoodTrucksTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>License Plate</TableHead>
-                  <TableHead>License Document</TableHead>
-                  <TableHead>Registration Doc</TableHead>
-                  <TableHead>Created At</TableHead>
+                  <TableHead>{tFoodTrucks("owner")}</TableHead>
+                  <TableHead>{tFoodTrucks("licensePlate")}</TableHead>
+                  <TableHead>{tFoodTrucks("licenseDocument")}</TableHead>
+                  <TableHead>{tFoodTrucks("registrationDoc")}</TableHead>
+                  <TableHead>{tCommon("createdAt")}</TableHead>
                   <TableHead>{tCommon("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -277,13 +280,13 @@ export default function FoodTrucksTable({
                     colSpan={7}
                     message={
                       searchTerm
-                        ? "No food trucks found"
-                        : "No food trucks registered"
+                        ? tFoodTrucks("noFoodTrucksFound")
+                        : tFoodTrucks("noFoodTrucksRegistered")
                     }
                     description={
                       searchTerm
-                        ? "Try a different search term"
-                        : "Food trucks will appear here when they are registered"
+                        ? tFoodTrucks("tryDifferentSearch")
+                        : tFoodTrucks("foodTrucksWillAppear")
                     }
                     showAddButton={!searchTerm}
                   />
@@ -298,7 +301,7 @@ export default function FoodTrucksTable({
                             className="text-blue-600 hover:underline"
                           >
                             <p className="font-medium">
-                              {foodTruck.User?.name || "Unknown"}
+                              {foodTruck.User?.name || tCommon("unknown")}
                             </p>
                             <p className="text-sm ">{foodTruck.User?.email}</p>
                           </Link>
@@ -317,7 +320,7 @@ export default function FoodTrucksTable({
                               className="flex items-center gap-1"
                             >
                               <FileCheck className="h-3 w-3" />
-                              Uploaded
+                              {tFoodTrucks("uploaded")}
                             </Badge>
                           ) : (
                             <Badge
@@ -325,7 +328,7 @@ export default function FoodTrucksTable({
                               className="flex items-center gap-1"
                             >
                               <FileX className="h-3 w-3" />
-                              Missing
+                              {tFoodTrucks("missing")}
                             </Badge>
                           )}
                         </div>
@@ -338,7 +341,7 @@ export default function FoodTrucksTable({
                               className="flex items-center gap-1"
                             >
                               <FileCheck className="h-3 w-3" />
-                              Uploaded
+                              {tFoodTrucks("uploaded")}
                             </Badge>
                           ) : (
                             <Badge
@@ -346,7 +349,7 @@ export default function FoodTrucksTable({
                               className="flex items-center gap-1"
                             >
                               <FileX className="h-3 w-3" />
-                              Missing
+                              {tFoodTrucks("missing")}
                             </Badge>
                           )}
                         </div>
@@ -397,9 +400,11 @@ export default function FoodTrucksTable({
       {foodTrucksData.totalPages > 1 && (
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * 10 + 1} to{" "}
-            {Math.min(currentPage * 10, foodTrucksData.total)} of{" "}
-            {foodTrucksData.total} food trucks
+            {tFoodTrucks("showingResults", {
+              start: (currentPage - 1) * 10 + 1,
+              end: Math.min(currentPage * 10, foodTrucksData.total),
+              total: foodTrucksData.total
+            })}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -409,7 +414,7 @@ export default function FoodTrucksTable({
               disabled={currentPage <= 1 || isPending}
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {tCommon("previous")}
             </Button>
 
             <div className="flex items-center space-x-1">
@@ -433,7 +438,7 @@ export default function FoodTrucksTable({
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage >= foodTrucksData.totalPages || isPending}
             >
-              Next
+              {tCommon("next")}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -447,15 +452,15 @@ export default function FoodTrucksTable({
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Edit Food Truck</DialogTitle>
-            <DialogDescription>Update food truck information</DialogDescription>
+            <DialogTitle>{tFoodTrucks("editFoodTruck")}</DialogTitle>
+            <DialogDescription>{tFoodTrucks("updateFoodTruckInfo")}</DialogDescription>
           </DialogHeader>
           {editingFoodTruck && (
             <form onSubmit={handleUpdateFoodTruck}>
               <input type="hidden" name="id" value={editingFoodTruck.id} />
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-plate">License Plate</Label>
+                  <Label htmlFor="edit-plate">{tFoodTrucks("licensePlate")}</Label>
                   <Input
                     id="edit-plate"
                     name="plate"
@@ -466,7 +471,7 @@ export default function FoodTrucksTable({
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-license">
-                    Update License Document (Optional)
+                    {tFoodTrucks("updateLicenseDocument")}
                   </Label>
                   <Input
                     id="edit-license"
@@ -476,12 +481,12 @@ export default function FoodTrucksTable({
                     disabled={isUpdating}
                   />
                   <p className="text-sm text-muted-foreground">
-                    Leave empty to keep the current license document
+                    {tFoodTrucks("leaveEmptyLicense")}
                   </p>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-carteGrise">
-                    Update Carte Grise (Optional)
+                    {tFoodTrucks("updateCarteGrise")}
                   </Label>
                   <Input
                     id="edit-carteGrise"
@@ -491,13 +496,13 @@ export default function FoodTrucksTable({
                     disabled={isUpdating}
                   />
                   <p className="text-sm text-muted-foreground">
-                    Leave empty to keep the current document
+                    {tFoodTrucks("leaveEmptyDocument")}
                   </p>
                 </div>
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? "Updating..." : "Update Food Truck"}
+                  {isUpdating ? tFoodTrucks("updating") : tFoodTrucks("updateFoodTruckButton")}
                 </Button>
               </DialogFooter>
             </form>
@@ -514,21 +519,20 @@ export default function FoodTrucksTable({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              Confirm Deletion
+              {tCommon("confirmDeletion")}
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this food truck? This action
-              cannot be undone.
+              {tFoodTrucks("deleteConfirmation")}
             </DialogDescription>
           </DialogHeader>
           {deletingFoodTruck && (
             <div className="py-4">
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                 <p className="font-medium">
-                  Owner: {deletingFoodTruck.User?.name}
+                  {tFoodTrucks("owner")}: {deletingFoodTruck.User?.name}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  License Plate: {deletingFoodTruck.plate}
+                  {tFoodTrucks("licensePlate")}: {deletingFoodTruck.plate}
                 </p>
               </div>
             </div>
@@ -539,7 +543,7 @@ export default function FoodTrucksTable({
               onClick={() => setDeletingFoodTruck(null)}
               disabled={isDeleting === deletingFoodTruck?.id}
             >
-              Cancel
+              {tCommon("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -549,8 +553,8 @@ export default function FoodTrucksTable({
               disabled={isDeleting === deletingFoodTruck?.id}
             >
               {isDeleting === deletingFoodTruck?.id
-                ? "Deleting..."
-                : "Delete Food Truck"}
+                ? tFoodTrucks("deleting")
+                : tFoodTrucks("deleteFoodTruck")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -560,20 +564,20 @@ export default function FoodTrucksTable({
       <Dialog open={!!viewingImage} onOpenChange={() => setViewingImage(null)}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
-            <DialogTitle>Carte Grise Document</DialogTitle>
+            <DialogTitle>{tFoodTrucks("carteGriseDocument")}</DialogTitle>
           </DialogHeader>
           {viewingImage && (
             <div className="py-4">
               {viewingImage.toLowerCase().endsWith(".pdf") ? (
                 <div className="text-center">
-                  <p className="mb-4">PDF Document</p>
+                  <p className="mb-4">{tFoodTrucks("pdfDocument")}</p>
                   <Button asChild>
                     <a
                       href={viewingImage}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      View PDF Document
+                      {tFoodTrucks("viewPdfDocument")}
                     </a>
                   </Button>
                 </div>
@@ -599,28 +603,27 @@ export default function FoodTrucksTable({
       >
         <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Food Truck Documents</DialogTitle>
+            <DialogTitle>{tFoodTrucks("foodTruckDocuments")}</DialogTitle>
             <DialogDescription>
-              View license and registration documents for{" "}
-              {viewingFoodTruck?.User?.name}
+              {tFoodTrucks("viewDocumentsFor", { name: viewingFoodTruck?.User?.name || "" })}
             </DialogDescription>
           </DialogHeader>
           {viewingFoodTruck && (
             <div className="space-y-6 py-4">
               {/* Food Truck Info */}
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2">Food Truck Information</h3>
+                <h3 className="font-semibold mb-2">{tFoodTrucks("foodTruckInformation")}</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium">Owner:</span>{" "}
+                    <span className="font-medium">{tFoodTrucks("owner")}:</span>{" "}
                     {viewingFoodTruck.User?.name}
                   </div>
                   <div>
-                    <span className="font-medium">Email:</span>{" "}
+                    <span className="font-medium">{tCommon("email")}:</span>{" "}
                     {viewingFoodTruck.User?.email}
                   </div>
                   <div>
-                    <span className="font-medium">License Plate:</span>{" "}
+                    <span className="font-medium">{tFoodTrucks("licensePlate")}:</span>{" "}
                     {viewingFoodTruck.plate}
                   </div>
                 </div>
@@ -628,19 +631,19 @@ export default function FoodTrucksTable({
 
               {/* License Document */}
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">License Document</h3>
+                <h3 className="text-lg font-semibold">{tFoodTrucks("licenseDocument")}</h3>
                 {viewingFoodTruck.license ? (
                   <div className="border rounded-lg p-4">
                     {viewingFoodTruck.license.toLowerCase().endsWith(".pdf") ? (
                       <div className="text-center">
-                        <p className="mb-4">PDF Document</p>
+                        <p className="mb-4">{tFoodTrucks("pdfDocument")}</p>
                         <Button asChild>
                           <a
                             href={viewingFoodTruck.license}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            View License Document (PDF)
+                            {tFoodTrucks("viewLicenseDocumentPdf")}
                           </a>
                         </Button>
                       </div>
@@ -659,7 +662,7 @@ export default function FoodTrucksTable({
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <FileX className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-gray-500">
-                      No license document uploaded
+                      {tFoodTrucks("noLicenseDocumentUploaded")}
                     </p>
                   </div>
                 )}
@@ -668,7 +671,7 @@ export default function FoodTrucksTable({
               {/* Carte Grise Document */}
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">
-                  Registration Document (Carte Grise)
+                  {tFoodTrucks("registrationDocumentCarteGrise")}
                 </h3>
                 {viewingFoodTruck.carteGrise ? (
                   <div className="border rounded-lg p-4">
@@ -676,14 +679,14 @@ export default function FoodTrucksTable({
                       .toLowerCase()
                       .endsWith(".pdf") ? (
                       <div className="text-center">
-                        <p className="mb-4">PDF Document</p>
+                        <p className="mb-4">{tFoodTrucks("pdfDocument")}</p>
                         <Button asChild>
                           <a
                             href={viewingFoodTruck.carteGrise}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            View Registration Document (PDF)
+                            {tFoodTrucks("viewRegistrationDocumentPdf")}
                           </a>
                         </Button>
                       </div>
@@ -702,7 +705,7 @@ export default function FoodTrucksTable({
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <FileX className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-gray-500">
-                      No registration document uploaded
+                      {tFoodTrucks("noRegistrationDocumentUploaded")}
                     </p>
                   </div>
                 )}
@@ -711,7 +714,7 @@ export default function FoodTrucksTable({
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setViewingFoodTruck(null)}>
-              Close
+              {tCommon("close")}
             </Button>
           </DialogFooter>
         </DialogContent>

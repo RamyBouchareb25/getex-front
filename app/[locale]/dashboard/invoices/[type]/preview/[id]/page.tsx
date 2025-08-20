@@ -50,6 +50,8 @@ type InvoiceData = {
 
 export default function InvoicePreviewPage() {
   const t = useTranslations("dashboard");
+  const tInvoices = useTranslations("invoices");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
@@ -117,21 +119,21 @@ export default function InvoicePreviewPage() {
   const getDocumentTitle = (type: string) => {
     switch (type) {
       case "bon-livraison":
-        return t("bonLivraison", {defaultValue: "Bon de Livraison"});
+        return tInvoices("bonLivraison");
       case "bon-commande":
-        return t("bonCommande", {defaultValue: "Bon de Commande"});
+        return tInvoices("bonCommande");
       case "bon-retour":
-        return t("bonRetour", {defaultValue: "Bon de Retour"});
+        return tInvoices("bonRetour");
       case "bon-reception":
-        return t("bonReception", {defaultValue: "Bon de Reception"});
+        return tInvoices("bonReception");
       case "facture":
-        return t("facture", {defaultValue: "Facture"});
+        return tInvoices("facture");
       case "facture-proforma":
-        return t("factureProforma", {defaultValue: "Facture Proforma"});
+        return tInvoices("factureProforma");
       case "facture-avoir":
-        return t("factureAvoir", {defaultValue: "Facture Avoir"});
+        return tInvoices("factureAvoir");
       default:
-        return t("document", {defaultValue: "Document"});
+        return tInvoices("document");
     }
   };
 
@@ -162,20 +164,20 @@ export default function InvoicePreviewPage() {
       <div className="container mx-auto p-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-red-500">Error</CardTitle>
+            <CardTitle className="text-red-500">{tCommon("error")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>{error || "Failed to load invoice data"}</p>
+            <p>{error || tInvoices("failedToLoadInvoice")}</p>
             {(documentType === "bon-reception" || documentType === "facture-avoir") && (
               <p className="mt-2 text-muted-foreground">
-                Note: This document type is currently under development.
+                {tInvoices("documentUnderDevelopment")}
               </p>
             )}
           </CardContent>
           <CardFooter>
             <Button onClick={handleBack} variant="outline" className="flex items-center">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              {tCommon("back")}
             </Button>
           </CardFooter>
         </Card>
@@ -186,22 +188,25 @@ export default function InvoicePreviewPage() {
   return (
     <div className="container mx-auto p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{getDocumentTitle(documentType)} Preview</h1>
+        <h1 className="text-3xl font-bold">{tInvoices("documentPreview", { document: getDocumentTitle(documentType) })}</h1>
         <div className="flex space-x-4">
           <Button onClick={handleBack} variant="outline" className="flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            {tCommon("back")}
           </Button>
           <Button onClick={handlePrint} className="flex items-center">
             <Printer className="mr-2 h-4 w-4" />
-            Print
+            {tCommon("print")}
           </Button>
         </div>
       </div>
 
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="border-b">
-          <CardTitle>{getDocumentTitle(documentType)} - Order #{orderId}</CardTitle>
+          <CardTitle>{tInvoices("documentWithOrderNumber", { 
+            document: getDocumentTitle(documentType), 
+            orderId: orderId 
+          })}</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           {/* This will be a placeholder until we get actual preview data */}
@@ -209,39 +214,39 @@ export default function InvoicePreviewPage() {
             {/* Header Information */}
             <div className="flex justify-between">
               <div>
-                <h3 className="font-bold text-lg">Company Information</h3>
+                <h3 className="font-bold text-lg">{tInvoices("companyInformation")}</h3>
                 <p>{invoiceData.company.name}</p>
-                <p>Address: {invoiceData.company.address}</p>
-                <p>Phone: {invoiceData.company.phone}</p>
-                <p>Email: {invoiceData.company.email}</p>
+                <p>{tInvoices("address")}: {invoiceData.company.address}</p>
+                <p>{tCommon("phone")}: {invoiceData.company.phone}</p>
+                <p>{tCommon("email")}: {invoiceData.company.email}</p>
               </div>
               <div className="text-right">
-                <h3 className="font-bold text-lg">Document Details</h3>
-                <p>Document #: {documentType.toUpperCase()}-{orderId}</p>
-                <p>Date: {new Date().toLocaleDateString()}</p>
-                <p>Order Reference: #{orderId}</p>
+                <h3 className="font-bold text-lg">{tInvoices("documentDetails")}</h3>
+                <p>{tInvoices("documentNumber")}: {documentType.toUpperCase()}-{orderId}</p>
+                <p>{tCommon("date")}: {new Date().toLocaleDateString()}</p>
+                <p>{tInvoices("orderReference")}: #{orderId}</p>
               </div>
             </div>
 
             {/* Customer Information */}
             <div>
-              <h3 className="font-bold text-lg">Customer Information</h3>
-              <p>Name: {invoiceData.user.firstName} {invoiceData.user.lastName}</p>
-              <p>Address: {invoiceData.shippingAddress || "N/A"}</p>
-              <p>Phone: {invoiceData.user.phoneNumber || "N/A"}</p>
-              <p>Email: {invoiceData.user.email || "N/A"}</p>
+              <h3 className="font-bold text-lg">{tInvoices("customerInformation")}</h3>
+              <p>{tCommon("name")}: {invoiceData.user.firstName} {invoiceData.user.lastName}</p>
+              <p>{tInvoices("address")}: {invoiceData.shippingAddress || "N/A"}</p>
+              <p>{tCommon("phone")}: {invoiceData.user.phoneNumber || "N/A"}</p>
+              <p>{tCommon("email")}: {invoiceData.user.email || "N/A"}</p>
             </div>
 
             {/* Items Table */}
             <div>
-              <h3 className="font-bold text-lg mb-2">Items</h3>
+              <h3 className="font-bold text-lg mb-2">{tInvoices("items")}</h3>
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-slate-100 dark:bg-slate-800">
-                    <th className="border p-2 text-left">Item</th>
-                    <th className="border p-2 text-right">Quantity</th>
-                    <th className="border p-2 text-right">Price</th>
-                    <th className="border p-2 text-right">Total</th>
+                    <th className="border p-2 text-left">{tInvoices("item")}</th>
+                    <th className="border p-2 text-right">{tInvoices("quantity")}</th>
+                    <th className="border p-2 text-right">{tInvoices("price")}</th>
+                    <th className="border p-2 text-right">{tCommon("total")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -256,15 +261,15 @@ export default function InvoicePreviewPage() {
                 </tbody>
                 <tfoot>
                   <tr className="font-bold">
-                    <td colSpan={3} className="border p-2 text-right">Subtotal</td>
+                    <td colSpan={3} className="border p-2 text-right">{tInvoices("subtotal")}</td>
                     <td className="border p-2 text-right">{invoiceData.total?.toFixed(2) || "0.00"} DZD</td>
                   </tr>
                   <tr className="font-bold">
-                    <td colSpan={3} className="border p-2 text-right">Tax (19%)</td>
+                    <td colSpan={3} className="border p-2 text-right">{tInvoices("tax")}</td>
                     <td className="border p-2 text-right">{(invoiceData.total ? invoiceData.total * 0.19 : 0).toFixed(2)} DZD</td>
                   </tr>
                   <tr className="font-bold">
-                    <td colSpan={3} className="border p-2 text-right">Total</td>
+                    <td colSpan={3} className="border p-2 text-right">{tCommon("total")}</td>
                     <td className="border p-2 text-right">{(invoiceData.total ? invoiceData.total * 1.19 : 0).toFixed(2)} DZD</td>
                   </tr>
                 </tfoot>
@@ -274,7 +279,7 @@ export default function InvoicePreviewPage() {
             {/* Notes */}
             {invoiceData.note && (
               <div>
-                <h3 className="font-bold text-lg">Notes</h3>
+                <h3 className="font-bold text-lg">{tCommon("notes")}</h3>
                 <p>{invoiceData.note}</p>
               </div>
             )}
@@ -282,16 +287,16 @@ export default function InvoicePreviewPage() {
             {/* Additional sections based on document type */}
             {documentType === "bon-livraison" && (
               <div>
-                <h3 className="font-bold text-lg">Delivery Information</h3>
-                <p>Delivery Date: {new Date().toLocaleDateString()}</p>
-                <p>Carrier: {invoiceData.chauffeur?.name || "N/A"}</p>
-                <p>Vehicle: {invoiceData.camion?.matricule || "N/A"}</p>
+                <h3 className="font-bold text-lg">{tInvoices("deliveryInformation")}</h3>
+                <p>{tInvoices("deliveryDate")}: {new Date().toLocaleDateString()}</p>
+                <p>{tInvoices("carrier")}: {invoiceData.chauffeur?.name || "N/A"}</p>
+                <p>{tInvoices("vehicle")}: {invoiceData.camion?.matricule || "N/A"}</p>
               </div>
             )}
             
             {documentType === "bon-retour" && invoiceData.cancelReason && (
               <div>
-                <h3 className="font-bold text-lg">Return Reason</h3>
+                <h3 className="font-bold text-lg">{tInvoices("returnReason")}</h3>
                 <p>{invoiceData.cancelReason}</p>
               </div>
             )}
@@ -300,12 +305,12 @@ export default function InvoicePreviewPage() {
         <CardFooter className="flex justify-between border-t p-6">
           <div>
             <p className="text-sm text-muted-foreground">
-              Thank you for your business.
+              {tInvoices("thankYou")}
             </p>
           </div>
           <Button onClick={handlePrint} className="flex items-center">
             <Printer className="mr-2 h-4 w-4" />
-            Print
+            {tCommon("print")}
           </Button>
         </CardFooter>
       </Card>
