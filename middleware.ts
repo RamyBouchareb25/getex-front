@@ -15,6 +15,44 @@ export default withAuth(
     const { pathname, searchParams } = req.nextUrl;
     const token = req.nextauth.token;
     const isImage = req.nextUrl.pathname.startsWith("/_next/image");
+    
+    // Handle CORS for API routes
+    if (pathname.startsWith("/api/")) {
+      const origin = req.headers.get("origin");
+      const allowedOrigins = [
+        "https://bellat-health.ramybouchare.me",
+        "https://bellat-front.ramybouchare.me",
+        "http://localhost:3000",
+        "http://localhost:3001",
+      ];
+
+      // Handle preflight requests
+      if (req.method === "OPTIONS") {
+        const response = new NextResponse(null, { status: 200 });
+        
+        if (origin && allowedOrigins.includes(origin)) {
+          response.headers.set("Access-Control-Allow-Origin", origin);
+        }
+        
+        response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        response.headers.set("Access-Control-Allow-Credentials", "true");
+        response.headers.set("Access-Control-Max-Age", "86400");
+        
+        return response;
+      }
+
+      // Handle actual requests
+      const response = NextResponse.next();
+      
+      if (origin && allowedOrigins.includes(origin)) {
+        response.headers.set("Access-Control-Allow-Origin", origin);
+        response.headers.set("Access-Control-Allow-Credentials", "true");
+      }
+      
+      return response;
+    }
+    
     if (isImage) {
       const imageUrl = req.nextUrl.searchParams.get("url");
 
@@ -39,9 +77,8 @@ export default withAuth(
         }
       }
     }
-    // Skip API routes and other non-localized paths
+    // Skip other non-localized paths
     if (
-      pathname.startsWith("/api/") ||
       pathname.startsWith("/_next/") ||
       pathname.startsWith("/favicon.ico") ||
       pathname.startsWith("/robots.txt")
