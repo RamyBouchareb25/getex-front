@@ -1,0 +1,928 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Tag,
+} from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  createStockAction,
+  updateStockAction,
+  deleteStockAction,
+} from "@/lib/actions/stock";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
+import SalamiLoadingAnimation from "../ui/salami-loading";
+
+interface Stock {
+  id: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  minQuantity: number;
+  expirationDate: Date | string;
+  reductionPercent: number;
+  visible: boolean;
+  ownerId: string;
+  createdAt: Date | string;
+  product?: {
+    id: string;
+    name: string;
+  };
+  owner?: {
+    id: string;
+    email: string;
+    name: string;
+    CompanyData?: {
+      id: string;
+      raisonSocial: string;
+    };
+  };
+}
+
+interface Product {
+  id: string;
+  name: string;
+}
+
+interface User {
+  id: string;
+  email: string;
+}
+
+interface PaginationData {
+  stock: Stock[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export default function StockTable({
+  stockData,
+  products,
+  users,
+  currentPage,
+  limit,
+}: {
+  stockData: PaginationData | Stock[];
+  products: Product[];
+  users: User[];
+  currentPage: number;
+  limit: number;
+}) {
+  const tStock = useTranslations("stock");
+  const tStockTable = useTranslations("stockTable");
+  const tCommon = useTranslations("common");
+  const tPagination = useTranslations("pagination");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Handle both paginated and non-paginated data
+  const stock = Array.isArray(stockData) ? stockData : stockData.stock;
+  const totalPages = Array.isArray(stockData)
+    ? Math.ceil(stock.length / limit)
+    : stockData.totalPages;
+  const total = Array.isArray(stockData) ? stock.length : stockData.total;
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingStock, setEditingStock] = useState<Stock | null>(null);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [selectedOwners, setSelectedOwners] = useState<string[]>([]);
+  const [stockStatusFilter, setStockStatusFilter] = useState<string>("");
+  const [visibilityFilter, setVisibilityFilter] = useState<string>("");
+  const [dateFromFilter, setDateFromFilter] = useState<string>("");
+  const [dateToFilter, setDateToFilter] = useState<string>("");
+
+  // Loading states
+  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Error states
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+  const productIdParam = searchParams.get("productId");
+  const ownerIdParam = searchParams.get("ownerId");
+
+  // Initialize filters from URL params
+  useEffect(() => {
+    setSearchTerm(searchParams.get("search") || "");
+    setStockStatusFilter(searchParams.get("stockStatus") || "");
+    setVisibilityFilter(searchParams.get("visibility") || "");
+    setDateFromFilter(searchParams.get("dateFrom") || "");
+    setDateToFilter(searchParams.get("dateTo") || "");
+    if (productIdParam) {
+      setSelectedProducts([productIdParam]);
+    }
+    if (ownerIdParam) {
+      setSelectedOwners([ownerIdParam]);
+    }
+  }, [searchParams, productIdParam, ownerIdParam]);
+
+  // Handle loading state when URL changes
+  useEffect(() => {
+    setIsSearching(false);
+  }, [stock]);
+
+  // Since we're using server-side pagination, we don't filter on client
+  const filteredStock = stock;
+
+  const isLowStock = (quantity: number, minQuantity: number) =>
+    quantity <= minQuantity;
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams();
+    params.set("page", newPage.toString());
+    params.set("limit", limit.toString());
+
+    // Preserve existing filters
+    if (searchTerm.trim()) params.set("search", searchTerm.trim());
+    if (selectedProducts.length > 0)
+      params.set("productId", selectedProducts[0]);
+    if (selectedOwners.length > 0) params.set("ownerId", selectedOwners[0]);
+    if (stockStatusFilter) params.set("stockStatus", stockStatusFilter);
+    if (visibilityFilter) params.set("visibility", visibilityFilter);
+    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
+    if (dateToFilter) params.set("dateTo", dateToFilter);
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleSearch = () => {
+    setIsSearching(true);
+    const params = new URLSearchParams();
+    params.set("page", "1");
+    params.set("limit", limit.toString());
+
+    if (searchTerm.trim()) params.set("search", searchTerm.trim());
+    if (selectedProducts.length > 0)
+      params.set("productId", selectedProducts[0]);
+    if (selectedOwners.length > 0) params.set("ownerId", selectedOwners[0]);
+    if (stockStatusFilter) params.set("stockStatus", stockStatusFilter);
+    if (visibilityFilter) params.set("visibility", visibilityFilter);
+    if (dateFromFilter) params.set("dateFrom", dateFromFilter);
+    if (dateToFilter) params.set("dateTo", dateToFilter);
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handleResetFilters = () => {
+    setIsSearching(true);
+    setSearchTerm("");
+    setSelectedProducts([]);
+    setSelectedOwners([]);
+    setStockStatusFilter("");
+    setVisibilityFilter("");
+    setDateFromFilter("");
+    setDateToFilter("");
+
+    const params = new URLSearchParams();
+    params.set("page", "1");
+    params.set("limit", limit.toString());
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const toggleProductFilter = (id: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const toggleOwnerFilter = (id: string) => {
+    setSelectedOwners((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleCreateStock = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsCreating(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      const result = await createStockAction(formData);
+      if (result.success) {
+        setSuccess(tStockTable("toasts.stockCreatedSuccess"));
+        setIsCreateOpen(false);
+      } else {
+        setError(result.message || tStockTable("toasts.stockCreatedError"));
+      }
+    } catch (error) {
+      console.error("Error creating stock:", error);
+      setError(tStockTable("toasts.stockCreatedUnexpectedError"));
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleUpdateStock = async (formData: FormData) => {
+    setIsUpdating(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const result = await updateStockAction(formData);
+      if (result.success) {
+        setSuccess(tStockTable("toasts.stockUpdatedSuccess"));
+        setEditingStock(null);
+      } else {
+        setError(result.message || tStockTable("toasts.stockUpdatedError"));
+      }
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      setError(tStockTable("toasts.stockUpdatedUnexpectedError"));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteStock = async (stockId: string) => {
+    setIsDeleting(stockId);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const result = await deleteStockAction(stockId);
+      if (result.success) {
+        setSuccess(tStockTable("toasts.stockDeletedSuccess"));
+      } else {
+        setError(result.message || tStockTable("toasts.stockDeletedError"));
+      }
+    } catch (error) {
+      console.error("Error deleting stock:", error);
+      setError(tStockTable("toasts.stockDeletedUnexpectedError"));
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert>
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {tStock("title")}
+          </h1>
+          <p className="text-muted-foreground">
+            {tStockTable("monitorInventory")}
+          </p>
+        </div>
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              {tStock("createStock")}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{tStock("createStock")}</DialogTitle>
+              <DialogDescription>{tStockTable("addInventoryForProduct")}</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateStock}>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="productId">{tStockTable("product")}</Label>
+                  <Select
+                    disabled={isCreating || isUpdating}
+                    name="productId"
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={tStockTable("selectProduct")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {products.map((product) => (
+                        <SelectItem key={product.id} value={product.id}>
+                          {product.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="quantity">{tStockTable("quantity")}</Label>
+                    <Input
+                      disabled={isCreating || isUpdating}
+                      id="quantity"
+                      name="quantity"
+                      type="number"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="price">{tStockTable("price")}</Label>
+                    <Input
+                      disabled={isCreating || isUpdating}
+                      id="price"
+                      name="price"
+                      type="number"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="minQuantity">{tStockTable("minQuantity")}</Label>
+                    <Input
+                      disabled={isCreating || isUpdating}
+                      id="minQuantity"
+                      name="minQuantity"
+                      type="number"
+                      defaultValue="1"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="reductionPercent">{tStockTable("reductionPercent")}</Label>
+                    <Input
+                      disabled={isCreating || isUpdating}
+                      id="reductionPercent"
+                      name="reductionPercent"
+                      type="number"
+                      step="0.01"
+                      defaultValue="0"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="expirationDate">{tStockTable("expirationDate")}</Label>
+                  <Input
+                    disabled={isCreating || isUpdating}
+                    id="expirationDate"
+                    name="expirationDate"
+                    type="date"
+                    required
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="visible"
+                    disabled={isCreating || isUpdating}
+                    name="visible"
+                    value="true"
+                    defaultChecked
+                  />
+                  <Label htmlFor="visible">{tStockTable("visibleToCustomers")}</Label>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={isCreating || isUpdating}>
+                  {isCreating ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                      {tCommon("creating")}
+                    </>
+                  ) : (
+                    tStock("createStock")
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{tStockTable("stockInventory")}</CardTitle>
+          <CardDescription>
+            {tStockTable("currentStockLevels")}
+          </CardDescription>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center space-x-2 flex-1">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                disabled={isUpdating || isSearching}
+                placeholder={tStockTable("searchStock")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+                className="max-w-sm"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSearch}
+                disabled={isSearching}
+              >
+                {isSearching ? tStockTable("searching") : tStockTable("search")}
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <Filter className="h-4 w-4" />
+                    <span>{tStockTable("filter")}</span>
+                    {(selectedProducts.length > 0 ||
+                      selectedOwners.length > 0 ||
+                      stockStatusFilter ||
+                      visibilityFilter ||
+                      dateFromFilter ||
+                      dateToFilter) && (
+                      <span className="ml-1 rounded-full bg-primary w-2 h-2" />
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium">{tStockTable("products")}</h4>
+                      <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
+                        {products.map((product) => (
+                          <div
+                            key={product.id}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              id={`product-${product.id}`}
+                              checked={selectedProducts.includes(product.id)}
+                              onCheckedChange={() =>
+                                toggleProductFilter(product.id)
+                              }
+                            />
+                            <Label htmlFor={`product-${product.id}`}>
+                              {product.name}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-medium">{tStockTable("owners")}</h4>
+                      <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
+                        {users.map((user) => (
+                          <div
+                            key={user.id}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              id={`owner-${user.id}`}
+                              checked={selectedOwners.includes(user.id)}
+                              onCheckedChange={() => toggleOwnerFilter(user.id)}
+                            />
+                            <Label htmlFor={`owner-${user.id}`}>
+                              {user.email}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-medium">{tStockTable("stockStatus")}</h4>
+                      <select
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        value={stockStatusFilter}
+                        onChange={(e) => setStockStatusFilter(e.target.value)}
+                      >
+                        <option value="">{tStockTable("allStock")}</option>
+                        <option value="low">{tStockTable("lowStock")}</option>
+                        <option value="normal">{tStockTable("normalStock")}</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-medium">{tStockTable("visibility")}</h4>
+                      <select
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        value={visibilityFilter}
+                        onChange={(e) => setVisibilityFilter(e.target.value)}
+                      >
+                        <option value="">{tStockTable("allItems")}</option>
+                        <option value="visible">{tStockTable("visible")}</option>
+                        <option value="hidden">{tStockTable("hidden")}</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-medium">{tStockTable("dateRange")}</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-muted-foreground">
+                            {tStockTable("from")}
+                          </label>
+                          <Input
+                            disabled={isUpdating || isSearching}
+                            type="date"
+                            value={dateFromFilter}
+                            onChange={(e) => setDateFromFilter(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground">
+                            {tStockTable("to")}
+                          </label>
+                          <Input
+                            disabled={isUpdating || isSearching}
+                            type="date"
+                            value={dateToFilter}
+                            onChange={(e) => setDateToFilter(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResetFilters}
+                        disabled={isSearching}
+                      >
+                        {tStockTable("resetFilters")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSearch}
+                        disabled={isSearching}
+                      >
+                        {isSearching ? tStockTable("applying") : tStockTable("applyFilters")}
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              <select
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                value={limit}
+                onChange={(e) => {
+                  const newLimit = parseInt(e.target.value);
+                  const params = new URLSearchParams();
+                  params.set("page", "1");
+                  params.set("limit", newLimit.toString());
+
+                  // Preserve existing filters
+                  if (searchTerm.trim())
+                    params.set("search", searchTerm.trim());
+                  if (selectedProducts.length > 0)
+                    params.set("productId", selectedProducts[0]);
+                  if (selectedOwners.length > 0)
+                    params.set("ownerId", selectedOwners[0]);
+                  if (stockStatusFilter)
+                    params.set("stockStatus", stockStatusFilter);
+                  if (visibilityFilter)
+                    params.set("visibility", visibilityFilter);
+                  if (dateFromFilter) params.set("dateFrom", dateFromFilter);
+                  if (dateToFilter) params.set("dateTo", dateToFilter);
+
+                  router.push(`${pathname}?${params.toString()}`);
+                }}
+              >
+                <option value={5}>5 {tStockTable("perPage")}</option>
+                <option value={10}>10 {tStockTable("perPage")}</option>
+                <option value={20}>20 {tStockTable("perPage")}</option>
+                <option value={50}>50 {tStockTable("perPage")}</option>
+              </select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isSearching ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-b-transparent"></div>
+              <span className="ml-2">{tStockTable("loadingStock")}</span>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{tStockTable("product")}</TableHead>
+                  <TableHead>{tStockTable("quantity")}</TableHead>
+                  <TableHead>{tStockTable("price")}</TableHead>
+                  <TableHead>{tStockTable("minQty")}</TableHead>
+                  <TableHead>{tStockTable("reduction")}</TableHead>
+                  <TableHead>{tStockTable("expiration")}</TableHead>
+                  <TableHead>{tStockTable("owner")}</TableHead>
+                  <TableHead>{tStockTable("status")}</TableHead>
+                  <TableHead>{tStockTable("actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStock.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={9}
+                      className="text-center py-8 text-muted-foreground"
+                    >
+                      {tStockTable("noStockItemsFound")}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredStock.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">
+                        <Link
+                          href={`/dashboard/products?id=${item.product?.id}`}
+                          className="text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                          <Tag className="h-3 w-3" />
+                          {item.product?.name || tStockTable("unknownProduct")}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {item.quantity}
+                          {isLowStock(item.quantity, item.minQuantity) && (
+                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{item.price} DA</TableCell>
+                      <TableCell>{item.minQuantity}</TableCell>
+                      <TableCell>{item.reductionPercent}%</TableCell>
+                      <TableCell>
+                        {item.expirationDate instanceof Date
+                          ? item.expirationDate.toISOString().split("T")[0]
+                          : new Date(item.expirationDate)
+                              .toISOString()
+                              .split("T")[0]}
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/dashboard/users?id=${item.owner?.id}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {item.owner?.name +
+                            " " +
+                            item.owner?.CompanyData?.raisonSocial || tStockTable("unknownOwner")}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {isLowStock(item.quantity, item.minQuantity) && (
+                            <Badge variant="destructive">{tStockTable("lowStock")}</Badge>
+                          )}
+                          <Badge
+                            variant={item.visible ? "default" : "secondary"}
+                          >
+                            {item.visible ? tStockTable("visible") : tStockTable("hidden")}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingStock(item)}
+                            disabled={isUpdating || isDeleting === item.id}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteStock(item.id)}
+                            disabled={isDeleting === item.id || isUpdating}
+                          >
+                            {isDeleting === item.id ? (
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+      {/* Pagination Controls */}
+
+      <div className="flex items-center justify-between px-6 py-4 border-t">
+        <div className="text-sm text-muted-foreground">
+          {tStockTable("showing", {
+            from: Math.min((currentPage - 1) * limit + 1, total),
+            to: Math.min(currentPage * limit, total),
+            total: total
+          })}
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1 || isSearching}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            {tStockTable("previous")}
+          </Button>
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+
+              return (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(pageNum)}
+                  disabled={isSearching}
+                  className="w-8 h-8 p-0"
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages || isSearching}
+          >
+            {tStockTable("next")}
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      {/* Edit Stock Dialog */}
+      <Dialog open={!!editingStock} onOpenChange={() => setEditingStock(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{tStockTable("editStock")}</DialogTitle>
+            <DialogDescription>{tStockTable("updateStockInfo")}</DialogDescription>
+          </DialogHeader>
+          {editingStock && (
+            <form action={handleUpdateStock}>
+              <input type="hidden" name="id" value={editingStock.id} />
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label>{tStockTable("product")}</Label>
+                  <Input
+                    value={editingStock.product?.name || tStockTable("unknownProduct")}
+                    disabled
+                    className="bg-muted"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-quantity">{tStockTable("quantity")}</Label>
+                    <Input
+                      id="edit-quantity"
+                      name="quantity"
+                      type="number"
+                      defaultValue={editingStock.quantity}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-price">{tStockTable("price")}</Label>
+                    <Input
+                      id="edit-price"
+                      name="price"
+                      type="number"
+                      step="0.01"
+                      defaultValue={editingStock.price}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-minQuantity">{tStockTable("minQuantity")}</Label>
+                    <Input
+                      id="edit-minQuantity"
+                      name="minQuantity"
+                      type="number"
+                      defaultValue={editingStock.minQuantity}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-reductionPercent">{tStockTable("reductionPercent")}</Label>
+                    <Input
+                      id="edit-reductionPercent"
+                      name="reductionPercent"
+                      type="number"
+                      step="0.01"
+                      defaultValue={editingStock.reductionPercent}
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-expirationDate">{tStockTable("expirationDate")}</Label>
+                  <Input
+                    id="edit-expirationDate"
+                    name="expirationDate"
+                    type="date"
+                    defaultValue={
+                      editingStock.expirationDate instanceof Date
+                        ? editingStock.expirationDate
+                            .toISOString()
+                            .split("T")[0]
+                        : editingStock.expirationDate
+                    }
+                    required
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-visible"
+                    name="visible"
+                    value="true"
+                    defaultChecked={editingStock.visible}
+                  />
+                  <Label htmlFor="edit-visible">{tStockTable("visibleToCustomers")}</Label>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit">{tStockTable("updateStock")}</Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

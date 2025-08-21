@@ -1,0 +1,261 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    ADMIN
+    GROSSISTE
+    POINT_DE_VENTE
+    GRANDE_SURFACE
+    FOOD_TRUCK
+}
+
+model User {
+    id        String   @id @default(cuid())
+    name      String
+    email     String   @unique
+    password  String
+    role      Role
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    CompanyData CompanyData?
+    FoodTruckData FoodTruckData?
+
+    Stock Stock[]
+    Order Order[]
+
+    // Sale Sale[]
+    Cart Cart?
+
+}
+
+model FoodTruckData {
+    id         String @id @default(cuid())
+    plate      String
+    carteGrise String
+    licence   String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String @unique
+    User   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CompanyData {
+    id           String   @id @default(cuid())
+    raisonSocial String
+    nif          BigInt
+    nis          BigInt
+    rc           String
+    phone        Int
+    address      Address?
+    art          String?
+    logo         String?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    userId    String      @unique
+    User      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    Camion    Camion[]
+    Chauffeur Chauffeur[]
+}
+
+model Address {
+    id        String   @id @default(cuid())
+    wilaya    String
+    commune   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    companyDataId String       @unique
+    companyData   CompanyData? @relation(fields: [companyDataId], references: [id], onDelete: Cascade)
+}
+
+model Stock {
+    id               String   @id @default(cuid())
+    productId        String
+    quantity         Int
+    price            Float    @default(0)
+    expirationDate   DateTime
+    minQuantity      Int      @default(1)
+    reductionPercent Float    @default(0)
+    visible          Boolean  @default(true)
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
+
+    product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+    ownerId String
+    owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+    // Pour l'instant un utilisateur peut avoir plusieurs stocks pour un même produit, on verra plus tard
+    // si on veut restreindre cela 
+    // Contrainte d'unicité : un utilisateur ne peut avoir qu'un seul stock par produit
+    // @@unique([ownerId, productId], name: "unique_user_product_stock")
+
+    // Sale Sale[]
+
+    OrderItem OrderItem[]
+}
+
+model Product {
+    id          String   @id @default(cuid())
+    name        String
+    reference   String
+    description String?
+    image       String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    stock Stock[]
+
+    subCategoryId   String
+    SubCategory     SubCategory      @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+    nutritionalInfo NutritionalInfo?
+
+    @@unique([name, subCategoryId])
+}
+
+model Category {
+    id          String  @id @default(cuid())
+    name        String
+    image       String?
+    description String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    SubCategories SubCategory[]
+}
+
+model SubCategory {
+    id          String    @id @default(cuid())
+    name        String    @unique
+    image       String?
+    description String?
+    products    Product[]
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    categoryId String
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+    CANCELED
+    PREPARING
+    SHIPPING
+    COMPLETED
+    RETURNED
+}
+
+model Order {
+    id                  String      @id
+    userId              String
+    total               Float
+    status              OrderStatus @default(PENDING)
+    createdAt           DateTime    @default(now())
+    updatedAt           DateTime    @updatedAt
+    note                String?
+    cancelReason        String?
+    chauffeurId         String?
+    camionId            String?
+    // For assignedOrder reverse relation
+    chauffeurAssignedId String?     @unique
+    camionAssignedId    String?     @unique
+
+    user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+    chauffeur         Chauffeur? @relation("ChauffeurOrders", fields: [chauffeurId], references: [id])
+    camion            Camion?    @relation("CamionOrders", fields: [camionId], references: [id])
+    assignedChauffeur Chauffeur? @relation("ChauffeurAssignedOrder", fields: [chauffeurAssignedId], references: [id])
+    assignedCamion    Camion?    @relation("CamionAssignedOrder", fields: [camionAssignedId], references: [id])
+
+    OrderItems OrderItem[]
+}
+
+model OrderItem {
+    id        String   @id @default(cuid())
+    orderId   String?
+    cartId    String?
+    stockId   String
+    quantity  Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    order Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    stock Stock  @relation(fields: [stockId], references: [id], onDelete: Cascade)
+    Cart  Cart?  @relation(fields: [cartId], references: [id])
+}
+
+model Cart {
+    id String @id @default(cuid())
+
+    userId    String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    CartItems OrderItem[]
+}
+
+model Chauffeur {
+    id              String  @id @default(cuid())
+    name            String
+    phone           Int
+    companyId       String
+    assignedOrderId String? @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    company       CompanyData @relation(fields: [companyId], references: [id], onDelete: Cascade)
+    assignedOrder Order?      @relation("ChauffeurAssignedOrder")
+    orders        Order[]     @relation("ChauffeurOrders")
+}
+
+model Camion {
+    id              String  @id @default(cuid())
+    name            String
+    plate           String
+    companyId       String
+    assignedOrderId String? @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    company       CompanyData @relation(fields: [companyId], references: [id], onDelete: Cascade)
+    assignedOrder Order?      @relation("CamionAssignedOrder")
+    orders        Order[]     @relation("CamionOrders")
+}
+
+model NutritionalInfo {
+    id        String   @id @default(cuid())
+    type      String   @default("N/A")
+    graisse   String   @default("N/A")
+    acide     String   @default("N/A")
+    glucide   String   @default("N/A")
+    sucre     String   @default("N/A")
+    proteine  String   @default("N/A")
+    sel       String   @default("N/A")
+    fibre     String   @default("N/A")
+    energie   String   @default("N/A")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    productId String  @unique
+    product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}

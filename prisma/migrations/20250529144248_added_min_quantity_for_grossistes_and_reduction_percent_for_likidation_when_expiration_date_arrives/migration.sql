@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Stock" ADD COLUMN     "minQuantity" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "reductionPercent" DOUBLE PRECISION NOT NULL DEFAULT 0;
