@@ -12,6 +12,38 @@ import { validateEnvironment, logEnvironmentStatus } from "./env-validation";
 // Log environment status on module load
 logEnvironmentStatus();
 
+// Get the backend URL with proper validation
+const getBackendUrl = (): string => {
+  const backendUrl = process.env.BACKEND_URL;
+  
+  // If no BACKEND_URL is set, use a fallback
+  if (!backendUrl) {
+    console.warn('⚠️  BACKEND_URL not set, using fallback');
+    return 'http://localhost:3000/api';
+  }
+  
+  // If it's a relative path, it won't work in server context
+  if (backendUrl.startsWith('/')) {
+    console.error('❌ BACKEND_URL cannot be a relative path in server context:', backendUrl);
+    // Try to construct an absolute URL
+    const protocol = process.env.BACKEND_PROTOCOL || 'http';
+    const host = process.env.BACKEND_HOST || 'localhost:3000';
+    const absoluteUrl = `${protocol}://${host}${backendUrl}`;
+    console.log('🔄 Converting relative URL to absolute:', absoluteUrl);
+    return absoluteUrl;
+  }
+  
+  // Validate that it's a proper URL
+  try {
+    new URL(backendUrl);
+    console.log('✅ Using BACKEND_URL:', backendUrl);
+    return backendUrl;
+  } catch (error) {
+    console.error('❌ Invalid BACKEND_URL format:', backendUrl);
+    throw new Error(`Invalid BACKEND_URL format: ${backendUrl}`);
+  }
+};
+
 // Shared auth headers function
 const getAuthHeaders = (session: any) => {
   if (session?.accessToken) {
@@ -28,6 +60,7 @@ const getAuthHeaders = (session: any) => {
   }
   return {};
 };
+
 // Custom error class for HTTP errors
 class HttpError extends Error {
   status: number;
@@ -50,9 +83,10 @@ class HttpError extends Error {
     this.url = url;
   }
 }
+
 // Server-side axios instance with response interceptor
 const serverAxios = axios.create({
-  baseURL: process.env.BACKEND_URL || "/api",
+  baseURL: getBackendUrl(),
   timeout: 30000, // 30 seconds timeout
 });
 
@@ -85,6 +119,18 @@ serverAxios.interceptors.response.use(
       baseURL: error.config?.baseURL,
       data: error.response?.data,
     });
+
+    // Handle URL parsing errors specifically
+    if (error.code === 'ERR_INVALID_URL') {
+      const invalidUrl = error.message.match(/"([^"]*)" cannot be parsed as a URL/)?.[1] || 'unknown';
+      throw new HttpError(
+        `Invalid URL configuration: ${invalidUrl}. Check BACKEND_URL environment variable.`,
+        0,
+        'INVALID_URL_CONFIG',
+        { originalError: error.message, invalidUrl },
+        error.config?.url
+      );
+    }
 
     if (error.response?.status === 401) {
       throw new Error("UNAUTHORIZED");

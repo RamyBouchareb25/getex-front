@@ -121,20 +121,13 @@ else
 fi
 echo ""
 
-echo "🔍 Docker Secrets (if available):"
-if [ -d "/run/secrets" ]; then
-    echo "Secrets directory exists:"
-    ls -la /run/secrets/
-    echo ""
-    echo "Secret file contents (first line only):"
-    for secret in /run/secrets/*; do
-        if [ -f "$secret" ]; then
-            echo "$(basename $secret): $(head -n1 $secret | cut -c1-50)..."
-        fi
-    done
-else
-    echo "No Docker secrets directory found"
-fi
+echo "🔍 Kubernetes Environment Variables:"
+echo "Environment variables are injected by Kubernetes:"
+echo "NEXTAUTH_SECRET: $(if [ -n "$NEXTAUTH_SECRET" ]; then echo '[SET]'; else echo '[NOT SET]'; fi)"
+echo "BACKEND_URL: $BACKEND_URL"
+echo "BACKEND_HOST: $BACKEND_HOST"
+echo "BACKEND_PROTOCOL: $BACKEND_PROTOCOL"
+echo "NEXTAUTH_URL: $NEXTAUTH_URL"
 echo ""
 
 echo "✅ Diagnostic completed at $(date -Iseconds)"
