@@ -1,13 +1,10 @@
-import createNextIntlPlugin from 'next-intl/plugin';
+import createNextIntlPlugin from "next-intl/plugin";
 
-const withNextIntl = createNextIntlPlugin('./i18n.ts');
-
-const BACKEND_HOST = process.env.BACKEND_HOST;
-const BACKEND_PROTOCOL = process.env.BACKEND_PROTOCOL;
+const withNextIntl = createNextIntlPlugin("./i18n.ts");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: "standalone",
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -17,11 +14,24 @@ const nextConfig = {
   reactStrictMode: false,
   images: {
     remotePatterns: [
+      // Broad patterns that will work across environments
       {
-        protocol: BACKEND_PROTOCOL || 'https',
-        hostname: BACKEND_HOST || 'localhost',
-        port: "",
-        pathname: "/files/**",
+        protocol: "https",
+        hostname: "**", // Wildcard - allows any HTTPS hostname
+      },
+      {
+        protocol: "http",
+        hostname: "**", // Wildcard - allows any HTTP hostname
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "**", // Any port for localhost
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "**",
       },
     ],
   },
