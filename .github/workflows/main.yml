@@ -52,8 +52,7 @@ jobs:
           NEW_IMAGE_TAG="ghcr.io/diardzairdev/bellat-frontend:${{ github.sha }}"
           
           # Use sed to replace the old image tag with the new one.
-          sed -i "s|ghcr.io/diardzairdev/bellat-frontend:.*|$NEW_IMAGE_TAG|g" k8s-gitops/clusters/my-cluster/frontend-deployment.yaml
-          
+          sed -i "s|image: ghcr.io/diardzairdev/bellat-frontend|image: $NEW_IMAGE_TAG|g" k8s-gitops/clusters/my-cluster/frontend-deployment.yaml          
           echo "Updated frontend-deployment.yaml:"
           cat k8s-gitops/clusters/my-cluster/frontend-deployment.yaml
 
