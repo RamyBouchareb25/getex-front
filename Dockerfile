@@ -61,9 +61,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
-# Copy entrypoint script
+# Copy entrypoint script and diagnostic tools
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY scripts/diagnose.sh /usr/local/bin/diagnose
+RUN chmod +x /entrypoint.sh /usr/local/bin/diagnose
 
 # Switch to non-root user
 USER nextjs
