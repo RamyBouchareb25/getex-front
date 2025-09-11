@@ -3,38 +3,22 @@ import { serverApi } from "../axios-interceptor";
 
 export const getDashboardStatsAction = async () => {
   try {
-    console.log('🔍 Fetching dashboard stats...');
-    console.log('BACKEND_URL:', process.env.BACKEND_URL);
-    
     const response = await serverApi.get("/dashboard/stats");
-    
-    console.log('✅ Dashboard stats response:', {
-      status: response.status,
-      statusText: response.statusText,
-      dataKeys: Object.keys(response.data || {}),
-    });
-    
     if (response.status !== 200) {
       throw new Error(
-        `Failed to fetch dashboard stats: ${response.status} ${response.statusText}`
+        `Failed to fetch dashboard stats: ${response.statusText}`
       );
     }
     return response.data;
   } catch (error) {
-    console.error("❌ Error fetching dashboard stats:", {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      name: error instanceof Error ? error.name : 'Unknown',
-      stack: error instanceof Error ? error.stack : 'No stack trace',
-      ...(error && typeof error === 'object' ? error : {}),
-    });
-    
+    console.error("Error fetching dashboard stats:", error);
     // Return fallback data
     return {
       totalRevenue: 0,
       totalOrders: 0,
       activeUsers: 0,
       productsInStock: 0,
-      revenueGrowth: 0,
+      revenueGrowth: 0.,
       ordersGrowth: 0,
       usersGrowth: 0,
       stockGrowth: 0,
