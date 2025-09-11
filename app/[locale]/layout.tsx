@@ -15,8 +15,8 @@ import { Toaster } from "@/components/ui/sonner"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard",
-  description: "Comprehensive admin dashboard for inventory management",
+  title: "Bellat Dashboard",
+  description: "Comprehensive bellat dashboard for inventory management",
 };
 
 export function generateStaticParams() {

@@ -115,6 +115,7 @@
     "ordersHistory": "Historique des commandes",
     "orderList": "Liste des commandes",
     "notifications": "Notifications",
+    "etats": "Rapports",
     "logout": "Déconnexion"
   },
   "map": {
@@ -1203,6 +1204,99 @@
     "deleteSuccess": "Food truck supprimé avec succès !",
     "deleteError": "Échec de la suppression du food truck",
     "unexpectedError": "Une erreur inattendue s'est produite"
+  },
+  "etats": {
+    "title": "Rapports et Analyses",
+    "description": "Générer et télécharger des rapports complets pour l'analyse commerciale",
+    "generateReport": "Générer un Rapport",
+    "downloadPDF": "Télécharger PDF",
+    "reportGenerated": "Rapport généré avec succès",
+    "reportFailed": "Échec de la génération du rapport",
+    "selectReportType": "Sélectionner le Type de Rapport",
+    "selectDateRange": "Sélectionner la Plage de Dates",
+    "selectFilters": "Sélectionner les Filtres",
+    "generating": "Génération du Rapport...",
+    "downloading": "Téléchargement...",
+    "noDataAvailable": "Aucune donnée disponible pour les critères sélectionnés",
+    "reportTypes": {
+      "users": {
+        "title": "Rapport des Utilisateurs",
+        "description": "Liste complète de tous les utilisateurs avec leurs détails, rôles et informations d'inscription"
+      },
+      "orders": {
+        "title": "Rapport des Commandes", 
+        "description": "Analyse complète des commandes incluant le statut, les revenus et les informations clients"
+      },
+      "products": {
+        "title": "Rapport des Produits",
+        "description": "Catalogue de produits avec niveaux de stock, prix et informations de catégorie"
+      },
+      "stock": {
+        "title": "Rapport du Stock",
+        "description": "État actuel de l'inventaire, niveaux de stock et alertes de stock dans tous les emplacements"
+      },
+      "companies": {
+        "title": "Rapport des Entreprises",
+        "description": "Aperçu des partenaires commerciaux incluant les revenus, commandes et statistiques d'utilisateurs"
+      },
+      "sales": {
+        "title": "Rapport des Ventes",
+        "description": "Performance des ventes quotidiennes avec tendances de revenus et analyse du mouvement des produits"
+      },
+      "userOrders": {
+        "title": "Rapport des Commandes Utilisateur",
+        "description": "Historique des commandes individuelles des clients et modèles d'achat"
+      }
+    },
+    "filters": {
+      "dateRange": "Plage de Dates",
+      "status": "Statut",
+      "user": "Utilisateur", 
+      "company": "Entreprise",
+      "product": "Produit",
+      "category": "Catégorie",
+      "allStatuses": "Tous les Statuts",
+      "allUsers": "Tous les Utilisateurs",
+      "allCompanies": "Toutes les Entreprises",
+      "allProducts": "Tous les Produits",
+      "allCategories": "Toutes les Catégories",
+      "from": "Date de Début",
+      "to": "Date de Fin",
+      "selectUser": "Sélectionner un Utilisateur",
+      "selectCompany": "Sélectionner une Entreprise",
+      "selectProduct": "Sélectionner un Produit",
+      "selectCategory": "Sélectionner une Catégorie"
+    },
+    "summary": {
+      "totalRecords": "Total des Enregistrements",
+      "totalRevenue": "Revenus Totaux",
+      "averageOrderValue": "Valeur Moyenne des Commandes",
+      "completedOrders": "Commandes Terminées",
+      "activeUsers": "Utilisateurs Actifs",
+      "totalProducts": "Total des Produits",
+      "lowStockItems": "Articles en Stock Faible",
+      "outOfStockItems": "Articles en Rupture",
+      "totalCompanies": "Total des Entreprises",
+      "generatedAt": "Généré le",
+      "reportPeriod": "Période du Rapport",
+      "dataPoints": "Points de Données"
+    },
+    "actions": {
+      "generateAndDownload": "Générer et Télécharger",
+      "preview": "Aperçu du Rapport",
+      "export": "Exporter les Données",
+      "share": "Partager le Rapport",
+      "schedule": "Programmer le Rapport",
+      "refresh": "Actualiser les Données"
+    },
+    "messages": {
+      "selectReportType": "Veuillez sélectionner un type de rapport pour continuer",
+      "reportGenerating": "Votre rapport est en cours de génération. Cela peut prendre quelques instants...",
+      "reportReady": "Votre rapport est prêt pour le téléchargement",
+      "reportError": "Il y a eu une erreur lors de la génération de votre rapport. Veuillez réessayer.",
+      "noFiltersSelected": "Aucun filtre appliqué - affichage de toutes les données disponibles",
+      "filtersApplied": "Filtres appliqués avec succès"
+    }
   },
   "notFound": {
     "title": "404 - Page Non Trouvée",

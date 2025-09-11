@@ -115,6 +115,7 @@
     "ordersHistory": "Orders History",
     "orderList": "Order List",
     "notifications": "Notifications",
+    "etats": "Reports",
     "logout": "Logout"
   },
   "map": {
@@ -149,7 +150,7 @@
     "loginSuccess": "Login successful",
     "logoutSuccess": "Logout successful",
     "adminLogin": "Admin Login",
-    "enterCredentials": "Enter your credentials to access the admin dashboard",
+    "enterCredentials": "Enter your credentials to access the bellat dashboard",
     "emailPlaceholder": "admin@example.com",
     "passwordPlaceholder": "password",
     "signingIn": "Signing in...",
@@ -166,8 +167,8 @@
     "unexpectedError": "An unexpected error occurred. Please try again."
   },
   "dashboard": {
-    "title": "Admin Dashboard",
-    "description": "Comprehensive admin dashboard for inventory management",
+    "title": "Bellat Dashboard",
+    "description": "Comprehensive bellat dashboard for inventory management",
     "totalRevenue": "Total Revenue",
     "totalOrders": "Total Orders",
     "totalUsers": "Total Users",
@@ -1090,7 +1091,7 @@
   },
   "pages": {
     "home": {
-      "title": "Welcome to Admin Dashboard",
+      "title": "Welcome to Bellat Dashboard",
       "description": "Manage your inventory, orders, and business operations efficiently",
       "getStarted": "Get Started",
       "learnMore": "Learn More"
@@ -1206,6 +1207,99 @@
     "deleteSuccess": "Food truck deleted successfully!",
     "deleteError": "Failed to delete food truck",
     "unexpectedError": "An unexpected error occurred"
+  },
+  "etats": {
+    "title": "Reports & Analytics",
+    "description": "Generate and download comprehensive reports for business analysis",
+    "generateReport": "Generate Report",
+    "downloadPDF": "Download PDF",
+    "reportGenerated": "Report generated successfully",
+    "reportFailed": "Failed to generate report",
+    "selectReportType": "Select Report Type",
+    "selectDateRange": "Select Date Range",
+    "selectFilters": "Select Filters",
+    "generating": "Generating Report...",
+    "downloading": "Downloading...",
+    "noDataAvailable": "No data available for the selected criteria",
+    "reportTypes": {
+      "users": {
+        "title": "Users Report",
+        "description": "Complete list of all users with their details, roles, and registration information"
+      },
+      "orders": {
+        "title": "Orders Report", 
+        "description": "Comprehensive orders analysis including status, revenue, and customer information"
+      },
+      "products": {
+        "title": "Products Report",
+        "description": "Product catalog with stock levels, pricing, and category information"
+      },
+      "stock": {
+        "title": "Stock Report",
+        "description": "Current inventory status, stock levels, and stock alerts across all locations"
+      },
+      "companies": {
+        "title": "Companies Report",
+        "description": "Business partners overview including revenue, orders, and user statistics"
+      },
+      "sales": {
+        "title": "Sales Report",
+        "description": "Daily sales performance with revenue trends and product movement analysis"
+      },
+      "userOrders": {
+        "title": "User Orders Report",
+        "description": "Individual customer order history and purchase patterns"
+      }
+    },
+    "filters": {
+      "dateRange": "Date Range",
+      "status": "Status",
+      "user": "User", 
+      "company": "Company",
+      "product": "Product",
+      "category": "Category",
+      "allStatuses": "All Statuses",
+      "allUsers": "All Users",
+      "allCompanies": "All Companies",
+      "allProducts": "All Products",
+      "allCategories": "All Categories",
+      "from": "From Date",
+      "to": "To Date",
+      "selectUser": "Select User",
+      "selectCompany": "Select Company",
+      "selectProduct": "Select Product",
+      "selectCategory": "Select Category"
+    },
+    "summary": {
+      "totalRecords": "Total Records",
+      "totalRevenue": "Total Revenue",
+      "averageOrderValue": "Average Order Value",
+      "completedOrders": "Completed Orders",
+      "activeUsers": "Active Users",
+      "totalProducts": "Total Products",
+      "lowStockItems": "Low Stock Items",
+      "outOfStockItems": "Out of Stock Items",
+      "totalCompanies": "Total Companies",
+      "generatedAt": "Generated At",
+      "reportPeriod": "Report Period",
+      "dataPoints": "Data Points"
+    },
+    "actions": {
+      "generateAndDownload": "Generate & Download",
+      "preview": "Preview Report",
+      "export": "Export Data",
+      "share": "Share Report",
+      "schedule": "Schedule Report",
+      "refresh": "Refresh Data"
+    },
+    "messages": {
+      "selectReportType": "Please select a report type to continue",
+      "reportGenerating": "Your report is being generated. This may take a few moments...",
+      "reportReady": "Your report is ready for download",
+      "reportError": "There was an error generating your report. Please try again.",
+      "noFiltersSelected": "No filters applied - showing all available data",
+      "filtersApplied": "Filters applied successfully"
+    }
   },
   "notFound": {
     "title": "404 - Page Not Found",

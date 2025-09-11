@@ -115,6 +115,7 @@
     "ordersHistory": "تاريخ الطلبات",
     "orderList": "قائمة الطلبات",
     "notifications": "الإشعارات",
+    "etats": "التقارير",
     "logout": "تسجيل الخروج"
   },
   "map": {
@@ -1204,5 +1205,98 @@
     "deleteSuccess": "تم حذف شاحنة الطعام بنجاح!",
     "deleteError": "فشل في حذف شاحنة الطعام",
     "unexpectedError": "حدث خطأ غير متوقع"
+  },
+  "etats": {
+    "title": "التقارير والتحليلات",
+    "description": "إنشاء وتحميل تقارير شاملة لتحليل الأعمال",
+    "generateReport": "إنشاء تقرير",
+    "downloadPDF": "تحميل PDF",
+    "reportGenerated": "تم إنشاء التقرير بنجاح",
+    "reportFailed": "فشل في إنشاء التقرير",
+    "selectReportType": "اختر نوع التقرير",
+    "selectDateRange": "اختر النطاق الزمني",
+    "selectFilters": "اختر المرشحات",
+    "generating": "جاري إنشاء التقرير...",
+    "downloading": "جاري التحميل...",
+    "noDataAvailable": "لا توجد بيانات متاحة للمعايير المحددة",
+    "reportTypes": {
+      "users": {
+        "title": "تقرير المستخدمين",
+        "description": "قائمة كاملة بجميع المستخدمين مع تفاصيلهم وأدوارهم ومعلومات التسجيل"
+      },
+      "orders": {
+        "title": "تقرير الطلبات", 
+        "description": "تحليل شامل للطلبات يتضمن الحالة والإيرادات ومعلومات العملاء"
+      },
+      "products": {
+        "title": "تقرير المنتجات",
+        "description": "كتالوج المنتجات مع مستويات المخزون والأسعار ومعلومات الفئات"
+      },
+      "stock": {
+        "title": "تقرير المخزون",
+        "description": "الحالة الحالية للمخزون ومستويات المخزون وتنبيهات المخزون في جميع المواقع"
+      },
+      "companies": {
+        "title": "تقرير الشركات",
+        "description": "نظرة عامة على الشركاء التجاريين تتضمن الإيرادات والطلبات وإحصائيات المستخدمين"
+      },
+      "sales": {
+        "title": "تقرير المبيعات",
+        "description": "أداء المبيعات اليومي مع اتجاهات الإيرادات وتحليل حركة المنتجات"
+      },
+      "userOrders": {
+        "title": "تقرير طلبات المستخدم",
+        "description": "تاريخ طلبات العملاء الفردية وأنماط الشراء"
+      }
+    },
+    "filters": {
+      "dateRange": "النطاق الزمني",
+      "status": "الحالة",
+      "user": "المستخدم", 
+      "company": "الشركة",
+      "product": "المنتج",
+      "category": "الفئة",
+      "allStatuses": "جميع الحالات",
+      "allUsers": "جميع المستخدمين",
+      "allCompanies": "جميع الشركات",
+      "allProducts": "جميع المنتجات",
+      "allCategories": "جميع الفئات",
+      "from": "من تاريخ",
+      "to": "إلى تاريخ",
+      "selectUser": "اختر مستخدم",
+      "selectCompany": "اختر شركة",
+      "selectProduct": "اختر منتج",
+      "selectCategory": "اختر فئة"
+    },
+    "summary": {
+      "totalRecords": "إجمالي السجلات",
+      "totalRevenue": "إجمالي الإيرادات",
+      "averageOrderValue": "متوسط قيمة الطلب",
+      "completedOrders": "الطلبات المكتملة",
+      "activeUsers": "المستخدمون النشطون",
+      "totalProducts": "إجمالي المنتجات",
+      "lowStockItems": "العناصر منخفضة المخزون",
+      "outOfStockItems": "العناصر غير المتوفرة",
+      "totalCompanies": "إجمالي الشركات",
+      "generatedAt": "تم الإنشاء في",
+      "reportPeriod": "فترة التقرير",
+      "dataPoints": "نقاط البيانات"
+    },
+    "actions": {
+      "generateAndDownload": "إنشاء وتحميل",
+      "preview": "معاينة التقرير",
+      "export": "تصدير البيانات",
+      "share": "مشاركة التقرير",
+      "schedule": "جدولة التقرير",
+      "refresh": "تحديث البيانات"
+    },
+    "messages": {
+      "selectReportType": "يرجى اختيار نوع التقرير للمتابعة",
+      "reportGenerating": "يتم إنشاء تقريرك. قد يستغرق هذا بضع دقائق...",
+      "reportReady": "تقريرك جاهز للتحميل",
+      "reportError": "حدث خطأ في إنشاء تقريرك. يرجى المحاولة مرة أخرى.",
+      "noFiltersSelected": "لم يتم تطبيق مرشحات - عرض جميع البيانات المتاحة",
+      "filtersApplied": "تم تطبيق المرشحات بنجاح"
+    }
   }
 }

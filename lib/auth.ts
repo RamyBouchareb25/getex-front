@@ -103,8 +103,8 @@ export const authOptions: NextAuthOptions = {
             } = jwtDecode(token) as JWTTokenPayload;
             
             // Check if user is an admin
-            if (role !== "ADMIN") {
-              throw new Error("ADMIN_ONLY");
+            if (role !== "ADMIN" && role !== "POINT_DE_VENTE") {
+              throw new Error("ADMIN_OR_POINT_DE_VENTE_ONLY");
             }
             
             return {
