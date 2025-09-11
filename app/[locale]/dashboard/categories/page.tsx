@@ -8,6 +8,8 @@ interface CategoriesPageProps {
     search?: string;
     dateFrom?: string;
     dateTo?: string;
+    id?: string;
+    subCategoryCount?: string;
   };
 }
 
@@ -17,14 +19,17 @@ const CategoriesPage = async ({ searchParams }: CategoriesPageProps) => {
   const search = searchParams.search;
   const dateFrom = searchParams.dateFrom;
   const dateTo = searchParams.dateTo;
-
+  const id = searchParams.id;
+  const subCategoryCount = searchParams.subCategoryCount;
   try {
     const categoriesData = await getCategoriesAction({ 
       page, 
       limit, 
       search, 
       dateFrom, 
-      dateTo 
+      dateTo, 
+      id, 
+      subCategoryCount
     });
 
     if (!categoriesData) {
@@ -36,6 +41,8 @@ const CategoriesPage = async ({ searchParams }: CategoriesPageProps) => {
       search: searchParams.search,
       dateFrom: searchParams.dateFrom,
       dateTo: searchParams.dateTo,
+      id: searchParams.id,
+      subCategoryCount: searchParams.subCategoryCount,
     });
 
     return <CategoriesTable key={searchParamsKey} categoriesData={categoriesData} currentPage={page} limit={limit} />;

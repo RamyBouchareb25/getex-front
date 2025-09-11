@@ -97,6 +97,7 @@
   },
   "navigation": {
     "dashboard": "Tableau de bord",
+    "map": "Carte",
     "orders": "Commandes",
     "products": "Produits",
     "categories": "Catégories",
@@ -115,6 +116,22 @@
     "orderList": "Liste des commandes",
     "notifications": "Notifications",
     "logout": "Déconnexion"
+  },
+  "map": {
+    "title": "Carte de l'Algérie",
+    "description": "Carte interactive montrant les emplacements à travers l'Algérie avec des marqueurs concentrés dans les grandes villes",
+    "legend": "Légende",
+    "pointDeVente": "Point de Vente",
+    "grossiste": "Grossiste",
+    "grandeSurface": "Grande Surface",
+    "totalMarkers": "Total des Marqueurs",
+    "highDensity": "Haute Densité",
+    "coverage": "Couverture",
+    "highDensityCities": "Alger, Oran, Annaba",
+    "allAlgeriaRegions": "Toutes les Régions d'Algérie",
+    "apiKeyNotConfigured": "La clé API Google Maps n'est pas configurée",
+    "loadingMaps": "Chargement des cartes...",
+    "errorLoadingMaps": "Erreur lors du chargement des cartes"
   },
   "auth": {
     "login": "Connexion",

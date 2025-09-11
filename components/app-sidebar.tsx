@@ -26,6 +26,7 @@ import {
   History,
   ClipboardList,
   Bell,
+  Map,
 } from "lucide-react";
 
 import {
@@ -82,6 +83,11 @@ export function AppSidebar() {
       title: "Dashboard (Mock Data)",
       url: `/${locale}/dashboard/mock`,
       icon: Home,
+    },
+    {
+      title: t("map"),
+      url: `/${locale}/dashboard/map`,
+      icon: Map,
     },
     {
       title: t("users"),

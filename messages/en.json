@@ -97,6 +97,7 @@
   },
   "navigation": {
     "dashboard": "Dashboard",
+    "map": "Map",
     "orders": "Orders",
     "products": "Products",
     "categories": "Categories",
@@ -115,6 +116,22 @@
     "orderList": "Order List",
     "notifications": "Notifications",
     "logout": "Logout"
+  },
+  "map": {
+    "title": "Algeria Map",
+    "description": "Interactive map showing locations across Algeria with concentrated markers in major cities",
+    "legend": "Legend",
+    "pointDeVente": "Point de Vente",
+    "grossiste": "Grossiste", 
+    "grandeSurface": "Grande Surface",
+    "totalMarkers": "Total Markers",
+    "highDensity": "High Density",
+    "coverage": "Coverage",
+    "highDensityCities": "Algiers, Oran, Annaba",
+    "allAlgeriaRegions": "All Algeria Regions",
+    "apiKeyNotConfigured": "Google Maps API key is not configured",
+    "loadingMaps": "Loading Maps...",
+    "errorLoadingMaps": "Error loading Maps"
   },
   "auth": {
     "login": "Login",

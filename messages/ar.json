@@ -97,6 +97,7 @@
   },
   "navigation": {
     "dashboard": "لوحة التحكم",
+    "map": "الخريطة",
     "orders": "الطلبات",
     "products": "المنتجات",
     "categories": "الفئات",
@@ -115,6 +116,22 @@
     "orderList": "قائمة الطلبات",
     "notifications": "الإشعارات",
     "logout": "تسجيل الخروج"
+  },
+  "map": {
+    "title": "خريطة الجزائر",
+    "description": "خريطة تفاعلية تُظهر المواقع عبر الجزائر مع علامات مركزة في المدن الكبرى",
+    "legend": "المفتاح",
+    "pointDeVente": "نقطة البيع",
+    "grossiste": "تاجر الجملة",
+    "grandeSurface": "المتجر الكبير",
+    "totalMarkers": "إجمالي العلامات",
+    "highDensity": "كثافة عالية",
+    "coverage": "التغطية",
+    "highDensityCities": "الجزائر، وهران، عنابة",
+    "allAlgeriaRegions": "جميع مناطق الجزائر",
+    "apiKeyNotConfigured": "مفتاح Google Maps API غير مكوّن",
+    "loadingMaps": "تحميل الخرائط...",
+    "errorLoadingMaps": "خطأ في تحميل الخرائط"
   },
   "auth": {
     "login": "تسجيل الدخول",

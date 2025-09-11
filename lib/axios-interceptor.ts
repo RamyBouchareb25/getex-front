@@ -3,14 +3,11 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
-import { getSession, signOut } from "next-auth/react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { validateEnvironment, logEnvironmentStatus } from "./env-validation";
 
 // Log environment status on module load
-logEnvironmentStatus();
+// logEnvironmentStatus();
 
 // Get the backend URL with proper validation
 const getBackendUrl = (): string => {
@@ -36,7 +33,6 @@ const getBackendUrl = (): string => {
   // Validate that it's a proper URL
   try {
     new URL(backendUrl);
-    console.log('✅ Using BACKEND_URL:', backendUrl);
     return backendUrl;
   } catch (error) {
     console.error('❌ Invalid BACKEND_URL format:', backendUrl);
@@ -93,8 +89,6 @@ const serverAxios = axios.create({
 // Add request interceptor for debugging
 serverAxios.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    console.log(`🚀 Making ${config.method?.toUpperCase()} request to: ${config.baseURL}${config.url}`);
-    console.log('Headers:', JSON.stringify(config.headers, null, 2));
     return config;
   },
   (error) => {
@@ -106,7 +100,6 @@ serverAxios.interceptors.request.use(
 // Setup server-side response interceptor
 serverAxios.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log(`✅ Response ${response.status} from: ${response.config.url}`);
     return response;
   },
   async (error: AxiosError) => {
