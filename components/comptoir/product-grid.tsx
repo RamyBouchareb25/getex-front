@@ -10,6 +10,7 @@ import { useProducts } from "@/hooks/use-products"
 import { useCategories, useSubCategories } from "@/hooks/use-categories"
 import type { Product } from "@/app/[locale]/dashboard/comptoir/page" 
 import { useTranslations } from "next-intl"
+import { imageUrl } from "@/lib/utils"
 type Props = {
   onProductSelect: (product: Product) => void
 }
@@ -133,7 +134,7 @@ export function ProductGrid({ onProductSelect }: Props) {
             <div className="aspect-square bg-muted relative overflow-hidden">
               {product.image ? (
                 <img
-                  src={product.image || "/placeholder.svg"}
+                  src={imageUrl(product.image) || "/placeholder.svg"}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
