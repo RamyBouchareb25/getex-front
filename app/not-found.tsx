@@ -23,7 +23,7 @@ export default function NotFound() {
               <div className="relative w-24 h-24 mx-auto p-2 rounded-2xl bg-gradient-to-br from-primary/10 to-chart-2/20 border border-primary/20">
                 <Image
                   src="/logo.png"
-                  alt="Bellat Logo"
+                  alt="Jacket's Club Logo"
                   fill
                   className="object-contain p-2"
                   priority
@@ -34,7 +34,7 @@ export default function NotFound() {
             {/* Brand name */}
             <div className="mb-4 flex items-center justify-center gap-2">
               <Building2 className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold text-primary">Bellat</span>
+              <span className="text-xl font-bold text-primary">Jacket's Club</span>
             </div>
 
             {/* Error Code */}

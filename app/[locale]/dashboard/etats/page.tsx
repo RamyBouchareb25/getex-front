@@ -311,7 +311,7 @@ export default function EtatsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("filters.allCompanies")}</SelectItem>
-                  <SelectItem value="1">Bellat Corporation</SelectItem>
+                  <SelectItem value="1">Jacket's Club</SelectItem>
                   <SelectItem value="2">Distribution Nord</SelectItem>
                   <SelectItem value="3">Grande Surface Sud</SelectItem>
                 </SelectContent>

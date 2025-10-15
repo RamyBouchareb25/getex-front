@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
       const response = await fetch(`${backendUrl}/health`, {
         method: 'GET',
-        headers: { 'User-Agent': 'Bellat-Frontend-Health-Check' },
+        headers: { 'User-Agent': 'JacketsClub-Frontend-Health-Check' },
         signal: AbortSignal.timeout(5000), // 5 second timeout
       });
 

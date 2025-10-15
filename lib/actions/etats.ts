@@ -26,7 +26,7 @@ export interface ReportData {
 
 // Mock data generators
 const generateMockUsers = () => [
-  { id: "1", name: "Ahmed Ben Ali", email: "ahmed@example.com", role: "ADMIN", company: "Bellat Corp", createdAt: "2024-01-15" },
+  { id: "1", name: "Ahmed Ben Ali", email: "ahmed@example.com", role: "ADMIN", company: "Jacket's Club Corp", createdAt: "2024-01-15" },
   { id: "2", name: "Fatima Zohra", email: "fatima@example.com", role: "POINT_DE_VENTE", company: "Distribution Nord", createdAt: "2024-02-20" },
   { id: "3", name: "Mohamed Amine", email: "mohamed@example.com", role: "GROSSISTE", company: "Grossiste Sud", createdAt: "2024-03-10" },
 ];
@@ -44,13 +44,13 @@ const generateMockProducts = () => [
 ];
 
 const generateMockStock = () => [
-  { productId: "PRD-001", productName: "Couscous Premium", currentStock: 150, minStock: 50, owner: "Bellat Stock", status: "IN_STOCK" },
-  { productId: "PRD-002", productName: "Huile d'Olive Extra", currentStock: 15, minStock: 20, owner: "Bellat Stock", status: "LOW_STOCK" },
+  { productId: "PRD-001", productName: "Couscous Premium", currentStock: 150, minStock: 50, owner: "Jacket's Club Stock", status: "IN_STOCK" },
+  { productId: "PRD-002", productName: "Huile d'Olive Extra", currentStock: 15, minStock: 20, owner: "Jacket's Club Stock", status: "LOW_STOCK" },
   { productId: "PRD-003", productName: "Lait UHT", currentStock: 0, minStock: 30, owner: "Distribution Nord", status: "OUT_OF_STOCK" },
 ];
 
 const generateMockCompanies = () => [
-  { id: "CMP-001", name: "Bellat Corporation", type: "GROSSISTE", users: 15, orders: 45, revenue: 1250000 },
+  { id: "CMP-001", name: "Jacket's Club Corporation", type: "GROSSISTE", users: 15, orders: 45, revenue: 1250000 },
   { id: "CMP-002", name: "Distribution Nord", type: "POINT_DE_VENTE", users: 8, orders: 32, revenue: 850000 },
   { id: "CMP-003", name: "Grande Surface Sud", type: "GRANDE_SURFACE", users: 12, orders: 78, revenue: 2100000 },
 ];

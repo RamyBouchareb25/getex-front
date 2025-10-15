@@ -29,7 +29,8 @@ import {
   Map,
   BookText,
 } from "lucide-react";
-
+import Icon from "@mdi/react";
+import { mdiCashRegister } from "@mdi/js";
 import {
   Sidebar,
   SidebarContent,
@@ -57,6 +58,8 @@ import { useSession } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { LanguageSwitcher } from "./language-switcher";
 import { ThemeToggle } from "./theme-toggle";
+import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
@@ -72,6 +75,12 @@ export function AppSidebar() {
   const user = session?.user;
   const t = useTranslations("navigation");
   const locale = useLocale();
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // All menu items with translations
   const allItems = [
@@ -79,7 +88,7 @@ export function AppSidebar() {
       title: t("dashboard"),
       url: `/${locale}/dashboard`,
       icon: Gauge,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
     },
     {
       title: "Dashboard (Mock Data)",
@@ -91,7 +100,7 @@ export function AppSidebar() {
       title: t("map"),
       url: `/${locale}/dashboard/map`,
       icon: Map,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
     },
     {
       title: t("users"),
@@ -127,10 +136,10 @@ export function AppSidebar() {
       title: t("stock"),
       url: `/${locale}/dashboard/stock`,
       icon: Warehouse,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
       content: [
         {
-          title: t("bellatStock"),
+          title: t("jacketStock"),
           url: `/${locale}/dashboard/stock/self`,
           icon: PackageCheck,
           roles: ["ADMIN"], // Available for both roles
@@ -139,7 +148,7 @@ export function AppSidebar() {
           title: t("allStocks"),
           url: `/${locale}/dashboard/stock`,
           icon: Boxes,
-          roles: ["ADMIN", "POINT_DE_VENTE"], // Admin only
+          roles: ["ADMIN", "DEPOT"], // Admin only
         },
       ],
     },
@@ -147,62 +156,69 @@ export function AppSidebar() {
       title: t("orders"),
       url: `/${locale}/dashboard/stock`,
       icon: ShoppingCart,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
       content: [
         {
           title: t("orderList"),
           url: `/${locale}/dashboard/orders`,
           icon: ClipboardList,
-          roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+          roles: ["ADMIN", "DEPOT"], // Available for both roles
         },
         {
           title: t("ordersHistory"),
           url: `/${locale}/dashboard/order-history`,
           icon: History,
-          roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+          roles: ["ADMIN", "DEPOT"], // Available for both roles
         },
       ],
+    },
+    {
+      title: t("comptoir"),
+      url: `/${locale}/dashboard/comptoir`,
+      mdiIcon: mdiCashRegister,
+      roles: ["ADMIN", "DEPOT", "MAGASIN"], // Available for both roles
+      isMdi: true,
     },
     {
       title: t("camions"),
       url: `/${locale}/dashboard/trucks`,
       icon: Truck,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
     },
     {
       title: t("chauffeurs"),
       url: `/${locale}/dashboard/drivers`,
       icon: UserCheck,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
     },
     {
       title: t("factures"),
       url: `/${locale}/dashboard/invoices`,
       icon: FileText,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
     },
     {
       title: t("foodTrucks"),
       url: `/${locale}/dashboard/food-trucks`,
       icon: Hamburger,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
     },
     {
       title: t("etats"),
       url: `/${locale}/dashboard/etats`,
       icon: BookText,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
     },
     {
       title: t("notifications"),
       url: `/${locale}/dashboard/notifications`,
       icon: Bell,
-      roles: ["ADMIN", "POINT_DE_VENTE"], // Available for both roles
+      roles: ["ADMIN", "DEPOT"], // Available for both roles
     },
   ];
 
   // Filter items based on user role
-  const userRole = user?.role || "POINT_DE_VENTE"; // Default to POINT_DE_VENTE if no role
+  const userRole = user?.role || "DEPOT"; // Default to DEPOT if no role
   const items = allItems.filter((item) => {
     // Check if user role is allowed for this item
     const hasAccess = item.roles.includes(userRole);
@@ -234,13 +250,17 @@ export function AppSidebar() {
     >
       <SidebarHeader>
         <div className="flex items-center justify-center p-4">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={500}
-            height={500}
-            className="h-24 w-auto"
-          />
+          {mounted ? (
+            <Image
+              src={resolvedTheme === "dark" ? "/logo.png" : "/logo-black.png"}
+              alt="Logo"
+              width={500}
+              height={500}
+              className="h-24 w-auto"
+            />
+          ) : (
+            <div className="h-24 w-auto" /> // Placeholder to prevent layout shift
+          )}
         </div>
         <div
           className={`flex items-center gap-2 px-4 py-2 ${
@@ -252,7 +272,9 @@ export function AppSidebar() {
               locale === "ar" ? "text-right" : "text-left"
             }`}
           >
-            <span className="truncate font-semibold">Bellat Dashboard</span>
+            <span className="truncate font-semibold">
+              Jacket's Club Dashboard
+            </span>
             <span className="truncate text-xs">Inventory Management</span>
           </div>
           <div className="flex items-center gap-1">
@@ -295,7 +317,7 @@ export function AppSidebar() {
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton data-active={hasActiveSubItem}>
-                            <item.icon />
+                            {item.icon && <item.icon />}
                             <span>{item.title}</span>
                             <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
                           </SidebarMenuButton>
@@ -339,7 +361,11 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild data-active={isActive}>
                       <Link href={item.url}>
-                        <item.icon />
+                        {item.isMdi ? (
+                          <Icon path={item.mdiIcon} size={1} />
+                        ) : (
+                          item.icon && <item.icon />
+                        )}
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>

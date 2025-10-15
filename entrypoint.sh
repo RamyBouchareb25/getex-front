@@ -2,7 +2,7 @@
 
 set -e
 
-echo "🚀 Starting Bellat Web Application"
+echo "🚀 Starting Jacket's Club Web Application"
 echo "=================================="
 
 # Environment variables are now injected directly by Kubernetes

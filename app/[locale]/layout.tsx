@@ -1,7 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "../globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { NextAuthSessionProvider } from "@/components/providers/session-provider";
 import { getServerSession } from "next-auth";
@@ -15,8 +14,8 @@ import { Toaster } from "@/components/ui/sonner"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Bellat Dashboard",
-  description: "Comprehensive bellat dashboard for inventory management",
+  title: "Jacket's Club Dashboard",
+  description: "Comprehensive jacket's club dashboard for inventory management",
 };
 
 export function generateStaticParams() {

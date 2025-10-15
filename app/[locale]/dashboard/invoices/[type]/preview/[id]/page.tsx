@@ -68,10 +68,10 @@ export default function InvoicePreviewPage() {
         if (response.success && response.data) {
           // Compose company info (could be static or from API)
           const company: CompanyInfo = {
-            name: response.data.company?.name || "BELLAT",
+            name: response.data.company?.name || "Jacket's Club",
             address: response.data.company?.address || "123 Company Street",
             phone: response.data.company?.phone || "(123) 456-7890",
-            email: response.data.company?.email || "contact@bellat.com",
+            email: response.data.company?.email || "contact@jacketsclub.com",
           };
           // Compose user info
           const user: UserInfo = {

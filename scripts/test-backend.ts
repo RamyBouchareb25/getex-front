@@ -24,7 +24,7 @@ async function testEndpoint(name: string, endpoint: string): Promise<TestResult>
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'Bellat-Backend-Test',
+        'User-Agent': 'JacketsClub-Backend-Test',
       },
       signal: AbortSignal.timeout(10000), // 10 second timeout
     });
