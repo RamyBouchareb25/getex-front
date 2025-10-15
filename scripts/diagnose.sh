@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔍 Bellat Production Diagnostics"
+echo "🔍 Jacket's Club Production Diagnostics"
 echo "=================================="
 echo "Timestamp: $(date -Iseconds)"
 echo "Container ID: $(hostname)"

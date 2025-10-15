@@ -105,11 +105,15 @@ export const getCategoriesAction = async ({
   limit, 
   search, 
   dateFrom, 
-  dateTo 
+  dateTo, 
+  id, 
+  subCategoryCount
 }: Pagination & { 
-  search?: string; 
+  search?: string;  
   dateFrom?: string; 
   dateTo?: string; 
+  id?: string; 
+  subCategoryCount?: string; 
 }) => {
   try {
     const params = new URLSearchParams({
@@ -120,6 +124,8 @@ export const getCategoriesAction = async ({
     if (search) params.append('search', search);
     if (dateFrom) params.append('dateFrom', dateFrom);
     if (dateTo) params.append('dateTo', dateTo);
+    if (id) params.append('id', id);
+    if (subCategoryCount) params.append('subCategoryCount', subCategoryCount);
     const response = await serverApi.get(`/category/admin?${params.toString()}`);
     if (response.status !== 200) {
       throw new Error(`Failed to fetch categories: ${response.statusText}`);
